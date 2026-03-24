@@ -1,0 +1,70 @@
+.map-container {
+    height: calc(100vh - 100px);
+    /* ajuste a su header */
+    width: 100%;
+    position: relative;
+}
+
+/* Elimina el cuadro blanco, bordes y sombras del tooltip de Leaflet */
+::ng-deep .tooltip-vendedor-clean {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Elimina la flecha/triángulo del tooltip */
+::ng-deep .tooltip-vendedor-clean::before {
+    display: none !important;
+}
+
+/* Estiliza el texto para legibilidad */
+::ng-deep .label-minimal {
+    text-align: center;
+    /* El shadow permite leer el texto sin necesidad de un cuadro de fondo */
+    text-shadow: 1px 1px 1px white, -1px -1px 1px white, 0 0 5px white;
+}
+
+::ng-deep .label-minimal .nombre {
+    font-weight: bold;
+    font-size: 13px;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+::ng-deep .label-minimal .tiempo {
+    font-size: 11px;
+    color: #d35400;
+    font-weight: 600;
+}/* Elimina el cuadro blanco, bordes y sombras del tooltip de Leaflet */
+::ng-deep .tooltip-vendedor-clean {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* Elimina la flecha/triángulo del tooltip */
+::ng-deep .tooltip-vendedor-clean::before {
+    display: none !important;
+}
+
+/* Estiliza el texto para legibilidad */
+::ng-deep .label-minimal {
+    text-align: center;
+    /* El shadow permite leer el texto sin necesidad de un cuadro de fondo */
+    text-shadow: 1px 1px 1px white, -1px -1px 1px white, 0 0 5px white;
+}
+
+::ng-deep .label-minimal .nombre {
+    font-weight: bold;
+    font-size: 13px;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+::ng-deep .label-minimal .tiempo {
+    font-size: 11px;
+    color: #d35400;
+    font-weight: 600;
+}

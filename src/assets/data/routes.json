@@ -1,0 +1,59 @@
+{
+  "routes": [
+    {
+      "path": "/mapa",
+      "title": "MENUITEMS.HOME.TEXT",
+      "iconType": "feather",
+      "icon": "map",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
+      "path": "",
+      "title": "Ventas",
+      "iconType": "",
+      "icon": "",
+      "class": "",
+      "groupTitle": true,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
+      "path": "ventas",
+      "title": "Ventas por Facturar",
+      "iconType": "feather",
+      "icon": "file-text",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
+      "path": "ventas-en-curso",
+      "title": "Ventas en Curso",
+      "iconType": "feather",
+      "icon": "file-text",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
+      "path": "ventas-facturadas",
+      "title": "Ventas Facturadas",
+      "iconType": "feather",
+      "icon": "file-text",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    }
+  ]
+}

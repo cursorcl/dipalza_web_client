@@ -1,0 +1,128 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Detalle de Venta</h5>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-2">
+            <a routerLink="/ventas-en-curso" class="d-flex align-items-center">
+                Ventas en Curso
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group row">
+                    <div class="col-sm-4">
+                        <div class="d-flex">
+                            <label class="col-form-label msr-3">Search:</label>
+                            <input type="text" class="form-control" (keyup)='updateFilter($event)'>
+                        </div>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="d-flex">
+                            <label class="col-form-label msr-3">{{venta?.nombreCliente ?? ''}}</label>
+                        </div>
+                    </div>
+                </div>
+                <ngx-datatable #table class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                    columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
+                    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
+                    <ngx-datatable-column [width]="200" name="Producto" headerClass="align-center-header"
+                        prop="nombreProducto">
+                        <ng-template let-row="row" let-value="value" let-rowIndex="rowIndex"
+                            ngx-datatable-cell-template>
+                            <div>{{row.nombreProducto}}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Cantidad" headerClass="align-center-header"
+                        cellClass="align-center-cell" prop="cantidad">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.cantidad}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Precio Unitario" headerClass="align-center-header"
+                        cellClass="align-right-cell" prop="precioUnitario">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.precioUnitario | currency:'$ ': 'symbol':'1.0-2'}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="% Descuento" headerClass="align-center-header"
+                        cellClass="align-right-cell" prop="porcentajeDescuento">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.porcentajeDescuento | percent:'1.0-2'}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="$ Descuento" headerClass="align-center-header"
+                        cellClass="align-right-cell" prop="totalDescuento">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.totalDescuento | currency:'$ ': 'symbol':'1.0-0'}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="ILA" headerClass="align-center-header" cellClass="align-right-cell"
+                        prop="totalIla">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.totalIla | currency:'$ ': 'symbol':'1.0-0'}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="IVA" headerClass="align-center-header" cellClass="align-right-cell"
+                        prop="totalIva">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.totalIva | currency:'$ ': 'symbol':'1.0-0'}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Total Línea" headerClass="align-center-header"
+                        cellClass="align-right-cell" prop="totalLinea">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.totalLinea| currency:'$ ': 'symbol':'1.0-0'}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Piezas" headerClass="align-center-header" cellClass="align-right-cell"
+                        prop="piezas">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.piezas}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Unidad" headerClass="align-center-header" cellClass="align-right-cell"
+                        prop="unidad">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.unidad}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+    <div class="floating-totals-container">
+        <div class="totals-card">
+            <div class="total-row">
+                <span>Neto:</span>
+                <strong>{{ venta?.totalNeto | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="total-row">
+                <span>Descuento:</span>
+                <strong class="text-danger"> {{ venta?.totalDescuento | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="total-row">
+                <span>IVA:</span>
+                <strong>{{ venta?.totalIva | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="total-row">
+                <span>ILA:</span>
+                <strong>{{ venta?.totalIla | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <hr class="totals-divider">
+            <div class="total-row total-highlight">
+                <span>TOTAL:</span>
+                <strong>{{ venta?.total| currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+        </div>
+    </div>
+</section>

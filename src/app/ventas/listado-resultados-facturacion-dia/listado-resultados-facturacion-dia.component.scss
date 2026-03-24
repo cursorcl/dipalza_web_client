@@ -1,0 +1,11 @@
+/* Permite que el contenedor de detalle sea flexible */
+::ng-deep .ngx-datatable.material .datatable-row-detail {
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Opcional: Estilizar el fondo del detalle para que se diferencie de la cabecera */
+::ng-deep .datatable-row-detail {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}

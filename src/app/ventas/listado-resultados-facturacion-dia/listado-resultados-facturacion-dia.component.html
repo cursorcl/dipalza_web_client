@@ -45,8 +45,7 @@
                                         <tr>
                                             <th>Código</th>
                                             <th>Cant. Asignada</th>
-                                            <th>Neto</th>
-                                            <th>IVA</th>
+                                            <th>Venta</th>
                                             <th>Numeración (Asignados)</th>
                                         </tr>
                                     </thead>
@@ -54,8 +53,7 @@
                                         <tr *ngFor="let item of row.items">
                                             <td>{{ item.codigoProducto }}</td>
                                             <td>{{ item.cantidadAsignada }}</td>
-                                            <td>{{ item.precioVentaNeto | currency }}</td>
-                                            <td>{{ item.valorTotalIva | currency }}</td>
+                                            <td>{{ item.valorTotalVentaNeta | currency }}</td>
                                             <td>
                                                 <small class="badge bg-info text-dark"
                                                     *ngFor="let nro of item.numeracion?.numerosPiezasAsignadas">

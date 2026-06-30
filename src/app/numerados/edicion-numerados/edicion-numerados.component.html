@@ -1,0 +1,45 @@
+<form [formGroup]="form" (ngSubmit)="submit()">
+
+    <!-- Producto -->
+    <div class="form-group">
+        <label>Seleccione producto</label>
+
+        <select formControlName="producto" class="form-control">
+            <option [ngValue]="null">-- Seleccione --</option>
+            <option *ngFor="let p of productos" [ngValue]="p">
+                {{ p.descripcion }}
+            </option>
+        </select>
+
+        <small *ngIf="form.get('producto')?.touched && form.get('producto')?.invalid" style="color:red">
+            Debe seleccionar un producto
+        </small>
+    </div>
+
+    <!-- Número -->
+    <div class="form-group">
+        <label>Número</label>
+
+        <input type="number" formControlName="numero" class="form-control" placeholder="Ingrese número" />
+
+        <small *ngIf="form.get('numero')?.touched && form.get('numero')?.invalid" style="color:red">
+            Número inválido
+        </small>
+    </div>
+
+    <!-- Peso -->
+    <div class="form-group">
+        <label>Peso (kg)</label>
+
+        <input type="number" step="0.001" formControlName="peso" class="form-control" placeholder="Ej: 1.250" />
+
+        <small *ngIf="form.get('peso')?.touched && form.get('peso')?.invalid" style="color:red">
+            Peso inválido
+        </small>
+    </div>
+
+    <button type="submit" [disabled]="form.invalid">
+        Guardar
+    </button>
+
+</form>

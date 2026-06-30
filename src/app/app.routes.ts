@@ -18,39 +18,15 @@ export const APP_ROUTE: Route[] = [
             },
             {
                 path: 'ventas',
-                loadComponent: () =>
-                    import('./ventas/listado-ventas-dia/listado-ventas-dia.component').then((m) => m.ListadoVentasDiaComponent)
+                loadChildren: () =>
+                    import('./ventas/ventas.routes').then((m) => m.VENTAS_ROUTES)
             },
             {
-                path: 'detalle-venta',
-                loadComponent: () =>
-                    import('./ventas/listado-detalle-ventas-dia/listado-detalle-ventas-dia.component').then((m) => m.ListadoDetalleVentasDiaComponent)
-            },
-            {
-                path: 'ventas-en-curso',
-                loadComponent: () =>
-                    import('./ventas/listado-ventas-dia-en-curso/listado-ventas-dia-en-curso.component').then((m) => m.ListadoVentasDiaEnCursoComponent)
-            },
-            {
-                path: 'detalle-venta-en-curso',
-                loadComponent: () =>
-                    import('./ventas/listado-detalle-ventas-dia-en-curso/listado-detalle-ventas-dia-en-curso.component').then((m) => m.ListadoDetalleVentasDiaEnCursoComponent)
-            },
-            {
-                path: 'ventas-facturadas',
-                loadComponent: () =>
-                    import('./ventas/listado-ventas-facturados-mes-actual/listado-ventas-facturados-mes-actual.component').then((m) => m.ListadoVentasFacturadosMesActualComponent)
-            },
-            {
-                path: 'detalle-venta-facturada',
-                loadComponent: () =>
-                    import('./ventas/listado-detalle-ventas-facturados-mes-actual/listado-detalle-ventas-facturados-mes-actual.component').then((m) => m.ListadoDetalleVentasFacturadosMesActualComponent)
-            },
-            {
-                path: 'resultados-facturacion',
-                loadComponent: () =>
-                    import('./ventas/listado-resultados-facturacion-dia/listado-resultados-facturacion-dia.component').then((m) => m.ListadoResultadosFacturacionDiaComponent)
+                path: 'numerados',
+                loadChildren: () =>
+                    import('./numerados/numerados.routes').then((m) => m.NUMERADOS_ROUTES)
             }
+
         ],
     },
     {

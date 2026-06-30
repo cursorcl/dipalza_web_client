@@ -7,13 +7,13 @@
 
 
 .align-right-cell {
-    display: flex !important;
-    justify-content: flex-end !important;
+  display: flex !important;
+  justify-content: flex-end !important;
 }
 
 .align-center-header {
-    display: flex !important;
-    justify-content: center !important;
+  display: flex !important;
+  justify-content: center !important;
 }
 
 .align-center-cell {
@@ -25,10 +25,86 @@
 
 .ngx-datatable .datatable-header-cell,
 .ngx-datatable .datatable-body-cell {
-  border-right: 1px solid rgba(0, 0, 0, 0.05) !important; 
+  border-right: 1px solid rgba(0, 0, 0, 0.05) !important;
 }
 
 .ngx-datatable .datatable-header-cell:last-child,
 .ngx-datatable .datatable-body-cell:last-child {
   border-right: none !important;
+}
+
+
+
+.tblEditBtn {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #4f555a;
+  padding: 0px 2px !important;
+}
+
+.tblEditBtn i {
+  font-size: 12px;
+  position: relative;
+  line-height: 1;
+  background-color: rgba($color: #00ff0a, $alpha: 0.1);
+  border-color: transparent;
+  color: #4caf50;
+  padding: 8px;
+  height: 100%;
+  border-radius: 5px;
+}
+
+.tblEditBtn :hover {
+  background-color: #0ba83b;
+  color: #fff;
+}
+
+.tblDelBtn {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #4f555a;
+  padding: 0px 2px !important;
+}
+
+.tblDelBtn i {
+  font-size: 12px;
+  position: relative;
+  line-height: 1;
+  background-color: rgba($color: #ff4400, $alpha: 0.1);
+  border-color: transparent;
+  color: #fa6c39;
+  padding: 8px;
+  height: 100%;
+  border-radius: 5px;
+}
+
+.tblDelBtn :hover {
+  background-color: #f86e3c;
+  color: #fff;
+}
+
+
+
+.tblViewBtn {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  color: #4f555a;
+  padding: 0px 2px !important;
+}
+
+.tblViewBtn i {
+  font-size: 12px;
+  position: relative;
+  line-height: 1;
+  background-color: rgba($color: #2277ff, $alpha: 0.1);
+  border-color: transparent;
+  color: #2277ff;
+  padding: 8px;
+  height: 100%;
+  border-radius: 5px;
+}
+
+.tblViewBtn :hover {
+  background-color: #0077ff;
+  color: #fff;
 }

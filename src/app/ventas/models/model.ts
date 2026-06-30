@@ -76,3 +76,40 @@ export interface VentaFacturaResultado {
     mensaje: string
 }
 
+
+export interface Numerado {
+    id: number;
+    codigoProducto: string;
+    nombreProducto: string;
+    numero: number;
+    peso: number;
+    estado: string;
+    creadoEn: string;
+    actualizadoEn: string;
+}
+
+export interface NumeradoResumen {
+    codigoProducto: string;
+    nombreProducto: string;
+    peso: number;
+    piezas: number;
+}
+
+
+export interface Producto {
+    articulo: string;
+    descripcion: string;
+    ventaNeto: number;
+    porcIla: number;
+    porcCarne: number;
+    unidad: string;
+    stock: number;
+    numbered: Boolean;
+    codigoila: string;
+    lastUpdate: string;
+    pieces: number;
+    stockVentas: number;
+    piezasVentas: number;
+    costo: number;
+    numerados?: Numerado[];
+}

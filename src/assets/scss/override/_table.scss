@@ -5,19 +5,23 @@
 // @import '@swimlane/ngx-datatable/themes/material.css';
 // @import '@swimlane/ngx-datatable/assets/icons.css';
 .table {
+
   td,
   &:not(.table-bordered) th {
     border-top: none;
   }
+
   &.table-row-border tr td {
     padding: 10px;
     border-top: 1px solid #eee;
     border-bottom: 1px solid #eee;
     vertical-align: middle;
   }
+
   tr {
     border-top: 1px solid #ececec !important;
   }
+
   tbody {
     border-top: 1px solid #ececec !important;
   }
@@ -85,7 +89,7 @@
       box-shadow: 4px 3px 6px 0 rgba(0, 0, 0, 0.2);
     }
 
-    + li {
+    +li {
       margin-left: -14px;
       background: transparent;
     }
@@ -127,49 +131,7 @@ table tr:hover .table-links {
 .table-striped tbody tr:nth-of-type(odd) {
   background-color: rgba(0, 0, 0, 0.02);
 }
-.tblEditBtn {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  color: #4f555a;
-  padding: 0px 2px !important;
-}
-.tblEditBtn i {
-  font-size: 12px;
-  position: relative;
-  line-height: 1;
-  background-color: rgba($color: #00ff0a, $alpha: 0.1);
-  border-color: transparent;
-  color: #4caf50;
-  padding: 8px;
-  height: 100%;
-  border-radius: 5px;
-}
-.tblEditBtn :hover {
-  background-color: #0ba83b;
-  color: #fff;
-}
 
-.tblDelBtn {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  color: #4f555a;
-  padding: 0px 2px !important;
-}
-.tblDelBtn i {
-  font-size: 12px;
-  position: relative;
-  line-height: 1;
-  background-color: rgba($color: #ff4400, $alpha: 0.1);
-  border-color: transparent;
-  color: #fa6c39;
-  padding: 8px;
-  height: 100%;
-  border-radius: 5px;
-}
-.tblDelBtn :hover {
-  background-color: #f86e3c;
-  color: #fff;
-}
 
 .ngx-datatable.material {
   background: #fff;
@@ -201,6 +163,7 @@ table tr:hover .table-links {
         text-transform: uppercase;
         background: transparent;
       }
+
       a:hover {
         color: rgba(0, 0, 0, 0.75);
         background-color: rgba(158, 158, 158, 0.2);
@@ -208,10 +171,12 @@ table tr:hover .table-links {
       }
     }
   }
+
   .datatable-body .datatable-body-row .datatable-body-cell {
     padding: 0.5rem 1.2rem;
     display: flex !important;
     align-items: center;
+
     .name-col-style {
       display: inline-block;
     }
@@ -237,6 +202,7 @@ table tr:hover .table-links {
   .datatable-body-cell-label {
     display: table-cell !important;
     vertical-align: middle !important;
+
     .truncate-text {
       text-overflow: ellipsis;
       overflow: hidden;
@@ -270,6 +236,7 @@ table tr:hover .table-links {
       vertical-align: text-bottom;
     }
   }
+
   .table-title {
     margin: 0px 10px;
   }
@@ -328,6 +295,7 @@ table tr:hover .table-links {
     display: inline-block;
     overflow: hidden;
     white-space: nowrap;
+
     .btn {
       margin: 0px 10px 0px 10px;
     }
@@ -380,9 +348,8 @@ table tr:hover .table-links {
   margin-top: 0px;
   padding-left: 40px !important;
 }
-.ngx-datatable.material.single-selection
-  .datatable-body-row.active
-  .datatable-body-cell {
+
+.ngx-datatable.material.single-selection .datatable-body-row.active .datatable-body-cell {
   color: #ffffff;
 }
 
@@ -406,31 +373,38 @@ table tr:hover .table-links {
     line-height: 2.4 !important;
   }
 }
+
 .table-modal-header {
   padding: 5px;
   border-radius: 0 0.55rem 0 0;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+
   img {
     float: left;
     border-radius: 50%;
     width: 45px;
   }
+
   .modal-about {
     float: left;
     padding-left: 10px;
   }
 }
+
 .modal-header .close:focus {
   outline: none;
 }
+
 .datatable-body-row {
   border-bottom: 1px solid #eee;
+
   &:hover {
     cursor: pointer;
   }
 }
+
 .btn-tbl-edit {
   background-color: #96a2b4 !important;
   height: 30px !important;
@@ -439,19 +413,23 @@ table tr:hover .table-links {
   line-height: 30px !important;
   color: #fff;
   border-radius: 50%;
+
   i {
     display: flex;
     justify-content: center;
     align-items: center;
   }
+
   :focus {
     background-color: #96a2b4;
   }
 }
+
 .btn-tbl-edit:focus,
 .btn-tbl-edit:hover {
   color: #fff;
 }
+
 .btn-tbl-delete {
   background-color: #ff944f !important;
   height: 30px !important;
@@ -460,19 +438,23 @@ table tr:hover .table-links {
   line-height: 30px !important;
   color: #fff;
   border-radius: 50%;
+
   i {
     display: flex;
     justify-content: center;
     align-items: center;
   }
 }
+
 .btn-tbl-delete:focus,
 .btn-tbl-delete:hover {
   color: #fff;
 }
+
 .datatable-checkbox input[type="checkbox"]:before {
   border: 2px solid #807b7b;
 }
+
 .data-table-img {
   float: left;
   width: 35px;
@@ -482,27 +464,33 @@ table tr:hover .table-links {
   box-shadow: 4px 3px 6px 0 rgba(0, 0, 0, 0.2);
   margin-right: 20px;
 }
+
 .tbl-row-border {
   padding: 10px;
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
   vertical-align: middle;
+
   td {
     height: 45px !important;
   }
 }
+
 .traffic-bar {
   height: 0.5rem;
 }
+
 .search-traffic .traffic-source {
   padding: 15px 0;
 }
+
 .doc-file-type {
   .media {
     margin-bottom: 15px;
     padding-bottom: 15px;
     border-bottom: 1px solid #d5dadb;
   }
+
   .img-icon {
     width: 46px;
     height: 46px;
@@ -512,35 +500,44 @@ table tr:hover .table-links {
     justify-content: center;
     align-items: center;
     margin: 0px 15px;
+
     i {
       font-size: 23px;
     }
   }
+
   .media-body {
     display: block;
     color: #000;
     height: 30px;
   }
+
   .media-cta {
     margin-right: 10px;
     cursor: pointer;
+
     i {
       padding-right: 10px;
     }
   }
 }
+
 .primary-rgba {
   background-color: rgba(0, 44, 255, 0.1);
 }
+
 .success-rgba {
   background-color: rgba(95, 194, 126, 0.1);
 }
+
 .danger-rgba {
   background-color: rgba(244, 68, 85, 0.1);
 }
+
 .info-rgba {
   background-color: rgba(114, 208, 251, 0.1);
 }
+
 .status-label:before {
   content: "";
   display: inline-block;

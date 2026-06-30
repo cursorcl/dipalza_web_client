@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
 import { HistorialPosicionDTO, PosicionDTO } from './models/model';
@@ -7,6 +7,7 @@ import { WSPositionService } from './ws-position.service';
 import { PositionsService } from './positions.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { generateColorPellete } from 'app/utils/color-pallet';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-mapa',
@@ -14,7 +15,7 @@ import { generateColorPellete } from 'app/utils/color-pallet';
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss'
 })
-export class MapaComponent implements AfterViewInit, OnInit, OnDestroy {
+export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private subscription: Subscription = new Subscription();
   private posicionesActuales: Map<string, PosicionDTO> = new Map();
@@ -27,17 +28,16 @@ export class MapaComponent implements AfterViewInit, OnInit, OnDestroy {
   private markers: Map<string, L.Marker> = new Map();
   private historialLayer: L.LayerGroup = L.layerGroup();
 
-  constructor(private mapInit: MapInitializerService, private wsPosicionService: WSPositionService, private positionService: PositionsService) { }
+  private mapInit = inject(MapInitializerService);
+  private wsPosicionService = inject(WSPositionService);
+  private positionService = inject(PositionsService);
+  private destroyRef = inject(DestroyRef);
 
-  ngOnInit(): void {
-
-  }
 
   ngAfterViewInit(): void {
     this.map = this.mapInit.createMap(this.mapEl.nativeElement);
     this.map.addLayer(this.historialLayer);
     this.loadInitialPositions();
-    // Suscripción reactiva a los eventos del WebSocket
     this.subscription = this.wsPosicionService.getPositions$().subscribe(
       (posicion: PosicionDTO) => {
         this.updatePositionOnMap(posicion);
@@ -55,11 +55,10 @@ export class MapaComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    // Evitamos fugas de memoria al destruir el componente
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    this.wsPosicionService.disconnect(); // Cerrar la conexión WebSocket al destruir el componente
+    this.wsPosicionService.disconnect();
   }
 
   private updatePositionOnMap(data: PosicionDTO): void {
@@ -77,11 +76,11 @@ export class MapaComponent implements AfterViewInit, OnInit, OnDestroy {
       const label = this.generateLabel(data);
       marker = L.marker(newLatLng)
         .addTo(this.map);
-      
-        marker.on('click', () => {
+
+      marker.on('click', () => {
         this.consultarYDibujarTrayectoriaDia(vendedorId, vendedorCodigo);
       });
-      
+
       marker.bindTooltip(
         label, {
         permanent: true,     // <--- Crucial: no se cierra
@@ -126,16 +125,18 @@ export class MapaComponent implements AfterViewInit, OnInit, OnDestroy {
   }
 
   private loadInitialPositions(): void {
-    this.positionService.getActualPositions().subscribe((posiciones: PosicionDTO[]) => {
-      posiciones.forEach(posicion => {
-        this.updatePositionOnMap(posicion)
-      });
+    this.positionService.getActualPositions()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((posiciones: PosicionDTO[]) => {
+        posiciones.forEach(posicion => {
+          this.updatePositionOnMap(posicion)
+        });
 
-      const bounds = this.getBoundarys();
-      if (bounds.isValid()) {
-        this.map.fitBounds(bounds);
-      }
-    });
+        const bounds = this.getBoundarys();
+        if (bounds.isValid()) {
+          this.map.fitBounds(bounds);
+        }
+      });
   }
 
   private getBoundarys(): L.LatLngBounds {
@@ -164,8 +165,6 @@ export class MapaComponent implements AfterViewInit, OnInit, OnDestroy {
       popupAnchor: [0, -32],
       tooltipAnchor: [16, -32] // Alineación para que el tooltip flote sobre el pin
     });
-
-
   }
 
   showHistory(points: HistorialPosicionDTO[]) {
@@ -211,35 +210,36 @@ export class MapaComponent implements AfterViewInit, OnInit, OnDestroy {
 
   private consultarYDibujarTrayectoriaDia(codigo: string, tipo: string) {
     const hoy = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-    
+
     const filter = {
-      vendedorIds: [{codigo: codigo, tipo: tipo}],
+      vendedorIds: [{ codigo: codigo, tipo: tipo }],
       dia: hoy
     }
     // Llamada al servicio que utiliza el repositorio con fetch
     this.positionService.getHistoric(filter)
-        .subscribe(puntos => {
-            if (puntos.length > 0) {
-                this.historialLayer.clearLayers(); // Limpiamos trayectorias anteriores
-                
-                const coordenadas = puntos.map(p => [p.latitud, p.longitud]);
-                const key = `${codigo}_${tipo}`;
-                const color = this.getColorForVendedor(key);
-                
-                const polyline = L.polyline(coordenadas as L.LatLngExpression[], {
-                    color: color,
-                    weight: 5,
-                    opacity: 0.8,
-                    smoothFactor: 1
-                });
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(puntos => {
+        if (puntos.length > 0) {
+          this.historialLayer.clearLayers(); // Limpiamos trayectorias anteriores
 
-                // Para el historial, usamos el Popup según lo solicitado
-                polyline.bindPopup(`<b>Historial de hoy:</b> ${puntos[0].vendedorNombre}`);
-                polyline.addTo(this.historialLayer);
-                
-                // Ajustamos la vista para ver el recorrido completo
-                this.map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-            }
-        });
-}
+          const coordenadas = puntos.map(p => [p.latitud, p.longitud]);
+          const key = `${codigo}_${tipo}`;
+          const color = this.getColorForVendedor(key);
+
+          const polyline = L.polyline(coordenadas as L.LatLngExpression[], {
+            color: color,
+            weight: 5,
+            opacity: 0.8,
+            smoothFactor: 1
+          });
+
+          // Para el historial, usamos el Popup según lo solicitado
+          polyline.bindPopup(`<b>Historial de hoy:</b> ${puntos[0].vendedorNombre}`);
+          polyline.addTo(this.historialLayer);
+
+          // Ajustamos la vista para ver el recorrido completo
+          this.map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+        }
+      });
+  }
 }

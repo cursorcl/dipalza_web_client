@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Venta, VentaDetalle } from '../models/model';
 import { Router, RouterLink } from '@angular/router';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { VentasService } from '../ventas.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-listado-detalle-ventas-dia',
@@ -20,8 +22,12 @@ export class ListadoDetalleVentasDiaComponent implements OnInit {
   reorderable = true;
   scrollBarHorizontal = window.innerWidth < 1200;
 
+  private ventaService = inject(VentasService);
+  private router = inject(Router);
+  private location = inject(Location);
+  private destroyRef = inject(DestroyRef);
 
-  constructor(private ventaService: VentasService,private router: Router, private location: Location) {
+  constructor() {
     const navigation = this.router.getCurrentNavigation();
 
     if (navigation?.extras?.state) {
@@ -32,17 +38,14 @@ export class ListadoDetalleVentasDiaComponent implements OnInit {
     this.loadingIndicator = false;
   }
 
-  updateFilter(event: any) {
-    const val = event.target.value.toLowerCase();
+  updateFilter(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const val = input.value.toLowerCase();
 
     // filter our data
-    const temp = this.rows.filter(function (d) {
+    this.rows = this.temp.filter(function (d: VentaDetalle) {
       return d.nombreProducto.toLowerCase().indexOf(val) !== -1 || !val;
     }) || [];
-  }
-
-  numbersOfPieces(piezasDetalle: any[]): string {
-    return piezasDetalle ? piezasDetalle.map( p => p.numero ).join(', ') : '';
   }
 
   ngOnInit(): void {
@@ -51,20 +54,23 @@ export class ListadoDetalleVentasDiaComponent implements OnInit {
 
   updateSalesByDate() {
     this.loadingIndicator = true;
-    const filtros = { estados: ['FINISHED'] };
-    this.ventaService.obtainDetailBySaleId(this.venta?.id || 0).subscribe({
-      next: (ventas: VentaDetalle[]) => {
-        this.rows = ventas;
-        this.loadingIndicator = false;
-      },
-      error: (error: any) => {
-        console.error('Error al obtener las ventas:', error);
-        this.loadingIndicator = false;
-      }
-    });
+    this.ventaService.obtainDetailBySaleId(this.venta?.id || 0)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (ventas: VentaDetalle[]) => {
+          this.rows = ventas;
+          this.temp = ventas;
+          this.loadingIndicator = false;
+        },
+        error: (error: HttpErrorResponse) => {
+          console.error('Error al obtener las ventas:', error);
+          this.loadingIndicator = false;
+        }
+      });
   }
 
   goBack() {
     this.location.back(); // Regresa a la página anterior en el historial
   }
 }
+

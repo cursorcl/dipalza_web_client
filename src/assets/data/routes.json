@@ -26,7 +26,7 @@
       "path": "ventas",
       "title": "Ventas por Facturar",
       "iconType": "feather",
-      "icon": "file-text",
+      "icon": "home",
       "class": "",
       "groupTitle": false,
       "badge": "",
@@ -34,7 +34,7 @@
       "submenu": []
     },
     {
-      "path": "ventas-en-curso",
+      "path": "ventas/ventas-en-curso",
       "title": "Ventas en Curso",
       "iconType": "feather",
       "icon": "file-text",
@@ -45,8 +45,19 @@
       "submenu": []
     },
     {
-      "path": "ventas-facturadas",
+      "path": "ventas/ventas-facturadas",
       "title": "Ventas Facturadas",
+      "iconType": "feather",
+      "icon": "file-text",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
+      "path": "numerados",
+      "title": "Productos Numerados",
       "iconType": "feather",
       "icon": "file-text",
       "class": "",

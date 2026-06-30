@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { Venta, VentaFacturaResultado } from '../models/model';
 import { RouterLink } from '@angular/router';
@@ -23,19 +23,20 @@ export class ListadoResultadosFacturacionDiaComponent implements OnInit {
 
   @ViewChild(DatatableComponent) table!: DatatableComponent;
 
-  constructor(private location: Location, private dataResultService: DataResultService) {
+  private location = inject(Location);
+  private dataResultService = inject(DataResultService);
 
-  }
 
-  toggleExpandRow(row: any) {
+  toggleExpandRow(row: VentaFacturaResultado) {
     this.table.rowDetail.toggleExpandRow(row);
   }
 
-  updateFilter(event: any) {
-    const val = event.target.value.toLowerCase();
+  updateFilter(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const val = input.value.toLowerCase();
 
     // filter our data
-    this.rows = this.temp.filter(function (d) {
+    this.rows = this.temp.filter(function (d: VentaFacturaResultado) {
       return d.factura.toLowerCase().indexOf(val) !== -1 || !val;
     }) || [];
   }

@@ -1,0 +1,79 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Numerados Existentes</h5>
+        </li>
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group row">
+                    <div class="col-sm-4">
+                        <div class="d-flex">
+                            <label class="col-form-label msr-3">Buscar:</label>
+                            <input type="text" class="form-control" (keyup)='updateFilter($event)'>
+                        </div>
+                    </div>
+                    <div class="col-sm-auto ms-auto">
+                        <div class="d-flex justify-content-end gap-2">
+                            <button class="btn btn-primary" (click)="updateSalesByDate()">Actualizar</button>
+                            <button class="btn btn-primary" (click)="addNumerado()">
+                                Agregar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <ngx-datatable #table class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                    columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
+                    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
+                    <ngx-datatable-column [width]="200" name="Código" headerClass="align-center-header"
+                        prop="codigoProducto">
+                        <ng-template let-row="row" let-value="value" let-rowIndex="rowIndex"
+                            ngx-datatable-cell-template>
+                            <div>{{row.codigoProducto}}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column [width]="200" name="Producto" headerClass="align-center-header"
+                        prop="nombreProducto">
+                        <ng-template let-row="row" let-value="value" let-rowIndex="rowIndex"
+                            ngx-datatable-cell-template>
+                            <div>{{row.nombreProducto}}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Peso Disponible [Kg]" headerClass="align-center-header"
+                        cellClass="align-center-cell" prop="peso">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.peso}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Piezas Disponibles" headerClass="align-center-header"
+                        cellClass="align-right-cell" prop="piezas">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{row.piezas}}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="" [sortable]="false" headerClass="align-center-header"
+                        cellClass="align-center-cell">
+                        <ng-template let-value="value" let-row="row" let-rowIndex="rowIndex"
+                            ngx-datatable-cell-template>
+                            <a class="msr-2 h-auto tblViewBtn" (click)="gotoToDetail(row)" style="cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a class="msr-2 h-auto tblEditBtn" (click)="updateNumerado(row)" style="cursor: pointer;">
+                                <i class="fas fa-plus"></i>
+                            </a>
+                            <a class="msr-2 h-auto tblDelBtn" (click)="deleteNumerado(row)" style="cursor: pointer;">
+                                <i class="fas fa-minus"></i>
+                            </a>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

@@ -3,16 +3,17 @@ import { Router, RouterLink } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
 import { AuthService } from '@core';
+import { ProductoService } from 'app/services/producto.service';
 @Component({
-    selector: 'app-signin',
-    templateUrl: './signin.component.html',
-    styleUrls: ['./signin.component.scss'],
-    imports: [
-        FormsModule,
-        ReactiveFormsModule,
-        FeatherModule,
-        RouterLink,
-    ]
+  selector: 'app-signin',
+  templateUrl: './signin.component.html',
+  styleUrls: ['./signin.component.scss'],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    FeatherModule,
+    RouterLink,
+  ]
 })
 export class SigninComponent implements OnInit {
   loginForm!: UntypedFormGroup;
@@ -23,7 +24,8 @@ export class SigninComponent implements OnInit {
   constructor(
     private formBuilder: UntypedFormBuilder,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private productoService: ProductoService
   ) { }
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
@@ -51,6 +53,10 @@ export class SigninComponent implements OnInit {
               if (res) {
                 const token = this.authService.currentUserValue.token;
                 if (token) {
+                  this.productoService.loadProductos().subscribe({
+                    next: () => console.log('Productos cargados en segundo plano'),
+                    error: (err) => console.error('Error cargando productos post-login', err)
+                  });
                   this.router.navigate(['/']);
                 }
               } else {
@@ -61,7 +67,10 @@ export class SigninComponent implements OnInit {
             }
           },
           error: (error) => {
-            this.error = error;
+            this.error = error.message ?? error;
+            if (error.status && error.status == 403) {
+              this.error = "Usuario no autorizado!!";
+            }
             this.submitted = false;
           },
         });

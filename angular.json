@@ -59,13 +59,11 @@
               "./node_modules/@swimlane/ngx-datatable/themes/material.css",
               "./node_modules/@swimlane/ngx-datatable/assets/icons.css",
               "./node_modules/@ng-select/ng-select/themes/default.theme.css",
-              "./node_modules/ngx-toastr/toastr.css",
               "src/assets/scss/style.scss",
               "src/styles.scss",
               "node_modules/leaflet/dist/leaflet.css"
             ],
             "scripts": [
-              "./node_modules/moment/min/moment.min.js",
               "./node_modules/apexcharts/dist/apexcharts.min.js"
             ],
             "browser": "src/main.ts"
@@ -112,8 +110,7 @@
             }
           },
           "defaultConfiguration": "development",
-          "options": {
-          }
+          "options": {}
         },
         "extract-i18n": {
           "builder": "@angular/build:extract-i18n",

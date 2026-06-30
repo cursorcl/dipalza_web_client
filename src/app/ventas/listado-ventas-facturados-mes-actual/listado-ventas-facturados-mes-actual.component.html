@@ -4,7 +4,7 @@
             <h5 class="page-title m-b-0">Ventas Facturadas</h5>
         </li>
         <li class="breadcrumb-item bcrumb-1">
-            <a routerLink="/mapa" class="d-flex align-items-center">
+            <a routerLink="/" class="d-flex align-items-center">
                 <i class="fas fa-home font-20"></i>
             </a>
         </li>
@@ -74,7 +74,7 @@
                         cellClass="align-center-cell">
                         <ng-template let-value="value" let-row="row" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>
-                            <a class="msr-2 h-auto tblEditBtn" (click)="gotoToDetail(row)" style="cursor: pointer;">
+                            <a class="msr-2 h-auto tblViewBtn" (click)="gotoToDetail(row)" style="cursor: pointer;">
                                 <i class="fas fa-eye"></i>
                             </a>
                         </ng-template>

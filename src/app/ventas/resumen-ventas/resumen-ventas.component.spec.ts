@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
+import { provideRouter } from '@angular/router';
 
 import { ResumenVentasComponent } from './resumen-ventas.component';
 import { VentasService } from '../ventas.service';
@@ -40,7 +41,10 @@ describe('ResumenVentasComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ResumenVentasComponent],
-      providers: [{ provide: VentasService, useValue: ventasServiceSpy }]
+      providers: [
+        { provide: VentasService, useValue: ventasServiceSpy },
+        provideRouter([])
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(ResumenVentasComponent);

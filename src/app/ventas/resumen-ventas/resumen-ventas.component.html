@@ -1,0 +1,145 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Resumen de Venta</h5>
+        </li>
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item bcrumb-2">
+            <a routerLink="/ventas" class="d-flex align-items-center">
+                Ventas por Facturar
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group row">
+                    <div class="col-sm-auto ms-auto">
+                        <button class="btn btn-primary" (click)="cargarResumen()">Actualizar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" *ngIf="loadingIndicator">
+            <div class="col-sm-12">
+                <p>Cargando resumen de ventas...</p>
+            </div>
+        </div>
+
+        <div class="row" *ngIf="!loadingIndicator && error">
+            <div class="col-sm-12">
+                <p class="text-danger">No fue posible obtener el resumen de ventas. Intenta nuevamente.</p>
+            </div>
+        </div>
+
+        <div class="row" *ngIf="!loadingIndicator && !error">
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="m-b-5">Cantidad de Ventas</h5>
+                                <h3 class="font-light">{{ cantidadVentas }}</h3>
+                            </div>
+                            <div class="col-auto">
+                                <div class="bg-blue text-white icon-box-style">
+                                    <i class="fas fa-list-ol"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="m-b-5">Total Neto</h5>
+                                <h3 class="font-light">{{ totalNeto | currency:'$ ': 'symbol':'1.0-0' }}</h3>
+                            </div>
+                            <div class="col-auto">
+                                <div class="bg-green text-white icon-box-style">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="m-b-5">Total Descuentos</h5>
+                                <h3 class="font-light">{{ totalDescuento | currency:'$ ': 'symbol':'1.0-0' }}</h3>
+                            </div>
+                            <div class="col-auto">
+                                <div class="bg-orange text-white icon-box-style">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="m-b-5">Total IVA</h5>
+                                <h3 class="font-light">{{ totalIva | currency:'$ ': 'symbol':'1.0-0' }}</h3>
+                            </div>
+                            <div class="col-auto">
+                                <div class="bg-purple text-white icon-box-style">
+                                    <i class="fas fa-receipt"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="m-b-5">Total ILA</h5>
+                                <h3 class="font-light">{{ totalIla | currency:'$ ': 'symbol':'1.0-0' }}</h3>
+                            </div>
+                            <div class="col-auto">
+                                <div class="bg-red text-white icon-box-style">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <h5 class="m-b-5">Total Bruto</h5>
+                                <h3 class="font-light">{{ totalBruto | currency:'$ ': 'symbol':'1.0-0' }}</h3>
+                            </div>
+                            <div class="col-auto">
+                                <div class="bg-dark text-white icon-box-style">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

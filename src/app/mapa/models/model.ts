@@ -37,3 +37,9 @@ export interface VendedorListItem {
   tiempoRelativo: string;
   online: boolean;
 }
+
+export interface VendedorDTO {
+  codigo: string;
+  tipo: string;
+  nombre: string;
+}

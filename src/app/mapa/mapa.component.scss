@@ -1,7 +1,12 @@
-.map-container {
+.mapa-layout {
+    display: flex;
     height: calc(100vh - 100px);
-    /* ajuste a su header */
     width: 100%;
+}
+
+.map-container {
+    flex: 1 1 auto;
+    height: 100%;
     position: relative;
 }
 

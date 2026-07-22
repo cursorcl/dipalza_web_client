@@ -23,4 +23,8 @@ describe('MapaComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('centrarEnVendedor no lanza error si el vendedorId no tiene marcador', () => {
+    expect(() => component.centrarEnVendedor('no-existe')).not.toThrow();
+  });
 });

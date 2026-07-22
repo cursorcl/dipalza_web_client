@@ -1,17 +1,18 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
-import { HistorialPosicionDTO, PosicionDTO } from './models/model';
+import { HistorialPosicionDTO, PosicionDTO, VendedorListItem } from './models/model';
 import { Subscription } from 'rxjs';
 import { WSPositionService } from './ws-position.service';
 import { PositionsService } from './positions.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
+import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-mapa',
-  imports: [],
+  imports: [VendorListComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss'
 })
@@ -25,6 +26,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private markers: Map<string, L.Marker> = new Map();
   private historialLayer: L.LayerGroup = L.layerGroup();
   private tooltipRefreshInterval?: ReturnType<typeof setInterval>;
+  vendedores = signal<VendedorListItem[]>([]);
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -49,6 +51,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
           this.updateTooltips(marker, data);
         }
       });
+      this.actualizarListaVendedores();
     }, 1000);
 
   }
@@ -99,6 +102,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     if (marker) {
       this.updateTooltips(marker, data);
     }
+    this.actualizarListaVendedores();
 
   }
   generateLabel(pos: PosicionDTO): string {
@@ -117,6 +121,31 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
     const popupHtml = this.generateLabel(pos);
     marker.setTooltipContent(popupHtml);
+  }
+
+  private actualizarListaVendedores(): void {
+    const ahora = Date.now();
+    const items: VendedorListItem[] = Array.from(this.posicionesActuales.values()).map((data) => {
+      const key = `${data.vendedorId}_${data.vendedorCodigo}`;
+      const ultimaActualizacion = new Date(data.fechaHora).getTime();
+      return {
+        vendedorId: data.vendedorId,
+        vendedorCodigo: data.vendedorCodigo,
+        vendedorNombre: data.vendedorNombre,
+        color: colorForVendedor(key),
+        fechaHora: data.fechaHora,
+        tiempoRelativo: TimeFormatter.formatRelativeTime(data.fechaHora),
+        online: (ahora - ultimaActualizacion) < 2 * 60 * 1000
+      };
+    });
+    this.vendedores.set(items);
+  }
+
+  centrarEnVendedor(vendedorId: string): void {
+    const marker = this.markers.get(vendedorId);
+    if (marker) {
+      this.map.setView(marker.getLatLng(), this.map.getZoom());
+    }
   }
 
   private loadInitialPositions(): void {

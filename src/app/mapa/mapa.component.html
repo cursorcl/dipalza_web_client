@@ -1,3 +1,9 @@
 <section class="main-content">
-<div class="map-container" #map></div>
+<div class="mapa-layout">
+  <div class="map-container" #map></div>
+  <app-vendor-list
+    [vendedores]="vendedores()"
+    (vendedorSeleccionado)="centrarEnVendedor($event)">
+  </app-vendor-list>
+</div>
 </section>

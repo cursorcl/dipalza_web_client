@@ -1,0 +1,16 @@
+<div class="vendor-list">
+  @for (vendedor of vendedores; track vendedor.vendedorId) {
+    <div class="vendor-list__item" (dblclick)="onDoubleClick(vendedor.vendedorId)">
+      <span class="vendor-list__dot" [style.background-color]="vendedor.color"></span>
+      <div class="vendor-list__info">
+        <span class="vendor-list__nombre">{{ vendedor.vendedorNombre }}</span>
+        <span class="vendor-list__tiempo">{{ vendedor.tiempoRelativo }}</span>
+      </div>
+      <span
+        class="vendor-list__estado"
+        [class.vendor-list__estado--online]="vendedor.online"
+        [title]="vendedor.online ? 'Online' : 'Offline'">
+      </span>
+    </div>
+  }
+</div>

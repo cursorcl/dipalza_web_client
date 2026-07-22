@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { WSPositionService } from './ws-position.service';
 import { PositionsService } from './positions.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
-import { generateColorPellete } from 'app/utils/color-pallet';
+import { colorForVendedor } from './vendor-color';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -19,9 +19,6 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private subscription: Subscription = new Subscription();
   private posicionesActuales: Map<string, PosicionDTO> = new Map();
-  private colors: Map<string, string> = new Map(); // Mapa para asignar colores únicos a cada vendedor
-  private colorPellete: string[] = generateColorPellete(20); // Generamos una paleta de colores para hasta 20 vendedores
-  private colorIndex: number = 0; // Índice para asignar colores de la paleta
 
   @ViewChild('map', { static: true }) mapEl!: ElementRef<HTMLDivElement>;
   private map!: L.Map;
@@ -78,7 +75,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       marker?.setLatLng(newLatLng);
     } else {
       const key = `${vendedorId}_${vendedorCodigo}`;
-      const markerColor = this.getColorForVendedor(key);
+      const markerColor = colorForVendedor(key);
       // Si es un vendedor nuevo, creamos el marcador y lo añadimos al mapa y al caché
       const label = this.generateLabel(data);
       marker = L.marker(newLatLng)
@@ -104,15 +101,6 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
 
   }
-  getColorForVendedor(key: string): string {
-
-    const markerColor = this.colors.get(key) || this.colorPellete[this.colorIndex];
-    this.colors.set(key, markerColor);
-    this.colorIndex = (this.colorIndex + 1) % this.colorPellete.length; // Avanzamos al siguiente color de la paleta
-    return markerColor;
-  }
-
-
   generateLabel(pos: PosicionDTO): string {
     const tiempoRelativo = TimeFormatter.formatRelativeTime(pos.fechaHora);
 
@@ -182,7 +170,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     const trayectorias = this.groupBySeller(points);
 
     trayectorias.forEach((coordinates, key) => {
-      const color = this.getColorForVendedor(key);
+      const color = colorForVendedor(key);
 
       // Creamos la polilínea con el estilo "Clean"
       const linea = L.polyline(coordinates, {
@@ -231,7 +219,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
           const coordenadas = puntos.map(p => [p.latitud, p.longitud]);
           const key = `${codigo}_${tipo}`;
-          const color = this.getColorForVendedor(key);
+          const color = colorForVendedor(key);
 
           const polyline = L.polyline(coordenadas as L.LatLngExpression[], {
             color: color,

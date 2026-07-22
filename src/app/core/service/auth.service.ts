@@ -69,7 +69,9 @@ refreshToken() {
 private storeTokens(data: any) {
   localStorage.setItem('token', data.token);
   localStorage.setItem('refreshToken', data.refreshToken);
-  // localStorage.setItem('currentUser', ...);
+  const updatedUser = { ...this.currentUserValue, token: data.token };
+  localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+  this.currentUserSubject.next(updatedUser);
 }
 
 getToken() {

@@ -27,6 +27,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private map!: L.Map;
   private markers: Map<string, L.Marker> = new Map();
   private historialLayer: L.LayerGroup = L.layerGroup();
+  private tooltipRefreshInterval?: ReturnType<typeof setInterval>;
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -38,19 +39,20 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.map = this.mapInit.createMap(this.mapEl.nativeElement);
     this.map.addLayer(this.historialLayer);
     this.loadInitialPositions();
+    this.wsPosicionService.connect();
     this.subscription = this.wsPosicionService.getPositions$().subscribe(
       (posicion: PosicionDTO) => {
         this.updatePositionOnMap(posicion);
       }
     );
-    setInterval(() => {
+    this.tooltipRefreshInterval = setInterval(() => {
       this.markers.forEach((marker, key) => {
         const data = this.posicionesActuales.get(key);
         if (data) {
           this.updateTooltips(marker, data);
         }
       });
-    }, 30000);
+    }, 1000);
 
   }
 
@@ -58,13 +60,18 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    this.wsPosicionService.disconnect();
+    if (this.tooltipRefreshInterval) {
+      clearInterval(this.tooltipRefreshInterval);
+    }
+    // No desconectamos el WebSocket acá: WSPositionService es un singleton
+    // root, se mantiene conectado durante toda la sesión de la app en vez
+    // de reconectarse cada vez que se entra a esta página.
   }
 
   private updatePositionOnMap(data: PosicionDTO): void {
     const { vendedorId, vendedorCodigo, latitud, longitud } = data;
     const newLatLng = L.latLng(latitud, longitud);
-
+    this.posicionesActuales.set(vendedorId, data);
 
     let marker = this.markers.get(vendedorId);
     if (this.markers.has(vendedorId)) {

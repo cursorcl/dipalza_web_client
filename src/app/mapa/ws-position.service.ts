@@ -33,8 +33,17 @@ export class WSPositionService {
     this.stompClient.onStompError = (frame) => {
       console.error('Error de STOMP:', frame.headers['message']);
     };
+  }
 
-    this.stompClient.activate();
+  /**
+   * Activa el cliente STOMP si no lo está ya. Idempotente: hace falta
+   * llamarlo en cada visita a la página del mapa, porque `disconnect()`
+   * desactiva este cliente compartido (root) al salir de la página.
+   */
+  connect(): void {
+    if (!this.stompClient.active) {
+      this.stompClient.activate();
+    }
   }
 
   /**

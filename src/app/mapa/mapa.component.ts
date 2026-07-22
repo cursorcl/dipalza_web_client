@@ -1,10 +1,11 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
-import { HistorialPosicionDTO, PosicionDTO, VendedorListItem } from './models/model';
+import { HistorialPosicionDTO, PosicionDTO, VendedorDTO, VendedorListItem } from './models/model';
 import { Subscription } from 'rxjs';
 import { WSPositionService } from './ws-position.service';
 import { PositionsService } from './positions.service';
+import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
@@ -27,10 +28,12 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private historialLayer: L.LayerGroup = L.layerGroup();
   private tooltipRefreshInterval?: ReturnType<typeof setInterval>;
   vendedores = signal<VendedorListItem[]>([]);
+  private padronVendedores: VendedorDTO[] = [];
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
   private positionService = inject(PositionsService);
+  private vendedorService = inject(VendedorService);
   private destroyRef = inject(DestroyRef);
 
 
@@ -38,6 +41,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.map = this.mapInit.createMap(this.mapEl.nativeElement);
     this.map.addLayer(this.historialLayer);
     this.loadInitialPositions();
+    this.cargarPadronVendedores();
     this.wsPosicionService.connect();
     this.subscription = this.wsPosicionService.getPositions$().subscribe(
       (posicion: PosicionDTO) => {
@@ -106,12 +110,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   }
   generateLabel(pos: PosicionDTO): string {
-    const tiempoRelativo = TimeFormatter.formatRelativeTime(pos.fechaHora);
-
     const popupHtml = `
         <div class="label-minimal">
             <div class="nombre">${pos.vendedorNombre}</div>
-            <div class="tiempo">${tiempoRelativo}</div>
         </div>
     `;
     return popupHtml;
@@ -123,19 +124,31 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     marker.setTooltipContent(popupHtml);
   }
 
+  private cargarPadronVendedores(): void {
+    this.vendedorService.getVendedores()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((vendedores: VendedorDTO[]) => {
+        this.padronVendedores = vendedores;
+        this.actualizarListaVendedores();
+      });
+  }
+
   private actualizarListaVendedores(): void {
     const ahora = Date.now();
-    const items: VendedorListItem[] = Array.from(this.posicionesActuales.values()).map((data) => {
-      const key = `${data.vendedorId}_${data.vendedorCodigo}`;
-      const ultimaActualizacion = new Date(data.fechaHora).getTime();
+    const items: VendedorListItem[] = this.padronVendedores.map((vendedor) => {
+      const key = `${vendedor.codigo}_${vendedor.tipo}`;
+      const posicion = this.posicionesActuales.get(vendedor.codigo);
+      const online = posicion
+        ? (ahora - new Date(posicion.fechaHora).getTime()) < 2 * 60 * 1000
+        : false;
       return {
-        vendedorId: data.vendedorId,
-        vendedorCodigo: data.vendedorCodigo,
-        vendedorNombre: data.vendedorNombre,
+        vendedorId: vendedor.codigo,
+        vendedorCodigo: vendedor.tipo,
+        vendedorNombre: vendedor.nombre,
         color: colorForVendedor(key),
-        fechaHora: data.fechaHora,
-        tiempoRelativo: TimeFormatter.formatRelativeTime(data.fechaHora),
-        online: (ahora - ultimaActualizacion) < 2 * 60 * 1000
+        fechaHora: posicion?.fechaHora ?? '',
+        tiempoRelativo: TimeFormatter.formatRelativeTime(posicion?.fechaHora ?? ''),
+        online
       };
     });
     this.vendedores.set(items);

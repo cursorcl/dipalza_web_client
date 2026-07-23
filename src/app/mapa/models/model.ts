@@ -27,3 +27,19 @@ export interface PositionFilter {
     hasta?: Date | string;       // LocalDateTime
     dia?: Date | string;         // LocalDate
 }
+
+export interface VendedorListItem {
+  vendedorId: string;
+  vendedorCodigo: string;
+  vendedorNombre: string;
+  color: string;
+  fechaHora: string;
+  tiempoRelativo: string;
+  online: boolean;
+}
+
+export interface VendedorDTO {
+  codigo: string;
+  tipo: string;
+  nombre: string;
+}

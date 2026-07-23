@@ -1,17 +1,20 @@
-import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
-import { HistorialPosicionDTO, PosicionDTO } from './models/model';
-import { Subscription } from 'rxjs';
+import { HistorialPosicionDTO, PosicionDTO, VendedorDTO, VendedorListItem } from './models/model';
+import { Subscription, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { WSPositionService } from './ws-position.service';
 import { PositionsService } from './positions.service';
+import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
-import { generateColorPellete } from 'app/utils/color-pallet';
+import { colorForVendedor } from './vendor-color';
+import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-mapa',
-  imports: [],
+  imports: [VendorListComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss'
 })
@@ -19,19 +22,19 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private subscription: Subscription = new Subscription();
   private posicionesActuales: Map<string, PosicionDTO> = new Map();
-  private colors: Map<string, string> = new Map(); // Mapa para asignar colores únicos a cada vendedor
-  private colorPellete: string[] = generateColorPellete(20); // Generamos una paleta de colores para hasta 20 vendedores
-  private colorIndex: number = 0; // Índice para asignar colores de la paleta
 
   @ViewChild('map', { static: true }) mapEl!: ElementRef<HTMLDivElement>;
   private map!: L.Map;
   private markers: Map<string, L.Marker> = new Map();
   private historialLayer: L.LayerGroup = L.layerGroup();
   private tooltipRefreshInterval?: ReturnType<typeof setInterval>;
+  vendedores = signal<VendedorListItem[]>([]);
+  private padronVendedores: VendedorDTO[] = [];
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
   private positionService = inject(PositionsService);
+  private vendedorService = inject(VendedorService);
   private destroyRef = inject(DestroyRef);
 
 
@@ -39,6 +42,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.map = this.mapInit.createMap(this.mapEl.nativeElement);
     this.map.addLayer(this.historialLayer);
     this.loadInitialPositions();
+    this.cargarPadronVendedores();
     this.wsPosicionService.connect();
     this.subscription = this.wsPosicionService.getPositions$().subscribe(
       (posicion: PosicionDTO) => {
@@ -52,6 +56,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
           this.updateTooltips(marker, data);
         }
       });
+      this.actualizarListaVendedores();
     }, 1000);
 
   }
@@ -78,7 +83,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       marker?.setLatLng(newLatLng);
     } else {
       const key = `${vendedorId}_${vendedorCodigo}`;
-      const markerColor = this.getColorForVendedor(key);
+      const markerColor = colorForVendedor(key);
       // Si es un vendedor nuevo, creamos el marcador y lo añadimos al mapa y al caché
       const label = this.generateLabel(data);
       marker = L.marker(newLatLng)
@@ -102,24 +107,13 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     if (marker) {
       this.updateTooltips(marker, data);
     }
+    this.actualizarListaVendedores();
 
   }
-  getColorForVendedor(key: string): string {
-
-    const markerColor = this.colors.get(key) || this.colorPellete[this.colorIndex];
-    this.colors.set(key, markerColor);
-    this.colorIndex = (this.colorIndex + 1) % this.colorPellete.length; // Avanzamos al siguiente color de la paleta
-    return markerColor;
-  }
-
-
   generateLabel(pos: PosicionDTO): string {
-    const tiempoRelativo = TimeFormatter.formatRelativeTime(pos.fechaHora);
-
     const popupHtml = `
         <div class="label-minimal">
             <div class="nombre">${pos.vendedorNombre}</div>
-            <div class="tiempo">${tiempoRelativo}</div>
         </div>
     `;
     return popupHtml;
@@ -129,6 +123,49 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
     const popupHtml = this.generateLabel(pos);
     marker.setTooltipContent(popupHtml);
+  }
+
+  private cargarPadronVendedores(): void {
+    this.vendedorService.getVendedores()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((err) => {
+          console.error('Error cargando el padrón de vendedores', err);
+          return of([] as VendedorDTO[]);
+        })
+      )
+      .subscribe((vendedores: VendedorDTO[]) => {
+        this.padronVendedores = vendedores;
+        this.actualizarListaVendedores();
+      });
+  }
+
+  private actualizarListaVendedores(): void {
+    const ahora = Date.now();
+    const items: VendedorListItem[] = this.padronVendedores.map((vendedor) => {
+      const key = `${vendedor.codigo}_${vendedor.tipo}`;
+      const posicion = this.posicionesActuales.get(vendedor.codigo);
+      const online = posicion
+        ? (ahora - new Date(posicion.fechaHora).getTime()) < 2 * 60 * 1000
+        : false;
+      return {
+        vendedorId: vendedor.codigo,
+        vendedorCodigo: vendedor.tipo,
+        vendedorNombre: vendedor.nombre,
+        color: colorForVendedor(key),
+        fechaHora: posicion?.fechaHora ?? '',
+        tiempoRelativo: TimeFormatter.formatRelativeTime(posicion?.fechaHora ?? ''),
+        online
+      };
+    });
+    this.vendedores.set(items);
+  }
+
+  centrarEnVendedor(vendedorId: string): void {
+    const marker = this.markers.get(vendedorId);
+    if (marker) {
+      this.map.setView(marker.getLatLng(), this.map.getZoom());
+    }
   }
 
   private loadInitialPositions(): void {
@@ -182,7 +219,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     const trayectorias = this.groupBySeller(points);
 
     trayectorias.forEach((coordinates, key) => {
-      const color = this.getColorForVendedor(key);
+      const color = colorForVendedor(key);
 
       // Creamos la polilínea con el estilo "Clean"
       const linea = L.polyline(coordinates, {
@@ -231,7 +268,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
           const coordenadas = puntos.map(p => [p.latitud, p.longitud]);
           const key = `${codigo}_${tipo}`;
-          const color = this.getColorForVendedor(key);
+          const color = colorForVendedor(key);
 
           const polyline = L.polyline(coordenadas as L.LatLngExpression[], {
             color: color,

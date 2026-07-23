@@ -142,9 +142,48 @@ git commit -m "feat: add deterministic per-vendor color and vendor list item mod
 
 **Files:**
 - Modify: `src/app/mapa/mapa.component.ts:1-24, 71-113, 177-198, 218-251`
+- Modify: `src/app/mapa/mapa.component.spec.ts`
 
 **Interfaces:**
 - Consumes: `colorForVendedor(key: string): string` de `./vendor-color` (Task 1).
+
+**Nota (hallazgo de pre-flight):** el test `mapa.component.spec.ts` ("should create") ya falla hoy en baseline, antes de cualquier cambio de este plan — al `TestBed` le falta un provider de `HttpClient` (que necesita `PositionsService`). Es una brecha preexistente en la infraestructura de tests de todo el proyecto (no es de esta feature), pero hay que arreglarla acá porque las Tasks 2 y 4 dependen de que este archivo compile y pase. No se toca ningún otro spec del proyecto — fuera de alcance.
+
+- [ ] **Step 0: Arreglar el provider de `HttpClient` faltante en el test existente**
+
+Reemplazar el contenido completo de `src/app/mapa/mapa.component.spec.ts`:
+
+```ts
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+
+import { MapaComponent } from './mapa.component';
+
+describe('MapaComponent', () => {
+  let component: MapaComponent;
+  let fixture: ComponentFixture<MapaComponent>;
+
+  beforeEach(async () => {
+    await TestBed.configureTestingModule({
+      imports: [MapaComponent],
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    })
+    .compileComponents();
+
+    fixture = TestBed.createComponent(MapaComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  });
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});
+```
+
+Run: `ng test --include='**/mapa.component.spec.ts'`
+Expected: PASS (1 spec) — confirma que el arreglo del provider funciona, antes de tocar nada más.
 
 - [ ] **Step 1: Cambiar los imports**
 

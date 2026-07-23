@@ -4,6 +4,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 
 import { MapaComponent } from './mapa.component';
 import { environment } from 'environments/environment';
+import { colorForVendedor } from './vendor-color';
 
 describe('MapaComponent', () => {
   let component: MapaComponent;
@@ -44,5 +45,44 @@ describe('MapaComponent', () => {
     expect(lista[0].vendedorNombre).toBe('Juan Perez');
     expect(lista[0].tiempoRelativo).toBe('Sin datos');
     expect(lista[0].online).toBeFalse();
+  });
+
+  it('un vendedor del padrón con posición reportada aparece en la lista como online con color y tiempo relativo', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    const posicion = {
+      vendedorId: '001',
+      vendedorCodigo: '0',
+      vendedorNombre: 'Juan Perez',
+      fechaHora: new Date().toISOString(),
+      latitud: -33.4,
+      longitud: -70.6
+    };
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([posicion]);
+
+    const reqVendedores = httpMock.expectOne(`${environment.apiUrl}/vendedores`);
+    reqVendedores.flush([{ codigo: '001', tipo: '0', nombre: 'Juan Perez' }]);
+
+    const lista = component.vendedores();
+    expect(lista).toHaveSize(1);
+    expect(lista[0].vendedorNombre).toBe('Juan Perez');
+    expect(lista[0].online).toBeTrue();
+    expect(lista[0].tiempoRelativo).not.toBe('Sin datos');
+    expect(lista[0].color).toBeTruthy();
+    expect(lista[0].color).toBe(colorForVendedor('001_0'));
+  });
+
+  it('si GET /vendedores falla, el componente no lanza error y la lista queda vacía', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([]);
+
+    const reqVendedores = httpMock.expectOne(`${environment.apiUrl}/vendedores`);
+    expect(() => {
+      reqVendedores.flush(null, { status: 500, statusText: 'Server Error' });
+    }).not.toThrow();
+
+    expect(component.vendedores()).toEqual([]);
   });
 });

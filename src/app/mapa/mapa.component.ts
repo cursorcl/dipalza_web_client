@@ -2,7 +2,8 @@ import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, si
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
 import { HistorialPosicionDTO, PosicionDTO, VendedorDTO, VendedorListItem } from './models/model';
-import { Subscription } from 'rxjs';
+import { Subscription, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { WSPositionService } from './ws-position.service';
 import { PositionsService } from './positions.service';
 import { VendedorService } from './vendedor.service';
@@ -126,7 +127,13 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private cargarPadronVendedores(): void {
     this.vendedorService.getVendedores()
-      .pipe(takeUntilDestroyed(this.destroyRef))
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError((err) => {
+          console.error('Error cargando el padrón de vendedores', err);
+          return of([] as VendedorDTO[]);
+        })
+      )
       .subscribe((vendedores: VendedorDTO[]) => {
         this.padronVendedores = vendedores;
         this.actualizarListaVendedores();

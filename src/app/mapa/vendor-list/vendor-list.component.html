@@ -1,6 +1,12 @@
 <div class="vendor-list">
   @for (vendedor of vendedores; track vendedor.vendedorId) {
     <div class="vendor-list__item" (dblclick)="onDoubleClick(vendedor.vendedorId)">
+      <input
+        type="checkbox"
+        class="vendor-list__checkbox"
+        [checked]="isSelected(vendedor)"
+        (change)="onToggleTrayectoria(vendedor)"
+        (dblclick)="$event.stopPropagation()" />
       <span class="vendor-list__dot" [style.background-color]="vendedor.color"></span>
       <div class="vendor-list__info">
         <span class="vendor-list__nombre">{{ vendedor.vendedorNombre }}</span>

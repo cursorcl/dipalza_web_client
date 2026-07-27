@@ -9,9 +9,19 @@ import { VendedorListItem } from '../models/model';
 })
 export class VendorListComponent {
   @Input() vendedores: VendedorListItem[] = [];
+  @Input() selectedIds: Set<string> = new Set();
   @Output() vendedorSeleccionado = new EventEmitter<string>();
+  @Output() trayectoriaToggled = new EventEmitter<VendedorListItem>();
 
   onDoubleClick(vendedorId: string): void {
     this.vendedorSeleccionado.emit(vendedorId);
+  }
+
+  isSelected(vendedor: VendedorListItem): boolean {
+    return this.selectedIds.has(`${vendedor.vendedorId}_${vendedor.vendedorCodigo}`);
+  }
+
+  onToggleTrayectoria(vendedor: VendedorListItem): void {
+    this.trayectoriaToggled.emit(vendedor);
   }
 }

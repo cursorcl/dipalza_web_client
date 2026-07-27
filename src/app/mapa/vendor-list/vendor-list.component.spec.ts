@@ -52,4 +52,35 @@ describe('VendorListComponent', () => {
 
     expect(emitidos).toEqual(['001']);
   });
+
+  it('el checkbox refleja si la clave del vendedor está en selectedIds', () => {
+    component.vendedores = [vendedorEjemplo];
+    component.selectedIds = new Set(['001_0']);
+    fixture.detectChanges();
+
+    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
+    expect(checkbox.checked).toBeTrue();
+  });
+
+  it('el checkbox aparece sin marcar si la clave no está en selectedIds', () => {
+    component.vendedores = [vendedorEjemplo];
+    component.selectedIds = new Set();
+    fixture.detectChanges();
+
+    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
+    expect(checkbox.checked).toBeFalse();
+  });
+
+  it('emite trayectoriaToggled con el vendedor completo al cambiar el checkbox', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const emitidos: VendedorListItem[] = [];
+    component.trayectoriaToggled.subscribe((v) => emitidos.push(v));
+
+    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
+    checkbox.dispatchEvent(new Event('change'));
+
+    expect(emitidos).toEqual([vendedorEjemplo]);
+  });
 });

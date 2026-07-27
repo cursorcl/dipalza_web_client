@@ -130,4 +130,28 @@ describe('MapaComponent', () => {
     expect(component.seleccionados().has('001_0')).toBeFalse();
     httpMock.expectNone(`${environment.apiUrl}/posicion/historico`);
   });
+
+  it('toggleTrayectoria muestra un toast si no hay recorrido para hoy', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
+
+    expect(component.toastMensaje()).toBe('Sin recorrido registrado hoy para Ana Soto');
+    expect(component.seleccionados().has('002_0')).toBeFalse();
+  });
+
+  it('el toast se oculta automáticamente después de 3 segundos', () => {
+    jasmine.clock().install();
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
+    expect(component.toastMensaje()).not.toBeNull();
+
+    jasmine.clock().tick(3000);
+    expect(component.toastMensaje()).toBeNull();
+
+    jasmine.clock().uninstall();
+  });
 });

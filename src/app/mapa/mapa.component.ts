@@ -223,6 +223,14 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.positionService.getHistoric(filter)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(puntos => {
+        if (puntos.length === 0) {
+          if (this.toastTimeout) {
+            clearTimeout(this.toastTimeout);
+          }
+          this.toastMensaje.set(`Sin recorrido registrado hoy para ${vendedor.nombre}`);
+          this.toastTimeout = setTimeout(() => this.toastMensaje.set(null), 3000);
+          return;
+        }
         this.mostrarTrayectoria(key, puntos);
       });
   }

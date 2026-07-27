@@ -99,7 +99,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         .addTo(this.map);
 
       marker.on('click', () => {
-        this.consultarYDibujarTrayectoriaDia(vendedorId, vendedorCodigo);
+        this.toggleTrayectoria({ codigo: vendedorId, tipo: vendedorCodigo, nombre: data.vendedorNombre });
       });
 
       marker.bindTooltip(
@@ -311,79 +311,4 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  showHistory(points: HistorialPosicionDTO[]) {
-    // Limpiamos la capa antes de presentar una nueva consulta
-    this.historialLayer.clearLayers();
-
-    // Agrupamos por vendedorId + vendedorCodigo (Clave compuesta corregida)
-    const trayectorias = this.groupBySeller(points);
-
-    trayectorias.forEach((coordinates, key) => {
-      const color = colorForVendedor(key);
-
-      // Creamos la polilínea con el estilo "Clean"
-      const linea = L.polyline(coordinates, {
-        color: color,
-        weight: 3,
-        opacity: 0.7,
-        smoothFactor: 1.5
-      });
-
-      // Añadimos la línea al grupo, no directamente al mapa
-      linea.addTo(this.historialLayer);
-    });
-  }
-
-  private groupBySeller(points: HistorialPosicionDTO[]): Map<string, L.LatLngExpression[]> {
-    const groupedPoints = new Map<string, L.LatLngExpression[]>();
-
-    points.forEach(point => {
-      // Generamos la clave única basada en tu modelo de clave compuesta
-      const key = `${point.vendedorId}_${point.vendedorCodigo}`;
-
-      if (!groupedPoints.has(key)) {
-        groupedPoints.set(key, []);
-      }
-
-      // Añadimos el punto a la lista del vendedor correspondiente
-      groupedPoints.get(key)!.push([point.latitud, point.longitud]);
-    });
-
-    return groupedPoints;
-  }
-
-  private consultarYDibujarTrayectoriaDia(codigo: string, tipo: string) {
-    const hoy = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-    const filter = {
-      vendedorIds: [{ codigo: codigo, tipo: tipo }],
-      dia: hoy
-    }
-    // Llamada al servicio que utiliza el repositorio con fetch
-    this.positionService.getHistoric(filter)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(puntos => {
-        if (puntos.length > 0) {
-          this.historialLayer.clearLayers(); // Limpiamos trayectorias anteriores
-
-          const coordenadas = puntos.map(p => [p.latitud, p.longitud]);
-          const key = `${codigo}_${tipo}`;
-          const color = colorForVendedor(key);
-
-          const polyline = L.polyline(coordenadas as L.LatLngExpression[], {
-            color: color,
-            weight: 5,
-            opacity: 0.8,
-            smoothFactor: 1
-          });
-
-          // Para el historial, usamos el Popup según lo solicitado
-          polyline.bindPopup(`<b>Historial de hoy:</b> ${puntos[0].vendedorNombre}`);
-          polyline.addTo(this.historialLayer);
-
-          // Ajustamos la vista para ver el recorrido completo
-          this.map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-        }
-      });
-  }
 }

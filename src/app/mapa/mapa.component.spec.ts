@@ -176,4 +176,24 @@ describe('MapaComponent', () => {
     expect(mapBounds.contains(L.latLng(-33.40, -70.60))).toBeTrue();
     expect(mapBounds.contains(L.latLng(-34.00, -71.00))).toBeTrue();
   });
+
+  it('el clic en el marker de un vendedor dibuja su recorrido del día', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([
+      { vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: new Date().toISOString(), latitud: -33.40, longitud: -70.60 }
+    ]);
+    httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '001', tipo: '0', nombre: 'Juan Perez' }]);
+
+    const marker = (component as any).markers.get('001');
+    expect(marker).toBeTruthy();
+
+    marker.fire('click');
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+
+    expect(component.seleccionados().has('001_0')).toBeTrue();
+  });
 });

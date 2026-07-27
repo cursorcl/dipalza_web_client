@@ -202,6 +202,18 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   toggleTrayectoria(vendedor: VendedorId & { nombre: string }): void {
     const key = `${vendedor.codigo}_${vendedor.tipo}`;
+
+    if (this.trayectoriasPorVendedor.has(key)) {
+      const layer = this.trayectoriasPorVendedor.get(key)!;
+      this.historialLayer.removeLayer(layer);
+      this.trayectoriasPorVendedor.delete(key);
+
+      const actualizado = new Set(this.seleccionados());
+      actualizado.delete(key);
+      this.seleccionados.set(actualizado);
+      return;
+    }
+
     const hoy = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
     const filter: PositionFilter = {
       vendedorIds: [{ codigo: vendedor.codigo, tipo: vendedor.tipo }],

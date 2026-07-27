@@ -114,4 +114,20 @@ describe('MapaComponent', () => {
 
     expect(component.seleccionados().has('001_0')).toBeTrue();
   });
+
+  it('toggleTrayectoria oculta el recorrido si ya estaba visible', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ]);
+    expect(component.seleccionados().has('001_0')).toBeTrue();
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    expect(component.seleccionados().has('001_0')).toBeFalse();
+    httpMock.expectNone(`${environment.apiUrl}/posicion/historico`);
+  });
 });

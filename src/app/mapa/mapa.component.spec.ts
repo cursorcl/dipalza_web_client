@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
+import * as L from 'leaflet';
 
 import { MapaComponent } from './mapa.component';
 import { environment } from 'environments/environment';
@@ -153,5 +154,26 @@ describe('MapaComponent', () => {
     expect(component.toastMensaje()).toBeNull();
 
     jasmine.clock().uninstall();
+  });
+
+  it('al seleccionar dos vendedores, la vista se ajusta para mostrar ambos recorridos', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+
+    component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 2, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:00:00', latitud: -34.00, longitud: -71.00 }
+    ]);
+
+    expect(component.seleccionados().has('001_0')).toBeTrue();
+    expect(component.seleccionados().has('002_0')).toBeTrue();
+
+    const mapBounds = (component as any).map.getBounds();
+    expect(mapBounds.contains(L.latLng(-33.40, -70.60))).toBeTrue();
+    expect(mapBounds.contains(L.latLng(-34.00, -71.00))).toBeTrue();
   });
 });

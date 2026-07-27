@@ -273,6 +273,22 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     const actualizado = new Set(this.seleccionados());
     actualizado.add(key);
     this.seleccionados.set(actualizado);
+
+    this.ajustarVistaATrayectoriasVisibles();
+  }
+
+  private ajustarVistaATrayectoriasVisibles(): void {
+    const bounds = L.latLngBounds([]);
+    this.trayectoriasPorVendedor.forEach(grupo => {
+      grupo.eachLayer(capa => {
+        if (capa instanceof L.Polyline) {
+          bounds.extend(capa.getBounds());
+        }
+      });
+    });
+    if (bounds.isValid()) {
+      this.map.fitBounds(bounds, { padding: [50, 50] });
+    }
   }
 
   createCustomIcon(color: string): L.DivIcon {

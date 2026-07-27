@@ -85,4 +85,18 @@ describe('MapaComponent', () => {
 
     expect(component.vendedores()).toEqual([]);
   });
+
+  it('no muestra el toast cuando toastMensaje es null', () => {
+    fixture.detectChanges();
+    const toast = fixture.nativeElement.querySelector('.mapa-toast');
+    expect(toast).toBeNull();
+  });
+
+  it('muestra el mensaje en pantalla cuando toastMensaje tiene un valor', () => {
+    component.toastMensaje.set('Sin recorrido registrado hoy para Juan Perez');
+    fixture.detectChanges();
+
+    const toast = fixture.nativeElement.querySelector('.mapa-toast');
+    expect(toast.textContent).toContain('Sin recorrido registrado hoy para Juan Perez');
+  });
 });

@@ -31,6 +31,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   vendedores = signal<VendedorListItem[]>([]);
   private padronVendedores: VendedorDTO[] = [];
 
+  toastMensaje = signal<string | null>(null);
+  private toastTimeout?: ReturnType<typeof setTimeout>;
+
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
   private positionService = inject(PositionsService);
@@ -67,6 +70,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
     if (this.tooltipRefreshInterval) {
       clearInterval(this.tooltipRefreshInterval);
+    }
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
     }
     // No desconectamos el WebSocket acá: WSPositionService es un singleton
     // root, se mantiene conectado durante toda la sesión de la app en vez

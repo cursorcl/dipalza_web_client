@@ -99,4 +99,19 @@ describe('MapaComponent', () => {
     const toast = fixture.nativeElement.querySelector('.mapa-toast');
     expect(toast.textContent).toContain('Sin recorrido registrado hoy para Juan Perez');
   });
+
+  it('toggleTrayectoria dibuja el recorrido del día y lo agrega a seleccionados', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/posicion/historico`);
+    expect(req.request.method).toBe('POST');
+    req.flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ]);
+
+    expect(component.seleccionados().has('001_0')).toBeTrue();
+  });
 });

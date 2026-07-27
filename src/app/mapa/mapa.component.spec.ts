@@ -196,4 +196,43 @@ describe('MapaComponent', () => {
 
     expect(component.seleccionados().has('001_0')).toBeTrue();
   });
+
+  it('marcar el checkbox de un vendedor en la lista dibuja su recorrido', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([]);
+    httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '001', tipo: '0', nombre: 'Juan Perez' }]);
+    fixture.detectChanges();
+
+    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
+    expect(checkbox).toBeTruthy();
+
+    checkbox.dispatchEvent(new Event('change'));
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+
+    expect(component.seleccionados().has('001_0')).toBeTrue();
+  });
+
+  it('al hacer clic en el marker, el checkbox correspondiente en la lista se marca', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([
+      { vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: new Date().toISOString(), latitud: -33.40, longitud: -70.60 }
+    ]);
+    httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '001', tipo: '0', nombre: 'Juan Perez' }]);
+
+    const marker = (component as any).markers.get('001');
+    marker.fire('click');
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+
+    fixture.detectChanges();
+
+    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
+    expect(checkbox.checked).toBeTrue();
+  });
 });

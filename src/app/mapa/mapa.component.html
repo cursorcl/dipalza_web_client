@@ -8,7 +8,9 @@
   </div>
   <app-vendor-list
     [vendedores]="vendedores()"
-    (vendedorSeleccionado)="centrarEnVendedor($event)">
+    [selectedIds]="seleccionados()"
+    (vendedorSeleccionado)="centrarEnVendedor($event)"
+    (trayectoriaToggled)="toggleTrayectoria({ codigo: $event.vendedorId, tipo: $event.vendedorCodigo, nombre: $event.vendedorNombre })">
   </app-vendor-list>
 </div>
 </section>

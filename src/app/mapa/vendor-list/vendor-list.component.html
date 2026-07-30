@@ -5,7 +5,7 @@
         type="checkbox"
         class="vendor-list__checkbox"
         [checked]="isSelected(vendedor)"
-        (change)="onToggleTrayectoria(vendedor)"
+        (change)="onToggleTrayectoria(vendedor, $event)"
         (dblclick)="$event.stopPropagation()" />
       <span class="vendor-list__dot" [style.background-color]="vendedor.color"></span>
       <div class="vendor-list__info">

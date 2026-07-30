@@ -116,6 +116,16 @@ describe('MapaComponent', () => {
     expect(component.seleccionados().has('001_0')).toBeTrue();
   });
 
+  it('toggleTrayectoria envía la fecha "dia" calculada en huso horario local (no UTC)', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/posicion/historico`);
+    expect(req.request.body.dia).toBe(new Date().toLocaleDateString('en-CA'));
+    req.flush([]);
+  });
+
   it('toggleTrayectoria oculta el recorrido si ya estaba visible', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
@@ -175,6 +185,8 @@ describe('MapaComponent', () => {
     const mapBounds = (component as any).map.getBounds();
     expect(mapBounds.contains(L.latLng(-33.40, -70.60))).toBeTrue();
     expect(mapBounds.contains(L.latLng(-34.00, -71.00))).toBeTrue();
+
+    expect((component as any).historialLayer.getLayers().length).toBe(2);
   });
 
   it('el clic en el marker de un vendedor dibuja su recorrido del día', () => {
@@ -214,6 +226,58 @@ describe('MapaComponent', () => {
     ]);
 
     expect(component.seleccionados().has('001_0')).toBeTrue();
+  });
+
+  it('el checkbox queda sin marcar tras un historial vacío (no debe quedar visualmente marcado)', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([]);
+    httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '002', tipo: '0', nombre: 'Ana Soto' }]);
+    fixture.detectChanges();
+
+    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
+    expect(checkbox).toBeTruthy();
+
+    checkbox.dispatchEvent(new Event('change'));
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
+    fixture.detectChanges();
+
+    expect(component.seleccionados().has('002_0')).toBeFalse();
+    expect(checkbox.checked).toBeFalse();
+  });
+
+  it('un doble toggle rápido del mismo vendedor antes de que llegue la respuesta HTTP no dispara una segunda solicitud', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/posicion/historico`);
+    req.flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ]);
+
+    expect(component.seleccionados().has('001_0')).toBeTrue();
+    expect((component as any).historialLayer.getLayers().length).toBe(1);
+
+    // Una vez resuelta la solicitud, el toggle nuevamente debe poder ocultar el recorrido.
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    expect(component.seleccionados().has('001_0')).toBeFalse();
+    expect((component as any).historialLayer.getLayers().length).toBe(0);
+  });
+
+  it('muestra un toast y no agrega al vendedor a seleccionados si getHistoric falla', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/posicion/historico`);
+    req.flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(component.toastMensaje()).toBe('No se pudo obtener el recorrido de Juan Perez');
+    expect(component.seleccionados().has('001_0')).toBeFalse();
   });
 
   it('al hacer clic en el marker, el checkbox correspondiente en la lista se marca', () => {

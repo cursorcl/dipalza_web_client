@@ -35,6 +35,8 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private toastTimeout?: ReturnType<typeof setTimeout>;
 
   private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
+  private cargando: Set<string> = new Set();
+  private canvasRenderer = L.canvas();
   seleccionados = signal<Set<string>>(new Set());
 
   private mapInit = inject(MapInitializerService);
@@ -214,25 +216,42 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    const hoy = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
+    if (this.cargando.has(key)) {
+      return;
+    }
+
+    const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
     const filter: PositionFilter = {
       vendedorIds: [{ codigo: vendedor.codigo, tipo: vendedor.tipo }],
       dia: hoy
     };
 
+    this.cargando.add(key);
+
     this.positionService.getHistoric(filter)
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(puntos => {
-        if (puntos.length === 0) {
-          if (this.toastTimeout) {
-            clearTimeout(this.toastTimeout);
+      .subscribe({
+        next: puntos => {
+          this.cargando.delete(key);
+          if (puntos.length === 0) {
+            this.mostrarToast(`Sin recorrido registrado hoy para ${vendedor.nombre}`);
+            return;
           }
-          this.toastMensaje.set(`Sin recorrido registrado hoy para ${vendedor.nombre}`);
-          this.toastTimeout = setTimeout(() => this.toastMensaje.set(null), 3000);
-          return;
+          this.mostrarTrayectoria(key, puntos);
+        },
+        error: () => {
+          this.cargando.delete(key);
+          this.mostrarToast(`No se pudo obtener el recorrido de ${vendedor.nombre}`);
         }
-        this.mostrarTrayectoria(key, puntos);
       });
+  }
+
+  private mostrarToast(mensaje: string): void {
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.toastMensaje.set(mensaje);
+    this.toastTimeout = setTimeout(() => this.toastMensaje.set(null), 3000);
   }
 
   private mostrarTrayectoria(key: string, puntos: HistorialPosicionDTO[]): void {
@@ -254,9 +273,12 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       const esFin = index === puntos.length - 1;
       const hora = new Date(punto.fechaHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 
+      const colorBorde = esInicio ? '#2ecc71' : esFin ? '#e74c3c' : '#ffffff';
+
       const circulo = L.circleMarker([punto.latitud, punto.longitud], {
+        renderer: this.canvasRenderer,
         radius: esInicio || esFin ? 7 : 4,
-        color: '#ffffff',
+        color: colorBorde,
         weight: esInicio || esFin ? 2 : 1,
         fillColor: color,
         fillOpacity: esInicio || esFin ? 1 : 0.6

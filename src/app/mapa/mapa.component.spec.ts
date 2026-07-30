@@ -74,6 +74,23 @@ describe('MapaComponent', () => {
     expect(lista[0].color).toBe(colorForVendedor('001_0'));
   });
 
+  it('solo muestra en la lista a los vendedores con tipo "0", descartando otros tipos del mismo padrón', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([]);
+
+    const reqVendedores = httpMock.expectOne(`${environment.apiUrl}/vendedores`);
+    reqVendedores.flush([
+      { codigo: '001', tipo: '1', nombre: 'Cobrador Unico' },
+      { codigo: '002', tipo: '0', nombre: 'Cristian Pavez' },
+      { codigo: '002', tipo: '1', nombre: 'Cristian Pavez' }
+    ]);
+
+    const lista = component.vendedores();
+    expect(lista).toHaveSize(1);
+    expect(lista[0].vendedorNombre).toBe('Cristian Pavez');
+  });
+
   it('si GET /vendedores falla, el componente no lanza error y la lista queda vacía', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 

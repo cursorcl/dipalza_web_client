@@ -58,3 +58,8 @@
 .vendor-list__estado--online {
     background-color: #2ecc71;
 }
+
+.vendor-list__checkbox {
+    flex-shrink: 0;
+    cursor: pointer;
+}

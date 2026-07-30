@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
-import { HistorialPosicionDTO, PosicionDTO, VendedorDTO, VendedorListItem } from './models/model';
+import { HistorialPosicionDTO, PosicionDTO, PositionFilter, VendedorDTO, VendedorId, VendedorListItem } from './models/model';
 import { Subscription, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { WSPositionService } from './ws-position.service';
@@ -30,6 +30,14 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private tooltipRefreshInterval?: ReturnType<typeof setInterval>;
   vendedores = signal<VendedorListItem[]>([]);
   private padronVendedores: VendedorDTO[] = [];
+
+  toastMensaje = signal<string | null>(null);
+  private toastTimeout?: ReturnType<typeof setTimeout>;
+
+  private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
+  private cargando: Set<string> = new Set();
+  private canvasRenderer = L.canvas();
+  seleccionados = signal<Set<string>>(new Set());
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -68,6 +76,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     if (this.tooltipRefreshInterval) {
       clearInterval(this.tooltipRefreshInterval);
     }
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
     // No desconectamos el WebSocket acá: WSPositionService es un singleton
     // root, se mantiene conectado durante toda la sesión de la app en vez
     // de reconectarse cada vez que se entra a esta página.
@@ -90,7 +101,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         .addTo(this.map);
 
       marker.on('click', () => {
-        this.consultarYDibujarTrayectoriaDia(vendedorId, vendedorCodigo);
+        this.toggleTrayectoria({ codigo: vendedorId, tipo: vendedorCodigo, nombre: data.vendedorNombre });
       });
 
       marker.bindTooltip(
@@ -191,6 +202,117 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     return bounds;
   }
 
+  toggleTrayectoria(vendedor: VendedorId & { nombre: string }): void {
+    const key = `${vendedor.codigo}_${vendedor.tipo}`;
+
+    if (this.trayectoriasPorVendedor.has(key)) {
+      const layer = this.trayectoriasPorVendedor.get(key)!;
+      this.historialLayer.removeLayer(layer);
+      this.trayectoriasPorVendedor.delete(key);
+
+      const actualizado = new Set(this.seleccionados());
+      actualizado.delete(key);
+      this.seleccionados.set(actualizado);
+      return;
+    }
+
+    if (this.cargando.has(key)) {
+      return;
+    }
+
+    const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
+    const filter: PositionFilter = {
+      vendedorIds: [{ codigo: vendedor.codigo, tipo: vendedor.tipo }],
+      dia: hoy
+    };
+
+    this.cargando.add(key);
+
+    this.positionService.getHistoric(filter)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: puntos => {
+          this.cargando.delete(key);
+          if (puntos.length === 0) {
+            this.mostrarToast(`Sin recorrido registrado hoy para ${vendedor.nombre}`);
+            return;
+          }
+          this.mostrarTrayectoria(key, puntos);
+        },
+        error: () => {
+          this.cargando.delete(key);
+          this.mostrarToast(`No se pudo obtener el recorrido de ${vendedor.nombre}`);
+        }
+      });
+  }
+
+  private mostrarToast(mensaje: string): void {
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.toastMensaje.set(mensaje);
+    this.toastTimeout = setTimeout(() => this.toastMensaje.set(null), 3000);
+  }
+
+  private mostrarTrayectoria(key: string, puntos: HistorialPosicionDTO[]): void {
+    const color = colorForVendedor(key);
+    const grupo = L.layerGroup();
+    const coordenadas = puntos.map(p => [p.latitud, p.longitud]) as L.LatLngExpression[];
+
+    const polyline = L.polyline(coordenadas, {
+      color,
+      weight: 5,
+      opacity: 0.8,
+      smoothFactor: 1
+    });
+    polyline.bindPopup(`<b>Recorrido de hoy:</b> ${puntos[0].vendedorNombre}`);
+    polyline.addTo(grupo);
+
+    puntos.forEach((punto, index) => {
+      const esInicio = index === 0;
+      const esFin = index === puntos.length - 1;
+      const hora = new Date(punto.fechaHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+
+      const colorBorde = esInicio ? '#2ecc71' : esFin ? '#e74c3c' : '#ffffff';
+
+      const circulo = L.circleMarker([punto.latitud, punto.longitud], {
+        renderer: this.canvasRenderer,
+        radius: esInicio || esFin ? 7 : 4,
+        color: colorBorde,
+        weight: esInicio || esFin ? 2 : 1,
+        fillColor: color,
+        fillOpacity: esInicio || esFin ? 1 : 0.6
+      });
+
+      const etiqueta = esInicio ? `Inicio — ${hora}` : esFin ? `Última posición — ${hora}` : hora;
+      circulo.bindPopup(etiqueta);
+      circulo.addTo(grupo);
+    });
+
+    grupo.addTo(this.historialLayer);
+    this.trayectoriasPorVendedor.set(key, grupo);
+
+    const actualizado = new Set(this.seleccionados());
+    actualizado.add(key);
+    this.seleccionados.set(actualizado);
+
+    this.ajustarVistaATrayectoriasVisibles();
+  }
+
+  private ajustarVistaATrayectoriasVisibles(): void {
+    const bounds = L.latLngBounds([]);
+    this.trayectoriasPorVendedor.forEach(grupo => {
+      grupo.eachLayer(capa => {
+        if (capa instanceof L.Polyline) {
+          bounds.extend(capa.getBounds());
+        }
+      });
+    });
+    if (bounds.isValid()) {
+      this.map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }
+
   createCustomIcon(color: string): L.DivIcon {
     // Definimos un SVG de tipo "pin" o "gota"
     const svgTemplate = `
@@ -211,79 +333,4 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     });
   }
 
-  showHistory(points: HistorialPosicionDTO[]) {
-    // Limpiamos la capa antes de presentar una nueva consulta
-    this.historialLayer.clearLayers();
-
-    // Agrupamos por vendedorId + vendedorCodigo (Clave compuesta corregida)
-    const trayectorias = this.groupBySeller(points);
-
-    trayectorias.forEach((coordinates, key) => {
-      const color = colorForVendedor(key);
-
-      // Creamos la polilínea con el estilo "Clean"
-      const linea = L.polyline(coordinates, {
-        color: color,
-        weight: 3,
-        opacity: 0.7,
-        smoothFactor: 1.5
-      });
-
-      // Añadimos la línea al grupo, no directamente al mapa
-      linea.addTo(this.historialLayer);
-    });
-  }
-
-  private groupBySeller(points: HistorialPosicionDTO[]): Map<string, L.LatLngExpression[]> {
-    const groupedPoints = new Map<string, L.LatLngExpression[]>();
-
-    points.forEach(point => {
-      // Generamos la clave única basada en tu modelo de clave compuesta
-      const key = `${point.vendedorId}_${point.vendedorCodigo}`;
-
-      if (!groupedPoints.has(key)) {
-        groupedPoints.set(key, []);
-      }
-
-      // Añadimos el punto a la lista del vendedor correspondiente
-      groupedPoints.get(key)!.push([point.latitud, point.longitud]);
-    });
-
-    return groupedPoints;
-  }
-
-  private consultarYDibujarTrayectoriaDia(codigo: string, tipo: string) {
-    const hoy = new Date().toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-    const filter = {
-      vendedorIds: [{ codigo: codigo, tipo: tipo }],
-      dia: hoy
-    }
-    // Llamada al servicio que utiliza el repositorio con fetch
-    this.positionService.getHistoric(filter)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(puntos => {
-        if (puntos.length > 0) {
-          this.historialLayer.clearLayers(); // Limpiamos trayectorias anteriores
-
-          const coordenadas = puntos.map(p => [p.latitud, p.longitud]);
-          const key = `${codigo}_${tipo}`;
-          const color = colorForVendedor(key);
-
-          const polyline = L.polyline(coordenadas as L.LatLngExpression[], {
-            color: color,
-            weight: 5,
-            opacity: 0.8,
-            smoothFactor: 1
-          });
-
-          // Para el historial, usamos el Popup según lo solicitado
-          polyline.bindPopup(`<b>Historial de hoy:</b> ${puntos[0].vendedorNombre}`);
-          polyline.addTo(this.historialLayer);
-
-          // Ajustamos la vista para ver el recorrido completo
-          this.map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
-        }
-      });
-  }
 }

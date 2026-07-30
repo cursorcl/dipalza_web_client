@@ -35,7 +35,8 @@ describe('detectarParadas', () => {
       comienzo: '2026-07-26T09:00:00',
       fin: '2026-07-26T09:00:00',
       esInicio: true,
-      esFin: true
+      esFin: true,
+      esParada: true
     });
   });
 
@@ -55,7 +56,8 @@ describe('detectarParadas', () => {
       comienzo: '2026-07-26T09:00:00',
       fin: '2026-07-26T09:00:00',
       esInicio: true,
-      esFin: false
+      esFin: false,
+      esParada: false
     });
     expect(nodos[1]).toEqual({
       numero: 2,
@@ -64,7 +66,8 @@ describe('detectarParadas', () => {
       comienzo: '2026-07-26T09:05:00',
       fin: '2026-07-26T09:05:00',
       esInicio: false,
-      esFin: true
+      esFin: true,
+      esParada: false
     });
   });
 
@@ -80,7 +83,7 @@ describe('detectarParadas', () => {
 
     expect(nodos.length).toBe(3);
     expect(nodos[0]).toEqual(jasmine.objectContaining({
-      numero: 1, esInicio: true, esFin: false, comienzo: '2026-07-26T09:00:00', fin: '2026-07-26T09:00:00'
+      numero: 1, esInicio: true, esFin: false, comienzo: '2026-07-26T09:00:00', fin: '2026-07-26T09:00:00', esParada: false
     }));
     expect(nodos[1]).toEqual({
       numero: 2,
@@ -89,10 +92,11 @@ describe('detectarParadas', () => {
       comienzo: '2026-07-26T09:10:00',
       fin: '2026-07-26T09:25:00',
       esInicio: false,
-      esFin: false
+      esFin: false,
+      esParada: true
     });
     expect(nodos[2]).toEqual(jasmine.objectContaining({
-      numero: 3, esInicio: false, esFin: true, comienzo: '2026-07-26T09:40:00', fin: '2026-07-26T09:40:00'
+      numero: 3, esInicio: false, esFin: true, comienzo: '2026-07-26T09:40:00', fin: '2026-07-26T09:40:00', esParada: false
     }));
   });
 
@@ -112,7 +116,8 @@ describe('detectarParadas', () => {
       comienzo: '2026-07-26T08:00:00',
       fin: '2026-07-26T09:00:00',
       esInicio: true,
-      esFin: true
+      esFin: true,
+      esParada: true
     }]);
   });
 
@@ -125,7 +130,7 @@ describe('detectarParadas', () => {
     const nodos = detectarParadas(puntos);
 
     expect(nodos.length).toBe(2);
-    expect(nodos[0]).toEqual(jasmine.objectContaining({ numero: 1, esInicio: true, esFin: false, comienzo: '2026-07-26T09:00:00' }));
-    expect(nodos[1]).toEqual(jasmine.objectContaining({ numero: 2, esInicio: false, esFin: true, comienzo: '2026-07-26T09:05:00' }));
+    expect(nodos[0]).toEqual(jasmine.objectContaining({ numero: 1, esInicio: true, esFin: false, comienzo: '2026-07-26T09:00:00', esParada: false }));
+    expect(nodos[1]).toEqual(jasmine.objectContaining({ numero: 2, esInicio: false, esFin: true, comienzo: '2026-07-26T09:05:00', esParada: false }));
   });
 });

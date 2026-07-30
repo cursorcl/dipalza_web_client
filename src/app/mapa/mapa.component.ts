@@ -276,7 +276,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       });
 
       const horaComienzo = new Date(nodo.comienzo).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
-      const esParadaReal = nodo.comienzo !== nodo.fin;
+      const esParadaReal = nodo.esParada;
       let etiqueta: string;
       if (esParadaReal) {
         const horaFin = new Date(nodo.fin).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });

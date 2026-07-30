@@ -9,6 +9,7 @@ export interface NodoParada {
   fin: string;
   esInicio: boolean;
   esFin: boolean;
+  esParada: boolean;
 }
 
 export function detectarParadas(
@@ -29,7 +30,8 @@ export function detectarParadas(
       comienzo: p.fechaHora,
       fin: p.fechaHora,
       esInicio: true,
-      esFin: true
+      esFin: true,
+      esParada: true
     }];
   }
 
@@ -66,7 +68,8 @@ export function detectarParadas(
         comienzo: primero.fechaHora,
         fin: ultimo.fechaHora,
         esInicio: esPrimerGrupo,
-        esFin: esUltimoGrupo
+        esFin: esUltimoGrupo,
+        esParada: true
       });
       return;
     }
@@ -78,7 +81,8 @@ export function detectarParadas(
         comienzo: primero.fechaHora,
         fin: primero.fechaHora,
         esInicio: true,
-        esFin: false
+        esFin: false,
+        esParada: false
       });
     }
     if (esUltimoGrupo) {
@@ -88,7 +92,8 @@ export function detectarParadas(
         comienzo: ultimo.fechaHora,
         fin: ultimo.fechaHora,
         esInicio: false,
-        esFin: true
+        esFin: true,
+        esParada: false
       });
     }
   });

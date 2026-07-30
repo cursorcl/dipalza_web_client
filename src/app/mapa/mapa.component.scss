@@ -61,3 +61,24 @@
     color: #d35400;
     font-weight: 600;
 }
+
+/* Elimina el cuadro blanco por defecto de Leaflet para los divIcon numerados */
+::ng-deep .custom-nodo-parada-icon {
+    background: transparent !important;
+    border: none !important;
+}
+
+::ng-deep .nodo-parada-badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.85);
+}

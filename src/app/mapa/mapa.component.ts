@@ -9,6 +9,7 @@ import { PositionsService } from './positions.service';
 import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
+import { detectarParadas } from './detectar-paradas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
@@ -36,7 +37,6 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
   private cargando: Set<string> = new Set();
-  private canvasRenderer = L.canvas();
   seleccionados = signal<Set<string>>(new Set());
 
   private mapInit = inject(MapInitializerService);
@@ -268,25 +268,26 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     polyline.bindPopup(`<b>Recorrido de hoy:</b> ${puntos[0].vendedorNombre}`);
     polyline.addTo(grupo);
 
-    puntos.forEach((punto, index) => {
-      const esInicio = index === 0;
-      const esFin = index === puntos.length - 1;
-      const hora = new Date(punto.fechaHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
-
-      const colorBorde = esInicio ? '#2ecc71' : esFin ? '#e74c3c' : '#ffffff';
-
-      const circulo = L.circleMarker([punto.latitud, punto.longitud], {
-        renderer: this.canvasRenderer,
-        radius: esInicio || esFin ? 7 : 4,
-        color: colorBorde,
-        weight: esInicio || esFin ? 2 : 1,
-        fillColor: color,
-        fillOpacity: esInicio || esFin ? 1 : 0.6
+    const nodos = detectarParadas(puntos);
+    nodos.forEach(nodo => {
+      const colorFondo = nodo.esInicio ? '#2ecc71' : nodo.esFin ? '#e74c3c' : color;
+      const marker = L.marker([nodo.latitud, nodo.longitud], {
+        icon: this.crearIconoNodo(nodo.numero, colorFondo)
       });
 
-      const etiqueta = esInicio ? `Inicio — ${hora}` : esFin ? `Última posición — ${hora}` : hora;
-      circulo.bindPopup(etiqueta);
-      circulo.addTo(grupo);
+      const horaComienzo = new Date(nodo.comienzo).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const esParadaReal = nodo.esParada;
+      let etiqueta: string;
+      if (esParadaReal) {
+        const horaFin = new Date(nodo.fin).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+        etiqueta = `Parada ${nodo.numero} — ${horaComienzo} a ${horaFin}`;
+      } else if (nodo.esInicio) {
+        etiqueta = `Inicio — ${horaComienzo}`;
+      } else {
+        etiqueta = `Última posición — ${horaComienzo}`;
+      }
+      marker.bindPopup(etiqueta);
+      marker.addTo(grupo);
     });
 
     grupo.addTo(this.historialLayer);
@@ -297,6 +298,17 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.seleccionados.set(actualizado);
 
     this.ajustarVistaATrayectoriasVisibles();
+  }
+
+  private crearIconoNodo(numero: number, colorFondo: string): L.DivIcon {
+    const html = `<div class="nodo-parada-badge" style="background:${colorFondo};">${numero}</div>`;
+    return L.divIcon({
+      html,
+      className: 'custom-nodo-parada-icon',
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -12]
+    });
   }
 
   private ajustarVistaATrayectoriasVisibles(): void {

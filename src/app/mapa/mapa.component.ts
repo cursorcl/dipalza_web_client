@@ -146,7 +146,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         })
       )
       .subscribe((vendedores: VendedorDTO[]) => {
-        this.padronVendedores = vendedores;
+        this.padronVendedores = vendedores.filter(v => v.tipo === '0');
         this.actualizarListaVendedores();
       });
   }

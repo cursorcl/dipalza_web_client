@@ -299,4 +299,43 @@ describe('MapaComponent', () => {
     const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
     expect(checkbox.checked).toBeTrue();
   });
+
+  it('mostrarTrayectoria dibuja un nodo numerado por cada parada detectada, no un punto por cada posición GPS', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -34.00, longitud: -71.00 }
+    ]);
+
+    const grupo = (component as any).trayectoriasPorVendedor.get('001_0') as L.LayerGroup;
+    const marcadores = grupo.getLayers().filter(capa => capa instanceof L.Marker) as L.Marker[];
+
+    expect(marcadores.length).toBe(2);
+    const popups = marcadores.map(m => m.getPopup()?.getContent());
+    expect(popups).toContain('Inicio — 09:00');
+    expect(popups).toContain('Última posición — 09:05');
+  });
+
+  it('mostrarTrayectoria etiqueta una parada real de más de 10 minutos con su rango horario', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:10:00', latitud: -34.00, longitud: -71.00 },
+      { id: 3, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:25:00', latitud: -34.00, longitud: -71.00 },
+      { id: 4, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:40:00', latitud: -35.00, longitud: -72.00 }
+    ]);
+
+    const grupo = (component as any).trayectoriasPorVendedor.get('001_0') as L.LayerGroup;
+    const marcadores = grupo.getLayers().filter(capa => capa instanceof L.Marker) as L.Marker[];
+
+    expect(marcadores.length).toBe(3);
+    const popups = marcadores.map(m => m.getPopup()?.getContent());
+    expect(popups).toContain('Inicio — 09:00');
+    expect(popups).toContain('Parada 2 — 09:10 a 09:25');
+    expect(popups).toContain('Última posición — 09:40');
+  });
 });

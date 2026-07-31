@@ -37,7 +37,8 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
   private cargando: Set<string> = new Set();
-  seleccionados = signal<Set<string>>(new Set());
+  private desiredSelection: string | null = null; // Tracks the most recently desired selection while loads are in flight
+  seleccionado = signal<string | null>(null);
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -205,20 +206,27 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   toggleTrayectoria(vendedor: VendedorId & { nombre: string }): void {
     const key = `${vendedor.codigo}_${vendedor.tipo}`;
 
-    if (this.trayectoriasPorVendedor.has(key)) {
-      const layer = this.trayectoriasPorVendedor.get(key)!;
-      this.historialLayer.removeLayer(layer);
-      this.trayectoriasPorVendedor.delete(key);
-
-      const actualizado = new Set(this.seleccionados());
-      actualizado.delete(key);
-      this.seleccionados.set(actualizado);
+    if (key === this.seleccionado()) {
+      this.ocultarTrayectoria(key);
+      this.seleccionado.set(null);
+      this.desiredSelection = null;
       return;
     }
 
     if (this.cargando.has(key)) {
+      this.desiredSelection = key;
       return;
     }
+
+    // Hide any currently displayed trajectory (whether in-flight or completed)
+    const anterior = this.seleccionado();
+    if (anterior !== null) {
+      this.ocultarTrayectoria(anterior);
+      this.seleccionado.set(null);
+    }
+
+    // Track that this key is the currently desired selection
+    this.desiredSelection = key;
 
     const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
     const filter: PositionFilter = {
@@ -233,6 +241,10 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       .subscribe({
         next: puntos => {
           this.cargando.delete(key);
+          // Only display if this response is still the desired selection
+          if (key !== this.desiredSelection) {
+            return;
+          }
           if (puntos.length === 0) {
             this.mostrarToast(`Sin recorrido registrado hoy para ${vendedor.nombre}`);
             return;
@@ -241,9 +253,19 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         },
         error: () => {
           this.cargando.delete(key);
-          this.mostrarToast(`No se pudo obtener el recorrido de ${vendedor.nombre}`);
+          // Only show error toast if this response was still desired
+          if (key === this.desiredSelection) {
+            this.mostrarToast(`No se pudo obtener el recorrido de ${vendedor.nombre}`);
+          }
         }
       });
+  }
+
+  private ocultarTrayectoria(key: string): void {
+    const layer = this.trayectoriasPorVendedor.get(key);
+    if (!layer) return;
+    this.historialLayer.removeLayer(layer);
+    this.trayectoriasPorVendedor.delete(key);
   }
 
   private mostrarToast(mensaje: string): void {
@@ -293,9 +315,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     grupo.addTo(this.historialLayer);
     this.trayectoriasPorVendedor.set(key, grupo);
 
-    const actualizado = new Set(this.seleccionados());
-    actualizado.add(key);
-    this.seleccionados.set(actualizado);
+    this.seleccionado.set(key);
 
     this.ajustarVistaATrayectoriasVisibles();
   }

@@ -5,12 +5,12 @@
     @if (toastMensaje(); as mensaje) {
       <div class="mapa-toast">{{ mensaje }}</div>
     }
+    <app-vendor-list
+      [vendedores]="vendedores()"
+      [selectedId]="seleccionado()"
+      (vendedorSeleccionado)="centrarEnVendedor($event)"
+      (trayectoriaToggled)="toggleTrayectoria({ codigo: $event.vendedorId, tipo: $event.vendedorCodigo, nombre: $event.vendedorNombre })">
+    </app-vendor-list>
   </div>
-  <app-vendor-list
-    [vendedores]="vendedores()"
-    [selectedIds]="seleccionados()"
-    (vendedorSeleccionado)="centrarEnVendedor($event)"
-    (trayectoriaToggled)="toggleTrayectoria({ codigo: $event.vendedorId, tipo: $event.vendedorCodigo, nombre: $event.vendedorNombre })">
-  </app-vendor-list>
 </div>
 </section>

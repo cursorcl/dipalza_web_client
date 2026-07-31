@@ -53,34 +53,92 @@ describe('VendorListComponent', () => {
     expect(emitidos).toEqual(['001']);
   });
 
-  it('el checkbox refleja si la clave del vendedor está en selectedIds', () => {
+  it('aplica la clase de fila seleccionada cuando selectedId coincide con la clave del vendedor', () => {
     component.vendedores = [vendedorEjemplo];
-    component.selectedIds = new Set(['001_0']);
+    component.selectedId = '001_0';
     fixture.detectChanges();
 
-    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
-    expect(checkbox.checked).toBeTrue();
+    const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
+    expect(fila.classList.contains('vendor-list__item--selected')).toBeTrue();
   });
 
-  it('el checkbox aparece sin marcar si la clave no está en selectedIds', () => {
+  it('no aplica la clase de fila seleccionada cuando selectedId es distinto', () => {
     component.vendedores = [vendedorEjemplo];
-    component.selectedIds = new Set();
+    component.selectedId = null;
     fixture.detectChanges();
 
-    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
-    expect(checkbox.checked).toBeFalse();
+    const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
+    expect(fila.classList.contains('vendor-list__item--selected')).toBeFalse();
   });
 
-  it('emite trayectoriaToggled con el vendedor completo al cambiar el checkbox', () => {
+  it('emite trayectoriaToggled con el vendedor completo al hacer clic en la fila', () => {
     component.vendedores = [vendedorEjemplo];
     fixture.detectChanges();
 
     const emitidos: VendedorListItem[] = [];
     component.trayectoriaToggled.subscribe((v) => emitidos.push(v));
 
-    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
-    checkbox.dispatchEvent(new Event('change'));
+    const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
+    fila.dispatchEvent(new Event('click'));
 
     expect(emitidos).toEqual([vendedorEjemplo]);
+  });
+
+  it('el panel inicia expandido: el cuerpo con la lista es visible', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeTruthy();
+    expect(component.colapsado()).toBeFalse();
+  });
+
+  it('al hacer clic en el encabezado, colapsa y oculta el cuerpo de la lista', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__header');
+    header.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    expect(component.colapsado()).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeNull();
+  });
+
+  it('un segundo clic en el encabezado vuelve a expandir el panel', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__header');
+    header.dispatchEvent(new Event('click'));
+    header.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    expect(component.colapsado()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeTruthy();
+  });
+
+  it('con más vendedores de los que caben en el panel, el cuerpo se vuelve desplazable en vez de recortar filas', () => {
+    // El :host es position:absolute con max-height: calc(100% - 32px), así que
+    // necesita un ancestro posicionado con altura definida y estar realmente
+    // adjunto al documento para que el layout (scrollHeight/clientHeight) sea real.
+    const contenedor = document.createElement('div');
+    contenedor.style.position = 'relative';
+    contenedor.style.width = '400px';
+    contenedor.style.height = '300px';
+    document.body.appendChild(contenedor);
+    contenedor.appendChild(fixture.nativeElement);
+
+    component.vendedores = Array.from({ length: 40 }, (_, i) => ({
+      ...vendedorEjemplo,
+      vendedorId: `V${i}`,
+      vendedorNombre: `Vendedor número ${i}`
+    }));
+    fixture.detectChanges();
+
+    const body: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__body');
+    expect(body).toBeTruthy();
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+
+    contenedor.remove();
   });
 });

@@ -1,10 +1,45 @@
 :host {
-    display: block;
-    width: 280px;
-    height: 100%;
-    overflow-y: auto;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    max-width: 280px;
+    max-height: calc(100% - 32px);
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
     box-sizing: border-box;
-    border-left: 1px solid #e9ecef;
+    z-index: 500;
+}
+
+.vendor-list__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.vendor-list__flecha {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.vendor-list__flecha--colapsado {
+    transform: rotate(-90deg);
+}
+
+.vendor-list__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .vendor-list__item {
@@ -13,10 +48,15 @@
     gap: 8px;
     padding: 6px 10px;
     cursor: pointer;
+    user-select: none;
 }
 
 .vendor-list__item:hover {
-    background-color: #f6f6f6;
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.vendor-list__item--selected {
+    background-color: rgba(0, 0, 0, 0.08);
 }
 
 .vendor-list__dot {
@@ -57,9 +97,4 @@
 
 .vendor-list__estado--online {
     background-color: #2ecc71;
-}
-
-.vendor-list__checkbox {
-    flex-shrink: 0;
-    cursor: pointer;
 }

@@ -2,10 +2,10 @@
   <div class="container">
     <div class="card login-card mb-0">
       <div class="row no-gutters">
-        <div class="col-md-5">
+        <div class="col-md-5 d-none d-md-block">
           <img src="assets/images/login.jpg" alt="login" class="login-card-img">
           </div>
-          <div class="col-md-7">
+          <div class="col-12 col-md-7">
             <div class="login-body">
               <div class="text-center">
                 <div class="brand-wrapper">
@@ -14,6 +14,19 @@
               </div>
               <form class="validate-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
                 <div class="row">
+                  @if (accounts.length > 0) {
+                    <div class="col-lg-12">
+                      <div class="form-group">
+                        <label for="accountSelect">Cuentas guardadas</label>
+                        <select id="accountSelect" class="form-select" (change)="onAccountSelected($any($event.target).value)">
+                          <option value="" selected disabled>Seleccione una cuenta guardada</option>
+                          @for (account of accounts; track account.username) {
+                            <option [value]="account.username">{{ account.username }}</option>
+                          }
+                        </select>
+                      </div>
+                    </div>
+                  }
                   <div class="col-lg-12">
                     <div class="form-group position-relative">
                       <label>Cuenta <span class="text-danger">*</span></label>
@@ -30,7 +43,7 @@
                         </div>
                       </div>
                       <div class="col-lg-12">
-                        <div class="d-flex justify-content-between">
+                        <div class="d-flex flex-column flex-sm-row justify-content-sm-between">
                           <div class="form-group">
                             <div class="form-check">
                               <input class="form-check-input" type="checkbox" id="customCheck1" formControlName="remember">
@@ -47,7 +60,7 @@
                           <div class="alert alert-danger mb-3 msl-3">{{error}}</div>
                         }
                         <div class="col-lg-12 mb-0">
-                          <button class="btn btn-primary auth-form-btn">Sign in</button>
+                          <button class="btn btn-primary auth-form-btn">Ingresar</button>
                         </div>
                         <div class="col-lg-12 mt-4 text-center">
                           <h6>O ingresar con</h6>
@@ -56,13 +69,10 @@
                               <i-feather name="facebook" class="fea-social sm-icon"></i-feather>
                             </a></li>
                             <li class="list-inline-item"><a href="javascript:void(0)" class="rounded">
-                              <i-feather name="github" class="fea-social sm-icon"></i-feather>
+                              <i-feather name="instagram" class="fea-social sm-icon"></i-feather>
                             </a></li>
                             <li class="list-inline-item"><a href="javascript:void(0)" class="rounded">
                               <i-feather name="twitter" class="fea-social sm-icon"></i-feather>
-                            </a></li>
-                            <li class="list-inline-item"><a href="javascript:void(0)" class="rounded">
-                              <i-feather name="gitlab" class="fea-social sm-icon"></i-feather>
                             </a></li>
                           </ul>
                         </div>

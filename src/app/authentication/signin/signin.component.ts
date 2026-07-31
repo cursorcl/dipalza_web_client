@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
-import { AuthService } from '@core';
+import { AuthService, RememberedAccountsService, RememberedAccount } from '@core';
 import { ProductoService } from 'app/services/producto.service';
 @Component({
   selector: 'app-signin',
@@ -21,21 +21,30 @@ export class SigninComponent implements OnInit {
   returnUrl!: string;
   error = '';
   hide = true;
+  accounts: RememberedAccount[] = [];
   constructor(
     private formBuilder: UntypedFormBuilder,
     private router: Router,
     private authService: AuthService,
-    private productoService: ProductoService
+    private productoService: ProductoService,
+    private rememberedAccountsService: RememberedAccountsService
   ) { }
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
-      username: ['0076104905', Validators.required],
-      password: ['Dip@lza2026', Validators.required],
+      username: ['', Validators.required],
+      password: ['', Validators.required],
       remember: [''],
     });
+    this.accounts = this.rememberedAccountsService.getAccounts();
   }
   get f() {
     return this.loginForm.controls;
+  }
+  onAccountSelected(username: string): void {
+    const account = this.accounts.find(a => a.username === username);
+    if (account) {
+      this.loginForm.patchValue({ username: account.username, password: account.password });
+    }
   }
   onSubmit() {
     this.submitted = true;
@@ -53,6 +62,12 @@ export class SigninComponent implements OnInit {
               if (res) {
                 const token = this.authService.currentUserValue.token;
                 if (token) {
+                  if (this.f['remember'].value) {
+                    this.rememberedAccountsService.saveAccount(
+                      this.f['username'].value,
+                      this.f['password'].value
+                    );
+                  }
                   this.productoService.loadProductos().subscribe({
                     next: () => console.log('Productos cargados en segundo plano'),
                     error: (err) => console.error('Error cargando productos post-login', err)

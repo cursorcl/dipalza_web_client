@@ -313,7 +313,39 @@ describe('MapaComponent', () => {
     expect((component as any).historialLayer.getLayers().length).toBe(1);
   });
 
-  it('muestra un toast y no agrega al vendedor a seleccionados si getHistoric falla', () => {
+  it('un tercer clic rápido sobre el primer vendedor (mientras su solicitud sigue en curso) deja a ese vendedor seleccionado al llegar la respuesta', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    // Click vendor A — request in flight, not yet resolved
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    // Click vendor B before A's response arrives — request in flight, desiredSelection becomes B
+    component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
+
+    // Click vendor A again: A's request is still in flight, so this hits the
+    // `cargando.has(key)` early-return branch. It must still record A as the
+    // desired selection instead of leaving it as B.
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    // No new request should have been made for the repeated click on A.
+    const requests = httpMock.match(`${environment.apiUrl}/posicion/historico`);
+    expect(requests.length).toBe(2);
+
+    // Resolve A's request — since the user's last click was on A, this should display.
+    requests[0].flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+
+    // Resolve B's now-stale request — must be discarded since A is the desired selection.
+    requests[1].flush([
+      { id: 2, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:00:00', latitud: -34.00, longitud: -71.00 }
+    ]);
+
+    expect(component.seleccionado()).toBe('001_0');
+    expect((component as any).historialLayer.getLayers().length).toBe(1);
+  });
+
+  it('muestra un toast y no marca al vendedor como seleccionado si getHistoric falla', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
     component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });

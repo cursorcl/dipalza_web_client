@@ -116,4 +116,29 @@ describe('VendorListComponent', () => {
     expect(component.colapsado()).toBeFalse();
     expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeTruthy();
   });
+
+  it('con más vendedores de los que caben en el panel, el cuerpo se vuelve desplazable en vez de recortar filas', () => {
+    // El :host es position:absolute con max-height: calc(100% - 32px), así que
+    // necesita un ancestro posicionado con altura definida y estar realmente
+    // adjunto al documento para que el layout (scrollHeight/clientHeight) sea real.
+    const contenedor = document.createElement('div');
+    contenedor.style.position = 'relative';
+    contenedor.style.width = '400px';
+    contenedor.style.height = '300px';
+    document.body.appendChild(contenedor);
+    contenedor.appendChild(fixture.nativeElement);
+
+    component.vendedores = Array.from({ length: 40 }, (_, i) => ({
+      ...vendedorEjemplo,
+      vendedorId: `V${i}`,
+      vendedorNombre: `Vendedor número ${i}`
+    }));
+    fixture.detectChanges();
+
+    const body: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__body');
+    expect(body).toBeTruthy();
+    expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+
+    contenedor.remove();
+  });
 });

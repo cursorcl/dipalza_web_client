@@ -214,6 +214,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
 
     if (this.cargando.has(key)) {
+      this.desiredSelection = key;
       return;
     }
 
@@ -258,7 +259,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
           }
         }
       });
-    }
+  }
 
   private ocultarTrayectoria(key: string): void {
     const layer = this.trayectoriasPorVendedor.get(key);

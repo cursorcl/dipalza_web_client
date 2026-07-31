@@ -95,6 +95,7 @@ describe('SigninComponent', () => {
       component.onAccountSelected('juan');
       expect(component.loginForm.get('username')?.value).toBe('juan');
       expect(component.loginForm.get('password')?.value).toBe('clave123');
+      expect(component.loginForm.get('remember')?.value).toBe(true);
     });
 
     it('onAccountSelected no debería modificar el formulario si el username no existe', () => {

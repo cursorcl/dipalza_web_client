@@ -43,7 +43,7 @@ export class SigninComponent implements OnInit {
   onAccountSelected(username: string): void {
     const account = this.accounts.find(a => a.username === username);
     if (account) {
-      this.loginForm.patchValue({ username: account.username, password: account.password });
+      this.loginForm.patchValue({ username: account.username, password: account.password, remember: true });
     }
   }
   onSubmit() {

@@ -83,4 +83,37 @@ describe('VendorListComponent', () => {
 
     expect(emitidos).toEqual([vendedorEjemplo]);
   });
+
+  it('el panel inicia expandido: el cuerpo con la lista es visible', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeTruthy();
+    expect(component.colapsado()).toBeFalse();
+  });
+
+  it('al hacer clic en el encabezado, colapsa y oculta el cuerpo de la lista', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__header');
+    header.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    expect(component.colapsado()).toBeTrue();
+    expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeNull();
+  });
+
+  it('un segundo clic en el encabezado vuelve a expandir el panel', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const header: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__header');
+    header.dispatchEvent(new Event('click'));
+    header.dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    expect(component.colapsado()).toBeFalse();
+    expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeTruthy();
+  });
 });

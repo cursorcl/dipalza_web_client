@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { VendedorListItem } from '../models/model';
 
 @Component({
@@ -12,6 +12,12 @@ export class VendorListComponent {
   @Input() selectedId: string | null = null;
   @Output() vendedorSeleccionado = new EventEmitter<string>();
   @Output() trayectoriaToggled = new EventEmitter<VendedorListItem>();
+
+  colapsado = signal(false);
+
+  alternarColapso(): void {
+    this.colapsado.set(!this.colapsado());
+  }
 
   onDoubleClick(vendedorId: string): void {
     this.vendedorSeleccionado.emit(vendedorId);

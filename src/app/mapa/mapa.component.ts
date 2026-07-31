@@ -37,6 +37,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
   private cargando: Set<string> = new Set();
+  private desiredSelection: string | null = null; // Tracks the most recently desired selection while loads are in flight
   seleccionado = signal<string | null>(null);
 
   private mapInit = inject(MapInitializerService);
@@ -208,6 +209,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     if (key === this.seleccionado()) {
       this.ocultarTrayectoria(key);
       this.seleccionado.set(null);
+      this.desiredSelection = null;
       return;
     }
 
@@ -215,11 +217,15 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    // Hide any currently displayed trajectory (whether in-flight or completed)
     const anterior = this.seleccionado();
     if (anterior !== null) {
       this.ocultarTrayectoria(anterior);
       this.seleccionado.set(null);
     }
+
+    // Track that this key is the currently desired selection
+    this.desiredSelection = key;
 
     const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
     const filter: PositionFilter = {
@@ -234,6 +240,10 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       .subscribe({
         next: puntos => {
           this.cargando.delete(key);
+          // Only display if this response is still the desired selection
+          if (key !== this.desiredSelection) {
+            return;
+          }
           if (puntos.length === 0) {
             this.mostrarToast(`Sin recorrido registrado hoy para ${vendedor.nombre}`);
             return;
@@ -242,17 +252,20 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         },
         error: () => {
           this.cargando.delete(key);
-          this.mostrarToast(`No se pudo obtener el recorrido de ${vendedor.nombre}`);
+          // Only show error toast if this response was still desired
+          if (key === this.desiredSelection) {
+            this.mostrarToast(`No se pudo obtener el recorrido de ${vendedor.nombre}`);
+          }
         }
       });
-}
+    }
 
-private ocultarTrayectoria(key: string): void {
+  private ocultarTrayectoria(key: string): void {
     const layer = this.trayectoriasPorVendedor.get(key);
     if (!layer) return;
     this.historialLayer.removeLayer(layer);
     this.trayectoriasPorVendedor.delete(key);
-}
+  }
 
   private mostrarToast(mensaje: string): void {
     if (this.toastTimeout) {

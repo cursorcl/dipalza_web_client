@@ -156,6 +156,7 @@ describe('MapaComponent', () => {
     component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
 
     expect(component.seleccionado()).toBeNull();
+    httpMock.expectNone(`${environment.apiUrl}/posicion/historico`);
   });
 
   it('toggleTrayectoria muestra un toast si no hay recorrido para hoy', () => {
@@ -278,6 +279,38 @@ describe('MapaComponent', () => {
     // Una vez resuelta la solicitud, el toggle nuevamente debe poder ocultar el recorrido.
     component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
     expect(component.seleccionado()).toBeNull();
+  });
+
+  it('al cambiar de vendedor antes de que la respuesta anterior llegue, solo se muestra el recorrido del último seleccionado', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    // Click vendor A — request in flight, not yet resolved
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    // seleccionado is still null, request is pending
+
+    // Click vendor B before A's response arrives
+    component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
+    // Now we have two requests in flight for A and B
+
+    // Collect both pending requests
+    const requests = httpMock.match(`${environment.apiUrl}/posicion/historico`);
+    expect(requests.length).toBe(2);
+
+    // Resolve A's request first (stale response)
+    requests[0].flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    // A's trajectory should NOT be displayed because B is now the desired selection
+
+    // Resolve B's request (current selection)
+    requests[1].flush([
+      { id: 2, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:00:00', latitud: -34.00, longitud: -71.00 }
+    ]);
+
+    // Only B should be in seleccionado and displayed
+    expect(component.seleccionado()).toBe('002_0');
+    // Should have exactly one trajectory (B's, not A's)
+    expect((component as any).historialLayer.getLayers().length).toBe(1);
   });
 
   it('muestra un toast y no agrega al vendedor a seleccionados si getHistoric falla', () => {

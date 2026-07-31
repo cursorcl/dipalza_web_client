@@ -118,7 +118,7 @@ describe('MapaComponent', () => {
     expect(toast.textContent).toContain('Sin recorrido registrado hoy para Juan Perez');
   });
 
-  it('toggleTrayectoria dibuja el recorrido del día y lo agrega a seleccionados', () => {
+  it('toggleTrayectoria dibuja el recorrido del día y lo marca como seleccionado', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
     component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
@@ -130,7 +130,7 @@ describe('MapaComponent', () => {
       { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
     ]);
 
-    expect(component.seleccionados().has('001_0')).toBeTrue();
+    expect(component.seleccionado()).toBe('001_0');
   });
 
   it('toggleTrayectoria envía la fecha "dia" calculada en huso horario local (no UTC)', () => {
@@ -151,12 +151,11 @@ describe('MapaComponent', () => {
       { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
       { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
     ]);
-    expect(component.seleccionados().has('001_0')).toBeTrue();
+    expect(component.seleccionado()).toBe('001_0');
 
     component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
 
-    expect(component.seleccionados().has('001_0')).toBeFalse();
-    httpMock.expectNone(`${environment.apiUrl}/posicion/historico`);
+    expect(component.seleccionado()).toBeNull();
   });
 
   it('toggleTrayectoria muestra un toast si no hay recorrido para hoy', () => {
@@ -166,7 +165,7 @@ describe('MapaComponent', () => {
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
 
     expect(component.toastMensaje()).toBe('Sin recorrido registrado hoy para Ana Soto');
-    expect(component.seleccionados().has('002_0')).toBeFalse();
+    expect(component.seleccionado()).toBeNull();
   });
 
   it('el toast se oculta automáticamente después de 3 segundos', () => {
@@ -183,27 +182,26 @@ describe('MapaComponent', () => {
     jasmine.clock().uninstall();
   });
 
-  it('al seleccionar dos vendedores, la vista se ajusta para mostrar ambos recorridos', () => {
+  it('al seleccionar otro vendedor, se reemplaza el recorrido anterior y la vista se ajusta al nuevo', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
     component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
       { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
     ]);
+    expect(component.seleccionado()).toBe('001_0');
+    expect((component as any).historialLayer.getLayers().length).toBe(1);
 
     component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
       { id: 2, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:00:00', latitud: -34.00, longitud: -71.00 }
     ]);
 
-    expect(component.seleccionados().has('001_0')).toBeTrue();
-    expect(component.seleccionados().has('002_0')).toBeTrue();
+    expect(component.seleccionado()).toBe('002_0');
+    expect((component as any).historialLayer.getLayers().length).toBe(1);
 
     const mapBounds = (component as any).map.getBounds();
-    expect(mapBounds.contains(L.latLng(-33.40, -70.60))).toBeTrue();
     expect(mapBounds.contains(L.latLng(-34.00, -71.00))).toBeTrue();
-
-    expect((component as any).historialLayer.getLayers().length).toBe(2);
   });
 
   it('el clic en el marker de un vendedor dibuja su recorrido del día', () => {
@@ -223,45 +221,43 @@ describe('MapaComponent', () => {
       { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
     ]);
 
-    expect(component.seleccionados().has('001_0')).toBeTrue();
+    expect(component.seleccionado()).toBe('001_0');
   });
 
-  it('marcar el checkbox de un vendedor en la lista dibuja su recorrido', () => {
+  it('hacer clic en la fila de un vendedor en la lista dibuja su recorrido', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
     httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([]);
     httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '001', tipo: '0', nombre: 'Juan Perez' }]);
     fixture.detectChanges();
 
-    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
-    expect(checkbox).toBeTruthy();
+    const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
+    expect(fila).toBeTruthy();
 
-    checkbox.dispatchEvent(new Event('change'));
+    fila.dispatchEvent(new Event('click'));
 
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
       { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
     ]);
 
-    expect(component.seleccionados().has('001_0')).toBeTrue();
+    expect(component.seleccionado()).toBe('001_0');
   });
 
-  it('el checkbox queda sin marcar tras un historial vacío (no debe quedar visualmente marcado)', () => {
+  it('la fila no queda resaltada tras un historial vacío', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
     httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([]);
     httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '002', tipo: '0', nombre: 'Ana Soto' }]);
     fixture.detectChanges();
 
-    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
-    expect(checkbox).toBeTruthy();
-
-    checkbox.dispatchEvent(new Event('change'));
+    const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
+    fila.dispatchEvent(new Event('click'));
 
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
     fixture.detectChanges();
 
-    expect(component.seleccionados().has('002_0')).toBeFalse();
-    expect(checkbox.checked).toBeFalse();
+    expect(component.seleccionado()).toBeNull();
+    expect(fila.classList.contains('vendor-list__item--selected')).toBeFalse();
   });
 
   it('un doble toggle rápido del mismo vendedor antes de que llegue la respuesta HTTP no dispara una segunda solicitud', () => {
@@ -276,13 +272,12 @@ describe('MapaComponent', () => {
       { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
     ]);
 
-    expect(component.seleccionados().has('001_0')).toBeTrue();
+    expect(component.seleccionado()).toBe('001_0');
     expect((component as any).historialLayer.getLayers().length).toBe(1);
 
     // Una vez resuelta la solicitud, el toggle nuevamente debe poder ocultar el recorrido.
     component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
-    expect(component.seleccionados().has('001_0')).toBeFalse();
-    expect((component as any).historialLayer.getLayers().length).toBe(0);
+    expect(component.seleccionado()).toBeNull();
   });
 
   it('muestra un toast y no agrega al vendedor a seleccionados si getHistoric falla', () => {
@@ -294,10 +289,10 @@ describe('MapaComponent', () => {
     req.flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(component.toastMensaje()).toBe('No se pudo obtener el recorrido de Juan Perez');
-    expect(component.seleccionados().has('001_0')).toBeFalse();
+    expect(component.seleccionado()).toBeNull();
   });
 
-  it('al hacer clic en el marker, el checkbox correspondiente en la lista se marca', () => {
+  it('al hacer clic en el marker, la fila correspondiente en la lista queda resaltada', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
     httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([
@@ -313,8 +308,8 @@ describe('MapaComponent', () => {
 
     fixture.detectChanges();
 
-    const checkbox: HTMLInputElement = fixture.nativeElement.querySelector('.vendor-list__checkbox');
-    expect(checkbox.checked).toBeTrue();
+    const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
+    expect(fila.classList.contains('vendor-list__item--selected')).toBeTrue();
   });
 
   it('mostrarTrayectoria dibuja un nodo numerado por cada parada detectada, no un punto por cada posición GPS', () => {

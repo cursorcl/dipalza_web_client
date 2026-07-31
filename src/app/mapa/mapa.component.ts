@@ -37,7 +37,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
   private cargando: Set<string> = new Set();
-  seleccionados = signal<Set<string>>(new Set());
+  seleccionado = signal<string | null>(null);
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -205,19 +205,20 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   toggleTrayectoria(vendedor: VendedorId & { nombre: string }): void {
     const key = `${vendedor.codigo}_${vendedor.tipo}`;
 
-    if (this.trayectoriasPorVendedor.has(key)) {
-      const layer = this.trayectoriasPorVendedor.get(key)!;
-      this.historialLayer.removeLayer(layer);
-      this.trayectoriasPorVendedor.delete(key);
-
-      const actualizado = new Set(this.seleccionados());
-      actualizado.delete(key);
-      this.seleccionados.set(actualizado);
+    if (key === this.seleccionado()) {
+      this.ocultarTrayectoria(key);
+      this.seleccionado.set(null);
       return;
     }
 
     if (this.cargando.has(key)) {
       return;
+    }
+
+    const anterior = this.seleccionado();
+    if (anterior !== null) {
+      this.ocultarTrayectoria(anterior);
+      this.seleccionado.set(null);
     }
 
     const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
@@ -244,7 +245,14 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
           this.mostrarToast(`No se pudo obtener el recorrido de ${vendedor.nombre}`);
         }
       });
-  }
+}
+
+private ocultarTrayectoria(key: string): void {
+    const layer = this.trayectoriasPorVendedor.get(key);
+    if (!layer) return;
+    this.historialLayer.removeLayer(layer);
+    this.trayectoriasPorVendedor.delete(key);
+}
 
   private mostrarToast(mensaje: string): void {
     if (this.toastTimeout) {
@@ -293,9 +301,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     grupo.addTo(this.historialLayer);
     this.trayectoriasPorVendedor.set(key, grupo);
 
-    const actualizado = new Set(this.seleccionados());
-    actualizado.add(key);
-    this.seleccionados.set(actualizado);
+    this.seleccionado.set(key);
 
     this.ajustarVistaATrayectoriasVisibles();
   }

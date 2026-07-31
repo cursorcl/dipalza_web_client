@@ -19,6 +19,10 @@
     background-color: #f6f6f6;
 }
 
+.vendor-list__item--selected {
+    background-color: #eef1f4;
+}
+
 .vendor-list__dot {
     width: 10px;
     height: 10px;
@@ -57,9 +61,4 @@
 
 .vendor-list__estado--online {
     background-color: #2ecc71;
-}
-
-.vendor-list__checkbox {
-    flex-shrink: 0;
-    cursor: pointer;
 }

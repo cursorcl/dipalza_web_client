@@ -449,4 +449,29 @@ describe('MapaComponent', () => {
 
     expect(component.nodosSeleccionados()).toEqual([]);
   });
+
+  it('al cambiar a otro vendedor, nodosSeleccionados refleja solo los nodos del nuevo vendedor', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    fixture.detectChanges();
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+
+    expect(component.nodosSeleccionados().length).toBe(1);
+
+    component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 2, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:00:00', latitud: -34.00, longitud: -71.00 },
+      { id: 3, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:10:00', latitud: -34.10, longitud: -71.10 }
+    ]);
+    fixture.detectChanges();
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+
+    expect(component.nodosSeleccionados().length).toBe(2);
+  });
 });

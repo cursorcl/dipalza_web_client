@@ -264,11 +264,11 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   }
 
   private ocultarTrayectoria(key: string): void {
+    this.nodosSeleccionados.set([]);
     const layer = this.trayectoriasPorVendedor.get(key);
     if (!layer) return;
     this.historialLayer.removeLayer(layer);
     this.trayectoriasPorVendedor.delete(key);
-    this.nodosSeleccionados.set([]);
   }
 
   private mostrarToast(mensaje: string): void {

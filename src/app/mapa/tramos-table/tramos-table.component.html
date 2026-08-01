@@ -1,0 +1,30 @@
+<div class="tramos-table__header" (click)="alternarColapso()">
+  <span class="tramos-table__titulo">Tramos del recorrido</span>
+  <span class="tramos-table__flecha" [class.tramos-table__flecha--colapsado]="colapsado()">▾</span>
+</div>
+@if (!colapsado()) {
+  <div class="tramos-table__body">
+    <table class="tramos-table__tabla">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Tipo</th>
+          <th>Calle</th>
+          <th>Hora de detención</th>
+          <th>Hora de fin</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.numero) {
+          <tr>
+            <td>{{ fila.numero }}</td>
+            <td>{{ fila.tipo }}</td>
+            <td>{{ fila.calle ?? 'Buscando calle…' }}</td>
+            <td>{{ fila.horaDetencion }}</td>
+            <td>{{ fila.horaFin ?? '—' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

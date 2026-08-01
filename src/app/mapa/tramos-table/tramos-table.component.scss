@@ -1,0 +1,68 @@
+:host {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+    right: 16px;
+    max-height: 240px;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    box-sizing: border-box;
+    z-index: 500;
+}
+
+.tramos-table__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c3e50;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.tramos-table__flecha {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.tramos-table__flecha--colapsado {
+    transform: rotate(-90deg);
+}
+
+.tramos-table__body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.tramos-table__tabla {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.tramos-table__tabla th,
+.tramos-table__tabla td {
+    padding: 6px 10px;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.tramos-table__tabla th {
+    position: sticky;
+    top: 0;
+    background: rgba(255, 255, 255, 0.95);
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.tramos-table__tabla tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}

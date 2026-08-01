@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, Subject } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { TramosTableComponent } from './tramos-table.component';
 import { GeocodificacionService, CalleResponse } from '../geocodificacion.service';
 import { NodoParada } from '../detectar-paradas';
@@ -120,5 +120,56 @@ describe('TramosTableComponent', () => {
 
     expect(component.colapsado()).toBeTrue();
     expect(fixture.nativeElement.querySelector('.tramos-table__body')).toBeNull();
+  });
+
+  it('respuestas atrasadas de una selección anterior no corrompen la selección actual', () => {
+    const sujeto1 = new Subject<CalleResponse>();
+    const sujeto2 = new Subject<CalleResponse>();
+
+    // Primera selección: nodoInicio
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(sujeto1.asObservable());
+    component.nodos = [nodoInicio];
+    component.ngOnChanges({ nodos: {} as any });
+
+    expect(component.filas()[0].calle).toBeNull(); // pendiente
+
+    // Segunda selección: nodoParada (nueva generación)
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(sujeto2.asObservable());
+    component.nodos = [nodoParada];
+    component.ngOnChanges({ nodos: {} as any });
+
+    expect(component.filas()[0].numero).toBe(2); // ahora el array tiene nodoParada
+    expect(component.filas()[0].calle).toBeNull(); // pendiente de sujeto2
+
+    // Resuelve la primera selección (ahora stale)
+    sujeto1.next({ calle: 'Calle Vieja' });
+
+    // La fila no debe cambiar — debe seguir pendiente de sujeto2
+    expect(component.filas()[0].calle).toBeNull();
+
+    // Resuelve la segunda selección (actual)
+    sujeto2.next({ calle: 'Calle Nueva' });
+    expect(component.filas()[0].calle).toBe('Calle Nueva');
+  });
+
+  it('si geocodificacionService falla, muestra "Calle no disponible"', () => {
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(throwError(() => new Error('Network error')));
+    component.nodos = [nodoInicio];
+    component.ngOnChanges({ nodos: {} as any });
+
+    expect(component.filas()[0].calle).toBe('Calle no disponible');
+  });
+
+  it('nodo simultáneamente esInicio y esParada muestra "Parada N" (prioridad a parada)', () => {
+    const nodoInicioParada: NodoParada = {
+      numero: 1, latitud: -33.04, longitud: -71.62,
+      comienzo: '2026-07-31T10:00:00', fin: '2026-07-31T10:20:00',
+      esInicio: true, esFin: false, esParada: true
+    };
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(of({ calle: 'Calle X' }));
+    component.nodos = [nodoInicioParada];
+    component.ngOnChanges({ nodos: {} as any });
+
+    expect(component.filas()[0].tipo).toBe('Parada 1');
   });
 });

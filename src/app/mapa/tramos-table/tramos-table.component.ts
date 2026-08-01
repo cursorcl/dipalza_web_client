@@ -25,9 +25,13 @@ export class TramosTableComponent implements OnChanges {
 
   private geocodificacionService = inject(GeocodificacionService);
   private destroyRef = inject(DestroyRef);
+  private generacionActual = 0;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['nodos']) return;
+
+    this.generacionActual++;
+    const generacion = this.generacionActual;
 
     const filasIniciales: FilaTramo[] = this.nodos.map((nodo, indice) => ({
       numero: nodo.numero,
@@ -41,11 +45,21 @@ export class TramosTableComponent implements OnChanges {
     this.nodos.forEach((nodo, indice) => {
       this.geocodificacionService.obtenerCalle(nodo.latitud, nodo.longitud)
         .pipe(takeUntilDestroyed(this.destroyRef))
-        .subscribe(respuesta => {
-          const actualizado = this.filas().map((fila, i) =>
-            i === indice ? { ...fila, calle: respuesta.calle } : fila
-          );
-          this.filas.set(actualizado);
+        .subscribe({
+          next: respuesta => {
+            if (generacion !== this.generacionActual) return;
+            const actualizado = this.filas().map((fila, i) =>
+              i === indice ? { ...fila, calle: respuesta.calle } : fila
+            );
+            this.filas.set(actualizado);
+          },
+          error: () => {
+            if (generacion !== this.generacionActual) return;
+            const actualizado = this.filas().map((fila, i) =>
+              i === indice ? { ...fila, calle: 'Calle no disponible' } : fila
+            );
+            this.filas.set(actualizado);
+          }
         });
     });
   }

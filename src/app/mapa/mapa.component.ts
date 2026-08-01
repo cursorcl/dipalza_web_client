@@ -36,6 +36,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   toastMensaje = signal<string | null>(null);
   private toastTimeout?: ReturnType<typeof setTimeout>;
 
+  private marcadorResaltado?: L.Marker;
+  private resaltadoTimeout?: ReturnType<typeof setTimeout>;
+
   private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
   private cargando: Set<string> = new Set();
   private desiredSelection: string | null = null; // Tracks the most recently desired selection while loads are in flight
@@ -81,6 +84,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
     if (this.toastTimeout) {
       clearTimeout(this.toastTimeout);
+    }
+    if (this.resaltadoTimeout) {
+      clearTimeout(this.resaltadoTimeout);
     }
     // No desconectamos el WebSocket acá: WSPositionService es un singleton
     // root, se mantiene conectado durante toda la sesión de la app en vez
@@ -184,6 +190,33 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   centrarEnNodoDelMapa(punto: { latitud: number; longitud: number }): void {
     this.map.setView([punto.latitud, punto.longitud], this.map.getZoom());
+    this.resaltarPunto(punto);
+  }
+
+  private resaltarPunto(punto: { latitud: number; longitud: number }): void {
+    if (this.marcadorResaltado) {
+      this.map.removeLayer(this.marcadorResaltado);
+    }
+    if (this.resaltadoTimeout) {
+      clearTimeout(this.resaltadoTimeout);
+    }
+
+    this.marcadorResaltado = L.marker([punto.latitud, punto.longitud], {
+      icon: L.divIcon({
+        html: '<div class="resaltado-punto-pulso"></div>',
+        className: 'custom-resaltado-punto-icon',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+      }),
+      interactive: false
+    }).addTo(this.map);
+
+    this.resaltadoTimeout = setTimeout(() => {
+      if (this.marcadorResaltado) {
+        this.map.removeLayer(this.marcadorResaltado);
+        this.marcadorResaltado = undefined;
+      }
+    }, 1500);
   }
 
   private loadInitialPositions(): void {

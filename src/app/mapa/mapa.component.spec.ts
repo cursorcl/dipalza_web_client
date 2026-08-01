@@ -39,6 +39,39 @@ describe('MapaComponent', () => {
     expect(centro.lng).toBeCloseTo(-71.9, 5);
   });
 
+  it('centrarEnNodoDelMapa agrega un resaltado temporal en el punto, que desaparece después de un tiempo', () => {
+    jasmine.clock().install();
+
+    component.centrarEnNodoDelMapa({ latitud: -34.5, longitud: -71.9 });
+
+    const marcador = (component as any).marcadorResaltado;
+    expect(marcador).toBeTruthy();
+    expect((component as any).map.hasLayer(marcador)).toBeTrue();
+
+    jasmine.clock().tick(1500);
+
+    expect((component as any).marcadorResaltado).toBeUndefined();
+    expect((component as any).map.hasLayer(marcador)).toBeFalse();
+
+    jasmine.clock().uninstall();
+  });
+
+  it('un segundo centrarEnNodoDelMapa antes de que expire el resaltado anterior lo reemplaza (no deja dos marcadores)', () => {
+    jasmine.clock().install();
+
+    component.centrarEnNodoDelMapa({ latitud: -34.5, longitud: -71.9 });
+    const primerMarcador = (component as any).marcadorResaltado;
+
+    jasmine.clock().tick(500);
+    component.centrarEnNodoDelMapa({ latitud: -35.0, longitud: -72.0 });
+    const segundoMarcador = (component as any).marcadorResaltado;
+
+    expect((component as any).map.hasLayer(primerMarcador)).toBeFalse();
+    expect((component as any).map.hasLayer(segundoMarcador)).toBeTrue();
+
+    jasmine.clock().uninstall();
+  });
+
   it('un vendedor del padrón sin posición reportada aparece en la lista como "Sin datos" y offline', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 

@@ -11,6 +11,9 @@
       (vendedorSeleccionado)="centrarEnVendedor($event)"
       (trayectoriaToggled)="toggleTrayectoria({ codigo: $event.vendedorId, tipo: $event.vendedorCodigo, nombre: $event.vendedorNombre })">
     </app-vendor-list>
+    @if (nodosSeleccionados().length > 0) {
+      <app-tramos-table [nodos]="nodosSeleccionados()"></app-tramos-table>
+    }
   </div>
 </div>
 </section>

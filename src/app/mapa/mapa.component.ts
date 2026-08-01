@@ -9,13 +9,14 @@ import { PositionsService } from './positions.service';
 import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
-import { detectarParadas } from './detectar-paradas';
+import { detectarParadas, NodoParada } from './detectar-paradas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
+import { TramosTableComponent } from './tramos-table/tramos-table.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-mapa',
-  imports: [VendorListComponent],
+  imports: [VendorListComponent, TramosTableComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss'
 })
@@ -39,6 +40,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private cargando: Set<string> = new Set();
   private desiredSelection: string | null = null; // Tracks the most recently desired selection while loads are in flight
   seleccionado = signal<string | null>(null);
+  nodosSeleccionados = signal<NodoParada[]>([]);
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -266,6 +268,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     if (!layer) return;
     this.historialLayer.removeLayer(layer);
     this.trayectoriasPorVendedor.delete(key);
+    this.nodosSeleccionados.set([]);
   }
 
   private mostrarToast(mensaje: string): void {
@@ -316,6 +319,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.trayectoriasPorVendedor.set(key, grupo);
 
     this.seleccionado.set(key);
+    this.nodosSeleccionados.set(nodos);
 
     this.ajustarVistaATrayectoriasVisibles();
   }

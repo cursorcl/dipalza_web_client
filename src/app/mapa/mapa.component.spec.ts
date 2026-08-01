@@ -415,4 +415,38 @@ describe('MapaComponent', () => {
     expect(popups).toContain('Parada 2 — 09:10 a 09:25');
     expect(popups).toContain('Última posición — 09:40');
   });
+
+  it('mostrarTrayectoria puebla nodosSeleccionados con los mismos nodos que dibuja en el mapa', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ]);
+    fixture.detectChanges();
+
+    expect(component.nodosSeleccionados().length).toBe(2);
+
+    // El nuevo <app-tramos-table> dispara sus propias solicitudes de geocodificación;
+    // las respondemos para no dejar solicitudes pendientes en el test.
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+  });
+
+  it('al deseleccionar un vendedor, nodosSeleccionados queda vacío', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    fixture.detectChanges();
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    expect(component.nodosSeleccionados()).toEqual([]);
+  });
 });

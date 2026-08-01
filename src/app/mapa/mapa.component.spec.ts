@@ -31,6 +31,47 @@ describe('MapaComponent', () => {
     expect(() => component.centrarEnVendedor('no-existe')).not.toThrow();
   });
 
+  it('centrarEnNodoDelMapa centra el mapa en la latitud/longitud recibida', () => {
+    component.centrarEnNodoDelMapa({ latitud: -34.5, longitud: -71.9 });
+
+    const centro = (component as any).map.getCenter();
+    expect(centro.lat).toBeCloseTo(-34.5, 5);
+    expect(centro.lng).toBeCloseTo(-71.9, 5);
+  });
+
+  it('centrarEnNodoDelMapa agrega un resaltado temporal en el punto, que desaparece después de un tiempo', () => {
+    jasmine.clock().install();
+
+    component.centrarEnNodoDelMapa({ latitud: -34.5, longitud: -71.9 });
+
+    const marcador = (component as any).marcadorResaltado;
+    expect(marcador).toBeTruthy();
+    expect((component as any).map.hasLayer(marcador)).toBeTrue();
+
+    jasmine.clock().tick(1500);
+
+    expect((component as any).marcadorResaltado).toBeUndefined();
+    expect((component as any).map.hasLayer(marcador)).toBeFalse();
+
+    jasmine.clock().uninstall();
+  });
+
+  it('un segundo centrarEnNodoDelMapa antes de que expire el resaltado anterior lo reemplaza (no deja dos marcadores)', () => {
+    jasmine.clock().install();
+
+    component.centrarEnNodoDelMapa({ latitud: -34.5, longitud: -71.9 });
+    const primerMarcador = (component as any).marcadorResaltado;
+
+    jasmine.clock().tick(500);
+    component.centrarEnNodoDelMapa({ latitud: -35.0, longitud: -72.0 });
+    const segundoMarcador = (component as any).marcadorResaltado;
+
+    expect((component as any).map.hasLayer(primerMarcador)).toBeFalse();
+    expect((component as any).map.hasLayer(segundoMarcador)).toBeTrue();
+
+    jasmine.clock().uninstall();
+  });
+
   it('un vendedor del padrón sin posición reportada aparece en la lista como "Sin datos" y offline', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 
@@ -414,5 +455,64 @@ describe('MapaComponent', () => {
     expect(popups).toContain('Inicio — 09:00');
     expect(popups).toContain('Parada 2 — 09:10 a 09:25');
     expect(popups).toContain('Última posición — 09:40');
+  });
+
+  it('mostrarTrayectoria puebla nodosSeleccionados con los mismos nodos que dibuja en el mapa', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ]);
+    fixture.detectChanges();
+
+    expect(component.nodosSeleccionados().length).toBe(2);
+
+    // El nuevo <app-tramos-table> dispara sus propias solicitudes de geocodificación;
+    // las respondemos para no dejar solicitudes pendientes en el test.
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+  });
+
+  it('al deseleccionar un vendedor, nodosSeleccionados queda vacío', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    fixture.detectChanges();
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+
+    expect(component.nodosSeleccionados()).toEqual([]);
+  });
+
+  it('al cambiar a otro vendedor, nodosSeleccionados refleja solo los nodos del nuevo vendedor', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    fixture.detectChanges();
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+
+    expect(component.nodosSeleccionados().length).toBe(1);
+
+    component.toggleTrayectoria({ codigo: '002', tipo: '0', nombre: 'Ana Soto' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 2, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:00:00', latitud: -34.00, longitud: -71.00 },
+      { id: 3, vendedorId: '002', vendedorCodigo: '0', vendedorNombre: 'Ana Soto', fechaHora: '2026-07-26T09:10:00', latitud: -34.10, longitud: -71.10 }
+    ]);
+    fixture.detectChanges();
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`)
+      .forEach(req => req.flush({ calle: 'Calle de prueba' }));
+
+    expect(component.nodosSeleccionados().length).toBe(2);
   });
 });

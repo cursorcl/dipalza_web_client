@@ -9,13 +9,14 @@ import { PositionsService } from './positions.service';
 import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
-import { detectarParadas } from './detectar-paradas';
+import { detectarParadas, NodoParada } from './detectar-paradas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
+import { TramosTableComponent } from './tramos-table/tramos-table.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-mapa',
-  imports: [VendorListComponent],
+  imports: [VendorListComponent, TramosTableComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss'
 })
@@ -35,10 +36,14 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   toastMensaje = signal<string | null>(null);
   private toastTimeout?: ReturnType<typeof setTimeout>;
 
+  private marcadorResaltado?: L.Marker;
+  private resaltadoTimeout?: ReturnType<typeof setTimeout>;
+
   private trayectoriasPorVendedor: Map<string, L.LayerGroup> = new Map();
   private cargando: Set<string> = new Set();
   private desiredSelection: string | null = null; // Tracks the most recently desired selection while loads are in flight
   seleccionado = signal<string | null>(null);
+  nodosSeleccionados = signal<NodoParada[]>([]);
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -79,6 +84,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
     if (this.toastTimeout) {
       clearTimeout(this.toastTimeout);
+    }
+    if (this.resaltadoTimeout) {
+      clearTimeout(this.resaltadoTimeout);
     }
     // No desconectamos el WebSocket acá: WSPositionService es un singleton
     // root, se mantiene conectado durante toda la sesión de la app en vez
@@ -180,6 +188,37 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  centrarEnNodoDelMapa(punto: { latitud: number; longitud: number }): void {
+    this.map.setView([punto.latitud, punto.longitud], this.map.getZoom());
+    this.resaltarPunto(punto);
+  }
+
+  private resaltarPunto(punto: { latitud: number; longitud: number }): void {
+    if (this.marcadorResaltado) {
+      this.map.removeLayer(this.marcadorResaltado);
+    }
+    if (this.resaltadoTimeout) {
+      clearTimeout(this.resaltadoTimeout);
+    }
+
+    this.marcadorResaltado = L.marker([punto.latitud, punto.longitud], {
+      icon: L.divIcon({
+        html: '<div class="resaltado-punto-pulso"></div>',
+        className: 'custom-resaltado-punto-icon',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+      }),
+      interactive: false
+    }).addTo(this.map);
+
+    this.resaltadoTimeout = setTimeout(() => {
+      if (this.marcadorResaltado) {
+        this.map.removeLayer(this.marcadorResaltado);
+        this.marcadorResaltado = undefined;
+      }
+    }, 1500);
+  }
+
   private loadInitialPositions(): void {
     this.positionService.getActualPositions()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -262,6 +301,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   }
 
   private ocultarTrayectoria(key: string): void {
+    this.nodosSeleccionados.set([]);
     const layer = this.trayectoriasPorVendedor.get(key);
     if (!layer) return;
     this.historialLayer.removeLayer(layer);
@@ -316,6 +356,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.trayectoriasPorVendedor.set(key, grupo);
 
     this.seleccionado.set(key);
+    this.nodosSeleccionados.set(nodos);
 
     this.ajustarVistaATrayectoriasVisibles();
   }

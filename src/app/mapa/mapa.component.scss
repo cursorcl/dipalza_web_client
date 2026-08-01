@@ -82,3 +82,29 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     text-shadow: 0 0 2px rgba(0, 0, 0, 0.85);
 }
+
+/* Resaltado temporal al centrar el mapa en un punto (doble clic en la tabla de tramos) */
+::ng-deep .custom-resaltado-punto-icon {
+    background: transparent !important;
+    border: none !important;
+}
+
+::ng-deep .resaltado-punto-pulso {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(52, 152, 219, 0.5);
+    border: 3px solid #3498db;
+    animation: resaltado-pulso 1.5s ease-out;
+}
+
+@keyframes resaltado-pulso {
+    0% {
+        transform: scale(0.3);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.6);
+        opacity: 0;
+    }
+}

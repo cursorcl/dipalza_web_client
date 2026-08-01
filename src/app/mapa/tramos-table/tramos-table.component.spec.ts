@@ -172,4 +172,49 @@ describe('TramosTableComponent', () => {
 
     expect(component.filas()[0].tipo).toBe('Parada 1');
   });
+
+  it('al hacer clic en una fila, la marca como seleccionada', () => {
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(of({ calle: 'Calle X' }));
+    component.nodos = [nodoInicio, nodoParada];
+    component.ngOnChanges({ nodos: {} as any });
+    fixture.detectChanges();
+
+    const filas: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('tbody tr');
+    filas[1].dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    expect(component.numeroSeleccionado()).toBe(2);
+    expect(filas[1].classList.contains('tramos-table__fila--selected')).toBeTrue();
+    expect(filas[0].classList.contains('tramos-table__fila--selected')).toBeFalse();
+  });
+
+  it('al hacer clic en otra fila, la selección se traslada (no queda más de una fila seleccionada)', () => {
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(of({ calle: 'Calle X' }));
+    component.nodos = [nodoInicio, nodoParada];
+    component.ngOnChanges({ nodos: {} as any });
+    fixture.detectChanges();
+
+    const filas: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('tbody tr');
+    filas[0].dispatchEvent(new Event('click'));
+    filas[1].dispatchEvent(new Event('click'));
+    fixture.detectChanges();
+
+    expect(component.numeroSeleccionado()).toBe(2);
+    expect(filas[0].classList.contains('tramos-table__fila--selected')).toBeFalse();
+  });
+
+  it('al hacer doble clic en una fila, emite centrarEnNodo con la latitud y longitud de ese nodo', () => {
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(of({ calle: 'Calle X' }));
+    component.nodos = [nodoInicio, nodoParada];
+    component.ngOnChanges({ nodos: {} as any });
+    fixture.detectChanges();
+
+    const emitidos: { latitud: number; longitud: number }[] = [];
+    component.centrarEnNodo.subscribe(p => emitidos.push(p));
+
+    const filas: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('tbody tr');
+    filas[1].dispatchEvent(new Event('dblclick'));
+
+    expect(emitidos).toEqual([{ latitud: nodoParada.latitud, longitud: nodoParada.longitud }]);
+  });
 });

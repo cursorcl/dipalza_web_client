@@ -31,6 +31,14 @@ describe('MapaComponent', () => {
     expect(() => component.centrarEnVendedor('no-existe')).not.toThrow();
   });
 
+  it('centrarEnNodoDelMapa centra el mapa en la latitud/longitud recibida', () => {
+    component.centrarEnNodoDelMapa({ latitud: -34.5, longitud: -71.9 });
+
+    const centro = (component as any).map.getCenter();
+    expect(centro.lat).toBeCloseTo(-34.5, 5);
+    expect(centro.lng).toBeCloseTo(-71.9, 5);
+  });
+
   it('un vendedor del padrón sin posición reportada aparece en la lista como "Sin datos" y offline', () => {
     const httpMock = TestBed.inject(HttpTestingController);
 

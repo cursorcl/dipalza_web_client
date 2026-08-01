@@ -182,6 +182,10 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  centrarEnNodoDelMapa(punto: { latitud: number; longitud: number }): void {
+    this.map.setView([punto.latitud, punto.longitud], this.map.getZoom());
+  }
+
   private loadInitialPositions(): void {
     this.positionService.getActualPositions()
       .pipe(takeUntilDestroyed(this.destroyRef))

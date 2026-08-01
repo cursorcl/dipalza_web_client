@@ -16,7 +16,10 @@
       </thead>
       <tbody>
         @for (fila of filas(); track fila.numero) {
-          <tr>
+          <tr
+            [class.tramos-table__fila--selected]="isSelected(fila.numero)"
+            (click)="seleccionarFila(fila.numero)"
+            (dblclick)="onDoubleClick(fila.numero)">
             <td>{{ fila.numero }}</td>
             <td>{{ fila.tipo }}</td>
             <td>{{ fila.calle ?? 'Buscando calle…' }}</td>

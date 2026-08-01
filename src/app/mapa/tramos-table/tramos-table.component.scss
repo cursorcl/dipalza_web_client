@@ -63,6 +63,15 @@
     color: #2c3e50;
 }
 
+.tramos-table__tabla tbody tr {
+    cursor: pointer;
+    user-select: none;
+}
+
 .tramos-table__tabla tbody tr:hover {
     background-color: rgba(0, 0, 0, 0.04);
+}
+
+.tramos-table__fila--selected {
+    background-color: rgba(0, 0, 0, 0.08);
 }

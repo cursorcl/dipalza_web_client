@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.2.0...v1.3.0) (2026-08-03)
+
+
+### Features
+
+* dispara sync-frontend.yml automáticamente al liberar una versión ([#18](https://github.com/cursorcl/dipalza_web_client/issues/18)) ([d07dc73](https://github.com/cursorcl/dipalza_web_client/commit/d07dc73e477940ef8517ef490ee72be4ad0013dd))
+
 # [1.2.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.1.0...v1.2.0) (2026-08-02)
 
 

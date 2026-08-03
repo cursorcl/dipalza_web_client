@@ -1,0 +1,16 @@
+name: Test RELEASE_TOKEN scope (temporal)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+    steps:
+      - name: Disparar sync-frontend.yml real en dipalza_server con RELEASE_TOKEN
+        run: |
+          gh api repos/cursorcl/dipalza_server/actions/workflows/sync-frontend.yml/dispatches \
+            -X POST -f ref=main -f "inputs[web_client_version]=v0.0.0-test-cross-repo"
+          echo "Dispatch enviado exitosamente (sin este echo, un 4xx habria detenido el step antes)."

@@ -39,3 +39,7 @@ jobs:
         run: npx semantic-release ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Usado solo por el successCmd de @semantic-release/exec (release.config.js)
+          # para disparar sync-frontend.yml en dipalza_server via la API de Actions —
+          # el GITHUB_TOKEN de arriba no tiene permisos sobre ese repo.
+          DISPATCH_TOKEN: ${{ secrets.RELEASE_TOKEN }}

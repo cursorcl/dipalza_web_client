@@ -43,19 +43,17 @@ export class SigninComponent implements OnInit {
   get f() {
     return this.loginForm.controls;
   }
-  private filtrarCuentas(): RememberedAccount[] {
+  private filterAccounts(): RememberedAccount[] {
     const valor = (this.f['username'].value ?? '').toLowerCase();
     return this.accounts.filter(a => a.username.toLowerCase().startsWith(valor));
   }
 
   onUsernameFocus(): void {
-    this.filteredAccounts = this.filtrarCuentas();
-    this.showSuggestions = this.filteredAccounts.length > 0;
-    this.highlightedIndex = -1;
+    this.onUsernameInput();
   }
 
   onUsernameInput(): void {
-    this.filteredAccounts = this.filtrarCuentas();
+    this.filteredAccounts = this.filterAccounts();
     this.showSuggestions = this.filteredAccounts.length > 0;
     this.highlightedIndex = -1;
   }

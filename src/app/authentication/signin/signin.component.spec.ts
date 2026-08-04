@@ -79,31 +79,141 @@ describe('SigninComponent', () => {
   });
 
   describe('cuentas recordadas', () => {
+    beforeEach(() => {
+      rememberedAccountsServiceMock.getAccounts.and.returnValue([
+        { username: 'juan', password: 'clave123' },
+        { username: 'juana', password: 'clave456' },
+        { username: 'pedro', password: 'clave789' },
+      ]);
+      component.ngOnInit();
+    });
+
     it('debería exponer las cuentas guardadas al inicializar', () => {
-      rememberedAccountsServiceMock.getAccounts.and.returnValue([
-        { username: 'juan', password: 'clave123' },
-      ]);
-      component.ngOnInit();
-      expect(component.accounts).toEqual([{ username: 'juan', password: 'clave123' }]);
+      expect(component.accounts.length).toBe(3);
     });
 
-    it('onAccountSelected debería precargar usuario y clave de la cuenta elegida', () => {
-      rememberedAccountsServiceMock.getAccounts.and.returnValue([
-        { username: 'juan', password: 'clave123' },
-      ]);
-      component.ngOnInit();
-      component.onAccountSelected('juan');
-      expect(component.loginForm.get('username')?.value).toBe('juan');
-      expect(component.loginForm.get('password')?.value).toBe('clave123');
-      expect(component.loginForm.get('remember')?.value).toBe(true);
+    describe('onUsernameFocus', () => {
+      it('debería mostrar todas las cuentas si el input está vacío', () => {
+        component.onUsernameFocus();
+        expect(component.filteredAccounts.length).toBe(3);
+        expect(component.showSuggestions).toBeTrue();
+      });
+
+      it('debería resetear highlightedIndex a -1', () => {
+        component.highlightedIndex = 2;
+        component.onUsernameFocus();
+        expect(component.highlightedIndex).toBe(-1);
+      });
     });
 
-    it('onAccountSelected no debería modificar el formulario si el username no existe', () => {
-      component.ngOnInit();
-      component.loginForm.setValue({ username: 'x', password: 'y', remember: '' });
-      component.onAccountSelected('inexistente');
-      expect(component.loginForm.get('username')?.value).toBe('x');
-      expect(component.loginForm.get('password')?.value).toBe('y');
+    describe('onUsernameInput', () => {
+      it('debería filtrar cuentas por prefijo del username (case-insensitive)', () => {
+        component.loginForm.get('username')?.setValue('JU');
+        component.onUsernameInput();
+        expect(component.filteredAccounts).toEqual([
+          { username: 'juan', password: 'clave123' },
+          { username: 'juana', password: 'clave456' },
+        ]);
+        expect(component.showSuggestions).toBeTrue();
+      });
+
+      it('debería ocultar la lista si no hay coincidencias', () => {
+        component.loginForm.get('username')?.setValue('zzz');
+        component.onUsernameInput();
+        expect(component.filteredAccounts).toEqual([]);
+        expect(component.showSuggestions).toBeFalse();
+      });
+
+      it('debería mostrar todas las cuentas si el input queda vacío', () => {
+        component.loginForm.get('username')?.setValue('');
+        component.onUsernameInput();
+        expect(component.filteredAccounts.length).toBe(3);
+      });
+    });
+
+    describe('selectAccount', () => {
+      it('debería precargar usuario, clave y marcar remember', () => {
+        component.selectAccount({ username: 'juan', password: 'clave123' });
+        expect(component.loginForm.get('username')?.value).toBe('juan');
+        expect(component.loginForm.get('password')?.value).toBe('clave123');
+        expect(component.loginForm.get('remember')?.value).toBe(true);
+      });
+
+      it('debería cerrar la lista de sugerencias', () => {
+        component.showSuggestions = true;
+        component.highlightedIndex = 1;
+        component.selectAccount({ username: 'juan', password: 'clave123' });
+        expect(component.showSuggestions).toBeFalse();
+        expect(component.highlightedIndex).toBe(-1);
+      });
+    });
+
+    describe('onUsernameBlur', () => {
+      it('debería cerrar la lista de sugerencias', () => {
+        component.showSuggestions = true;
+        component.highlightedIndex = 1;
+        component.onUsernameBlur();
+        expect(component.showSuggestions).toBeFalse();
+        expect(component.highlightedIndex).toBe(-1);
+      });
+    });
+
+    describe('onUsernameKeydown', () => {
+      function keyEvent(key: string): KeyboardEvent {
+        return new KeyboardEvent('keydown', { key });
+      }
+
+      beforeEach(() => {
+        component.onUsernameFocus();
+      });
+
+      it('ArrowDown debería avanzar highlightedIndex sin pasar del último elemento', () => {
+        component.onUsernameKeydown(keyEvent('ArrowDown'));
+        expect(component.highlightedIndex).toBe(0);
+        component.onUsernameKeydown(keyEvent('ArrowDown'));
+        component.onUsernameKeydown(keyEvent('ArrowDown'));
+        component.onUsernameKeydown(keyEvent('ArrowDown'));
+        expect(component.highlightedIndex).toBe(2);
+      });
+
+      it('ArrowUp debería retroceder highlightedIndex sin bajar de 0', () => {
+        component.highlightedIndex = 1;
+        component.onUsernameKeydown(keyEvent('ArrowUp'));
+        expect(component.highlightedIndex).toBe(0);
+        component.onUsernameKeydown(keyEvent('ArrowUp'));
+        expect(component.highlightedIndex).toBe(0);
+      });
+
+      it('Enter con una sugerencia resaltada debería seleccionarla y no enviar el formulario', () => {
+        component.highlightedIndex = 1;
+        const event = keyEvent('Enter');
+        spyOn(event, 'preventDefault');
+        component.onUsernameKeydown(event);
+        expect(event.preventDefault).toHaveBeenCalled();
+        expect(component.loginForm.get('username')?.value).toBe('juana');
+      });
+
+      it('Enter sin sugerencia resaltada no debería interceptar el evento', () => {
+        component.highlightedIndex = -1;
+        const event = keyEvent('Enter');
+        spyOn(event, 'preventDefault');
+        component.onUsernameKeydown(event);
+        expect(event.preventDefault).not.toHaveBeenCalled();
+      });
+
+      it('Escape debería cerrar la lista sin seleccionar', () => {
+        component.highlightedIndex = 1;
+        component.onUsernameKeydown(keyEvent('Escape'));
+        expect(component.showSuggestions).toBeFalse();
+        expect(component.highlightedIndex).toBe(-1);
+        expect(component.loginForm.get('username')?.value).toBe('');
+      });
+
+      it('no debería hacer nada si showSuggestions es false', () => {
+        component.showSuggestions = false;
+        component.onUsernameKeydown(keyEvent('ArrowDown'));
+        expect(component.highlightedIndex).toBe(-1);
+      });
     });
   });
 

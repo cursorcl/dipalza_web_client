@@ -22,6 +22,9 @@ export class SigninComponent implements OnInit {
   error = '';
   hide = true;
   accounts: RememberedAccount[] = [];
+  filteredAccounts: RememberedAccount[] = [];
+  showSuggestions = false;
+  highlightedIndex = -1;
   constructor(
     private formBuilder: UntypedFormBuilder,
     private router: Router,
@@ -40,11 +43,57 @@ export class SigninComponent implements OnInit {
   get f() {
     return this.loginForm.controls;
   }
-  onAccountSelected(username: string): void {
-    const account = this.accounts.find(a => a.username === username);
-    if (account) {
-      this.loginForm.patchValue({ username: account.username, password: account.password, remember: true });
+  private filtrarCuentas(): RememberedAccount[] {
+    const valor = (this.f['username'].value ?? '').toLowerCase();
+    return this.accounts.filter(a => a.username.toLowerCase().startsWith(valor));
+  }
+
+  onUsernameFocus(): void {
+    this.filteredAccounts = this.filtrarCuentas();
+    this.showSuggestions = this.filteredAccounts.length > 0;
+    this.highlightedIndex = -1;
+  }
+
+  onUsernameInput(): void {
+    this.filteredAccounts = this.filtrarCuentas();
+    this.showSuggestions = this.filteredAccounts.length > 0;
+    this.highlightedIndex = -1;
+  }
+
+  onUsernameBlur(): void {
+    this.showSuggestions = false;
+    this.highlightedIndex = -1;
+  }
+
+  onUsernameKeydown(event: KeyboardEvent): void {
+    if (!this.showSuggestions || this.filteredAccounts.length === 0) {
+      return;
     }
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.highlightedIndex = Math.min(this.highlightedIndex + 1, this.filteredAccounts.length - 1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+    } else if (event.key === 'Enter') {
+      if (this.highlightedIndex >= 0) {
+        event.preventDefault();
+        this.selectAccount(this.filteredAccounts[this.highlightedIndex]);
+      }
+    } else if (event.key === 'Escape') {
+      this.showSuggestions = false;
+      this.highlightedIndex = -1;
+    }
+  }
+
+  selectAccount(account: RememberedAccount): void {
+    this.loginForm.patchValue({
+      username: account.username,
+      password: account.password,
+      remember: true,
+    });
+    this.showSuggestions = false;
+    this.highlightedIndex = -1;
   }
   onSubmit() {
     this.submitted = true;

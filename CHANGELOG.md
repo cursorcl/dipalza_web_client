@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.3.0...v1.4.0) (2026-08-04)
+
+
+### Features
+
+* autocompletado de cuentas guardadas en el login ([#19](https://github.com/cursorcl/dipalza_web_client/issues/19)) ([abe664c](https://github.com/cursorcl/dipalza_web_client/commit/abe664cc7bd4089b5a93973f615938b41bb58d52))
+
 # [1.3.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.2.0...v1.3.0) (2026-08-03)
 
 

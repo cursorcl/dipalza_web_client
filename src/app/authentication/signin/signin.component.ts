@@ -45,7 +45,7 @@ export class SigninComponent implements OnInit {
   }
   private filterAccounts(): RememberedAccount[] {
     const valor = (this.f['username'].value ?? '').toLowerCase();
-    return this.accounts.filter(a => a.username.toLowerCase().startsWith(valor));
+    return this.accounts.filter(a => (a.username ?? '').toLowerCase().startsWith(valor));
   }
 
   onUsernameFocus(): void {

@@ -129,6 +129,19 @@ describe('SigninComponent', () => {
         component.onUsernameInput();
         expect(component.filteredAccounts.length).toBe(3);
       });
+
+      it('debería tolerar cuentas con username inválido sin lanzar TypeError', () => {
+        component.accounts = [
+          { username: 'juan', password: 'clave123' },
+          { username: undefined, password: 'clave456' } as any,
+          { username: 'pedro', password: 'clave789' },
+        ];
+        component.loginForm.get('username')?.setValue('j');
+        expect(() => component.onUsernameInput()).not.toThrow();
+        expect(component.filteredAccounts).toEqual([
+          { username: 'juan', password: 'clave123' },
+        ]);
+      });
     });
 
     describe('selectAccount', () => {

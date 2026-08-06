@@ -1,6 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'http://ventas.dynalias.net:8080/api',
-  authUrl: 'http://ventas.dynalias.net:8080/auth',
-  wsUrl: 'ws://ventas.dynalias.net:8080/ws-posiciones'
+  apiUrl: 'https://ventas.dynalias.net/api',
+  authUrl: 'https://ventas.dynalias.net/auth',
+  wsUrl: 'wss://ventas.dynalias.net/ws-posiciones'
 };

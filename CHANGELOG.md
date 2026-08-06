@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.4.0...v1.4.1) (2026-08-06)
+
+
+### Bug Fixes
+
+* usa HTTPS para las URLs de producción del backend ([#20](https://github.com/cursorcl/dipalza_web_client/issues/20)) ([e74ae9b](https://github.com/cursorcl/dipalza_web_client/commit/e74ae9bd65faf5f90d926c87612a0b5b313bba11))
+
 # [1.4.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.3.0...v1.4.0) (2026-08-04)
 
 

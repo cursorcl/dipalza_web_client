@@ -1,3 +1,10 @@
+# [1.5.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.4.1...v1.5.0) (2026-08-08)
+
+
+### Features
+
+* agrega cambio de clave autenticado y recuperación por correo ([#22](https://github.com/cursorcl/dipalza_web_client/issues/22)) ([5cbf2a0](https://github.com/cursorcl/dipalza_web_client/commit/5cbf2a002483f78737a9aaabd8c2479adcea0b89))
+
 ## [1.4.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.4.0...v1.4.1) (2026-08-06)
 
 

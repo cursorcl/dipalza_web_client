@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component } from '@angular/core';
 import {
   AbstractControl,
   ReactiveFormsModule,
@@ -20,39 +19,27 @@ function clavesCoincidenValidator(): ValidatorFn {
 }
 
 @Component({
-  selector: 'app-reset',
-  templateUrl: './reset.component.html',
-  styleUrls: ['./reset.component.sass'],
+  selector: 'app-cambiar-clave',
+  templateUrl: './cambiar-clave.component.html',
+  styleUrls: ['./cambiar-clave.component.scss'],
   imports: [ReactiveFormsModule],
 })
-export class ResetComponent implements OnInit {
+export class CambiarClaveComponent {
   form: UntypedFormGroup;
   submitted = false;
   loading = false;
   error = '';
+  success = '';
 
-  constructor(
-    private formBuilder: UntypedFormBuilder,
-    private authService: AuthService,
-    private route: ActivatedRoute,
-    private router: Router,
-  ) {
+  constructor(private formBuilder: UntypedFormBuilder, private authService: AuthService) {
     this.form = this.formBuilder.group(
       {
-        username: ['', Validators.required],
-        codigo: ['', [Validators.required, Validators.pattern(/^\d{6}$/)]],
+        claveActual: ['', Validators.required],
         claveNueva: ['', [Validators.required, Validators.minLength(8)]],
         confirmarClave: ['', Validators.required],
       },
       { validators: clavesCoincidenValidator() },
     );
-  }
-
-  ngOnInit(): void {
-    const username = this.route.snapshot.queryParamMap.get('username');
-    if (username) {
-      this.form.patchValue({ username });
-    }
   }
 
   get f() {
@@ -62,6 +49,7 @@ export class ResetComponent implements OnInit {
   onSubmit() {
     this.submitted = true;
     this.error = '';
+    this.success = '';
 
     if (this.form.invalid) {
       return;
@@ -69,18 +57,20 @@ export class ResetComponent implements OnInit {
 
     this.loading = true;
     this.authService
-      .resetPassword(this.f['username'].value, this.f['codigo'].value, this.f['claveNueva'].value)
+      .changePassword(this.f['claveActual'].value, this.f['claveNueva'].value)
       .subscribe({
         next: () => {
           this.loading = false;
-          this.router.navigate(['/authentication/signin']);
+          this.success = 'Contraseña actualizada correctamente.';
+          this.form.reset();
+          this.submitted = false;
         },
         error: (err) => {
           this.loading = false;
           this.error =
-            err.status === 400
-              ? 'El código ingresado es inválido o venció.'
-              : 'No se pudo restablecer la clave. Intente nuevamente.';
+            err.status === 401
+              ? 'La clave actual es incorrecta.'
+              : 'No se pudo cambiar la clave. Intente nuevamente.';
         },
       });
   }

@@ -1,14 +1,61 @@
-import { Component, OnInit } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
+import { AuthService } from '@core';
 
 @Component({
-    selector: 'app-forgot',
-    templateUrl: './forgot.component.html',
-    styleUrls: ['./forgot.component.sass'],
-    imports: [FormsModule]
+  selector: 'app-forgot',
+  templateUrl: './forgot.component.html',
+  styleUrls: ['./forgot.component.sass'],
+  imports: [ReactiveFormsModule],
 })
-export class ForgotComponent implements OnInit {
-  constructor() {}
+export class ForgotComponent {
+  form: UntypedFormGroup;
+  submitted = false;
+  loading = false;
+  enviado = false;
 
-  ngOnInit(): void {}
+  constructor(
+    private formBuilder: UntypedFormBuilder,
+    private authService: AuthService,
+    private router: Router,
+  ) {
+    this.form = this.formBuilder.group({
+      usernameOrEmail: ['', Validators.required],
+    });
+  }
+
+  get f() {
+    return this.form.controls;
+  }
+
+  onSubmit() {
+    this.submitted = true;
+    if (this.form.invalid) {
+      return;
+    }
+
+    this.loading = true;
+    this.authService.forgotPassword(this.f['usernameOrEmail'].value).subscribe({
+      next: () => {
+        this.loading = false;
+        // Siempre respondemos igual exista o no la cuenta -- no filtramos
+        // qué usuarios/correos están registrados.
+        this.enviado = true;
+      },
+      error: () => {
+        this.loading = false;
+        this.enviado = true;
+      },
+    });
+  }
+
+  irARestablecer() {
+    const valor = (this.f['usernameOrEmail'].value ?? '').toString();
+    this.router.navigate(['/authentication/reset'], {
+      // Reset-password exige el username exacto, no el correo -- solo se
+      // prellena si el usuario ya escribió su username (no un correo).
+      queryParams: valor.includes('@') ? {} : { username: valor },
+    });
+  }
 }

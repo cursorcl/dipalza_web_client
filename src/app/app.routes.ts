@@ -17,6 +17,11 @@ export const APP_ROUTE: Route[] = [
                     import('./mapa/mapa.component').then((m) => m.MapaComponent)
             },
             {
+                path: 'perfil',
+                loadComponent: () =>
+                    import('./perfil/cambiar-clave/cambiar-clave.component').then((m) => m.CambiarClaveComponent)
+            },
+            {
                 path: 'ventas',
                 loadChildren: () =>
                     import('./ventas/ventas.routes').then((m) => m.VENTAS_ROUTES)

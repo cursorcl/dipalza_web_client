@@ -1,0 +1,49 @@
+<div class="row">
+  <div class="col-lg-6">
+    <div class="card">
+      <div class="card-header">
+        <h4>Cambiar contraseña</h4>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label>Clave actual</label>
+            <input type="password" class="form-control" formControlName="claveActual"
+              [class.is-invalid]="submitted && f['claveActual'].errors">
+            @if (submitted && f['claveActual'].errors) {
+              <div class="invalid-feedback">Ingrese su clave actual.</div>
+            }
+          </div>
+          <div class="form-group">
+            <label>Clave nueva</label>
+            <input type="password" class="form-control" formControlName="claveNueva"
+              [class.is-invalid]="submitted && f['claveNueva'].errors">
+            @if (submitted && f['claveNueva'].errors) {
+              <div class="invalid-feedback">La clave nueva debe tener al menos 8 caracteres.</div>
+            }
+          </div>
+          <div class="form-group">
+            <label>Confirmar clave nueva</label>
+            <input type="password" class="form-control" formControlName="confirmarClave"
+              [class.is-invalid]="submitted && (f['confirmarClave'].errors || form.errors?.['clavesNoCoinciden'])">
+            @if (submitted && form.errors?.['clavesNoCoinciden']) {
+              <div class="invalid-feedback">Las claves no coinciden.</div>
+            }
+          </div>
+          @if (error) {
+            <div class="alert alert-danger">{{ error }}</div>
+          }
+          @if (success) {
+            <div class="alert alert-success">{{ success }}</div>
+          }
+          <button type="submit" class="btn btn-primary" [disabled]="loading">
+            @if (loading) {
+              <span class="spinner-border spinner-border-sm me-1"></span>
+            }
+            Guardar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

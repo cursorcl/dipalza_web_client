@@ -5,32 +5,53 @@
         <div class="col-12">
           <div class="card card-primary">
             <div class="card-header">
-              <h4>Reestablecer Clave</h4>
+              <h4>Restablecer clave</h4>
             </div>
             <div class="card-body">
-              <p class="text-muted">Ingrese su nueva clave</p>
-              <form method="POST">
+              <p class="text-muted">Ingrese su usuario, el código recibido por correo y la clave nueva.</p>
+              <form [formGroup]="form" (ngSubmit)="onSubmit()">
                 <div class="form-group">
-                  <label for="email">Correo</label>
-                  <input id="email" type="email" class="form-control" name="email" tabindex="1" required autofocus>
+                  <label for="username">Usuario</label>
+                  <input id="username" type="text" class="form-control" formControlName="username"
+                    [class.is-invalid]="submitted && f['username'].errors" tabindex="1" autofocus>
+                  @if (submitted && f['username'].errors) {
+                    <div class="invalid-feedback">Ingrese su usuario.</div>
+                  }
                 </div>
                 <div class="form-group">
-                  <label for="password">Nueva clave</label>
-                  <input id="password" type="password" class="form-control pwstrength" data-indicator="pwindicator"
-                    name="password" tabindex="2" required>
-                  <div id="pwindicator" class="pwindicator">
-                    <div class="bar"></div>
-                    <div class="label"></div>
-                  </div>
+                  <label for="codigo">Código de 6 dígitos</label>
+                  <input id="codigo" type="text" inputmode="numeric" maxlength="6" class="form-control"
+                    formControlName="codigo" [class.is-invalid]="submitted && f['codigo'].errors" tabindex="2">
+                  @if (submitted && f['codigo'].errors) {
+                    <div class="invalid-feedback">Ingrese el código de 6 dígitos recibido por correo.</div>
+                  }
                 </div>
                 <div class="form-group">
-                  <label for="password-confirm">Confirme clave</label>
-                  <input id="password-confirm" type="password" class="form-control" name="confirm-password" tabindex="2"
-                    required>
+                  <label for="claveNueva">Nueva clave</label>
+                  <input id="claveNueva" type="password" class="form-control" formControlName="claveNueva"
+                    [class.is-invalid]="submitted && f['claveNueva'].errors" tabindex="3">
+                  @if (submitted && f['claveNueva'].errors) {
+                    <div class="invalid-feedback">La clave nueva debe tener al menos 8 caracteres.</div>
+                  }
                 </div>
                 <div class="form-group">
-                  <button type="submit" class="btn btn-primary btn-lg btn-block" tabindex="4">
-                    Reestablecer Clave
+                  <label for="confirmarClave">Confirme clave</label>
+                  <input id="confirmarClave" type="password" class="form-control" formControlName="confirmarClave"
+                    [class.is-invalid]="submitted && (f['confirmarClave'].errors || form.errors?.['clavesNoCoinciden'])"
+                    tabindex="4">
+                  @if (submitted && form.errors?.['clavesNoCoinciden']) {
+                    <div class="invalid-feedback">Las claves no coinciden.</div>
+                  }
+                </div>
+                @if (error) {
+                  <div class="alert alert-danger">{{ error }}</div>
+                }
+                <div class="form-group">
+                  <button type="submit" class="btn btn-primary btn-lg btn-block" [disabled]="loading" tabindex="5">
+                    @if (loading) {
+                      <span class="spinner-border spinner-border-sm me-1"></span>
+                    }
+                    Restablecer clave
                   </button>
                 </div>
               </form>

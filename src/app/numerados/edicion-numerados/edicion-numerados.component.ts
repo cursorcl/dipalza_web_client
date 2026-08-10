@@ -89,6 +89,12 @@ export class EdicionNumeradosComponent implements OnInit {
       estado: this.numeradoEnEdicion?.estado
     };
 
+    if (!payload.codigoProducto) {
+      this.error = 'No se pudo determinar el producto del numerado. Intente nuevamente.';
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
     this.error = '';
     this.success = '';

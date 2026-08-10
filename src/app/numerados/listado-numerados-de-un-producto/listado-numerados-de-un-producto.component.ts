@@ -18,6 +18,7 @@ export class ListadoNumeradosDeUnProductoComponent {
   loadingIndicator = true;
   reorderable = true;
   scrollBarHorizontal = window.innerWidth < 1200;
+  error = '';
 
   numeradoResumenSeleccionado?: NumeradoResumen;
   rows: Numerado[] = [];
@@ -82,12 +83,14 @@ export class ListadoNumeradosDeUnProductoComponent {
     if (!confirm(`¿Eliminar el numerado ${row.numero}?`)) {
       return;
     }
+    this.error = '';
     this.ventaService.eliminarNumerado(row.id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => this.updateSalesByDate(this.numeradoResumenSeleccionado?.codigoProducto ?? ''),
         error: (error: HttpErrorResponse) => {
           console.error('Error al eliminar numerado:', error);
+          this.error = error.error?.message ?? 'No se pudo eliminar el numerado. Intente nuevamente.';
         }
       });
   }

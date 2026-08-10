@@ -66,7 +66,7 @@ export class ListadoNumeradosComponent implements OnInit {
   }
 
   addNumerado() {
-    //this.router.navigate(['/numerados/agregar-numerado']);
+    this.router.navigate(['/numerados/formulario-numerado']);
   }
   updateNumerado(row: NumeradoResumen) {
     console.log(row);

@@ -8,5 +8,9 @@ export const NUMERADOS_ROUTES: Route[] = [
     {
         path: 'detalle-numerado',
         loadComponent: () => import('./listado-numerados-de-un-producto/listado-numerados-de-un-producto.component').then((m) => m.ListadoNumeradosDeUnProductoComponent)
+    },
+    {
+        path: 'formulario-numerado',
+        loadComponent: () => import('./edicion-numerados/edicion-numerados.component').then((m) => m.EdicionNumeradosComponent)
     }
 ];

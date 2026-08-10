@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, Validators, FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { Numerado, NumeradoPayload, Producto } from 'app/ventas/models/model';
 import { VentasService } from 'app/ventas/ventas.service';
 
@@ -18,22 +18,17 @@ interface NumeradoForm {
   styleUrl: './edicion-numerados.component.scss'
 })
 export class EdicionNumeradosComponent implements OnInit {
+  @Input() numeradoEnEdicion: Numerado | null = null;
+  @Input() codigoProductoPreseleccionado: string | null = null;
+
   form: FormGroup;
 
   productos: Producto[] = [];
-  numeradoEnEdicion: Numerado | null = null;
-  codigoProductoPreseleccionado: string | null = null;
 
   loading = false;
   error = '';
-  success = '';
 
-  constructor(private ventasService: VentasService, private router: Router) {
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras?.state;
-    this.numeradoEnEdicion = (state?.['numerado'] as Numerado) ?? null;
-    this.codigoProductoPreseleccionado = (state?.['codigoProductoPreseleccionado'] as string) ?? null;
-
+  constructor(public activeModal: NgbActiveModal, private ventasService: VentasService) {
     this.form = new FormGroup({
       producto: new FormControl<Producto | null>(null, Validators.required),
       numero: new FormControl<number | null>(null, [Validators.required, Validators.min(1)]),
@@ -46,6 +41,15 @@ export class EdicionNumeradosComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // @Input() ya está poblado en este punto (Angular los setea antes de ngOnInit),
+    // por eso esEdicion recién se puede usar de forma confiable acá y no en el constructor.
+    if (!this.esEdicion) {
+      this.form.get('numero')?.disable();
+      this.form.get('producto')?.valueChanges.subscribe((producto: Producto | null) => {
+        this.actualizarNumeroSugerido(producto);
+      });
+    }
+
     this.ventasService.obtainProductos().subscribe({
       next: (productos) => {
         this.productos = productos.filter(p => p.numbered === true);
@@ -74,6 +78,32 @@ export class EdicionNumeradosComponent implements OnInit {
     }
   }
 
+  private actualizarNumeroSugerido(producto: Producto | null): void {
+    const numeroControl = this.form.get('numero');
+    if (!producto) {
+      numeroControl?.setValue(null);
+      return;
+    }
+    this.ventasService.obtainNumerados(producto.articulo).subscribe({
+      next: (numerados) => {
+        numeroControl?.setValue(this.calcularSiguienteNumero(numerados));
+      },
+      error: () => {
+        numeroControl?.setValue(null);
+        this.error = 'No se pudo calcular el número disponible para este producto.';
+      }
+    });
+  }
+
+  private calcularSiguienteNumero(numerados: Numerado[]): number {
+    const usados = new Set(numerados.map(n => n.numero));
+    let candidato = 1;
+    while (usados.has(candidato)) {
+      candidato++;
+    }
+    return candidato;
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -95,9 +125,14 @@ export class EdicionNumeradosComponent implements OnInit {
       return;
     }
 
+    if (payload.numero === null || payload.numero === undefined) {
+      this.error = 'No se pudo asignar un número disponible para este producto. Intente nuevamente.';
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
     this.error = '';
-    this.success = '';
 
     const peticion = this.esEdicion
       ? this.ventasService.actualizarNumerado(payload)
@@ -106,8 +141,7 @@ export class EdicionNumeradosComponent implements OnInit {
     peticion.subscribe({
       next: () => {
         this.loading = false;
-        this.success = this.esEdicion ? 'Numerado actualizado correctamente.' : 'Numerado creado correctamente.';
-        this.router.navigate(['/numerados']);
+        this.activeModal.close(true);
       },
       error: (err: HttpErrorResponse) => {
         this.loading = false;

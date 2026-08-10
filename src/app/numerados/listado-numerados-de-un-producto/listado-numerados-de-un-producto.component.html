@@ -57,22 +57,10 @@
                             {{row.peso}}
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Piezas Disponibles" headerClass="align-center-header"
-                        cellClass="align-right-cell" prop="piezas">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            {{row.piezas}}
-                        </ng-template>
-                    </ngx-datatable-column>
                     <ngx-datatable-column name="" [sortable]="false" headerClass="align-center-header"
                         cellClass="align-center-cell">
                         <ng-template let-value="value" let-row="row" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>
-                            <a class="msr-2 h-auto tblViewBtn" style="cursor: pointer;">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                            <a class="msr-2 h-auto tblEditBtn" (click)="editarNumerado(row)" style="cursor: pointer;">
-                                <i class="fas fa-plus"></i>
-                            </a>
                             <a class="msr-2 h-auto tblDelBtn" (click)="eliminarNumerado(row)" style="cursor: pointer;">
                                 <i class="fas fa-minus"></i>
                             </a>

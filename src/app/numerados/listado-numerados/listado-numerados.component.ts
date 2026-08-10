@@ -5,6 +5,8 @@ import { Numerado, NumeradoResumen } from 'app/ventas/models/model';
 import { VentasService } from 'app/ventas/ventas.service';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Router, RouterLink } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { EdicionNumeradosComponent } from '../edicion-numerados/edicion-numerados.component';
 
 @Component({
   selector: 'app-listado-numerados',
@@ -25,6 +27,7 @@ export class ListadoNumeradosComponent implements OnInit {
   private ventaService = inject(VentasService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+  private modalService = inject(NgbModal);
 
 
   ngOnInit(): void {
@@ -66,18 +69,18 @@ export class ListadoNumeradosComponent implements OnInit {
   }
 
   addNumerado() {
-    this.router.navigate(['/numerados/formulario-numerado']);
+    this.abrirDialogoNumerado();
   }
-  updateNumerado(row: NumeradoResumen) {
-    console.log(row);
-    this.router.navigate(['/numerados/detalle-numerado'], {
-      state: { numeradoResumenSeleccionado: row }
-    });
+
+  agregarNumerado(row: NumeradoResumen) {
+    this.abrirDialogoNumerado(row.codigoProducto);
   }
-  deleteNumerado(row: NumeradoResumen) {
-    console.log(row);
-    this.router.navigate(['/numerados/detalle-numerado'], {
-      state: { numeradoResumenSeleccionado: row }
-    });
+
+  private abrirDialogoNumerado(codigoProductoPreseleccionado?: string) {
+    const modalRef = this.modalService.open(EdicionNumeradosComponent);
+    if (codigoProductoPreseleccionado) {
+      modalRef.componentInstance.codigoProductoPreseleccionado = codigoProductoPreseleccionado;
+    }
+    modalRef.closed.subscribe(() => this.updateSalesByDate());
   }
 }

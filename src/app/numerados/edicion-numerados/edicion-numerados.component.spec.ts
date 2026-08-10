@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
-import { provideRouter } from '@angular/router';
+import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 
 import { EdicionNumeradosComponent } from './edicion-numerados.component';
 
@@ -12,7 +12,7 @@ describe('EdicionNumeradosComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [EdicionNumeradosComponent],
-      providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])]
+      providers: [provideHttpClient(), provideHttpClientTesting(), NgbActiveModal]
     })
     .compileComponents();
 
@@ -25,7 +25,7 @@ describe('EdicionNumeradosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('arranca en modo alta cuando no hay estado de navegación', () => {
+  it('arranca en modo alta cuando no hay numerado en edición', () => {
     expect(component.esEdicion).toBeFalse();
   });
 });

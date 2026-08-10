@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { Numerado, NumeradoResumen, Venta, VentaDetalle, VentaFacturaResultado } from './models/model';
+import { Numerado, NumeradoPayload, NumeradoResumen, Producto, Venta, VentaDetalle, VentaFacturaResultado } from './models/model';
 import { Observable } from 'rxjs';
 import { FiltroVentas } from './models/other-models';
 
@@ -16,6 +16,8 @@ export class VentasService {
   private urlFacturar = `${environment.apiUrl}/facturacion`;
   private urlNumeradosByProdcut = `${environment.apiUrl}/numerados/byProduct`;
   private urlNumeradosResumen = `${environment.apiUrl}/numerados/resumen`;
+  private urlNumerados = `${environment.apiUrl}/numerados`;
+  private urlProductos = `${environment.apiUrl}/productos`;
   constructor(private httpClient: HttpClient) { }
 
 
@@ -64,5 +66,21 @@ export class VentasService {
   obtainNumeradosResumen(): Observable<NumeradoResumen[]> {
     const url = `${this.urlNumeradosResumen}`;
     return this.httpClient.get<NumeradoResumen[]>(url);
+  }
+
+  crearNumerado(payload: NumeradoPayload): Observable<Numerado> {
+    return this.httpClient.post<Numerado>(this.urlNumerados, payload);
+  }
+
+  actualizarNumerado(payload: NumeradoPayload): Observable<Numerado> {
+    return this.httpClient.put<Numerado>(this.urlNumerados, payload);
+  }
+
+  eliminarNumerado(id: number): Observable<void> {
+    return this.httpClient.delete<void>(this.urlNumerados, { body: { id } });
+  }
+
+  obtainProductos(): Observable<Producto[]> {
+    return this.httpClient.get<Producto[]>(this.urlProductos);
   }
 }

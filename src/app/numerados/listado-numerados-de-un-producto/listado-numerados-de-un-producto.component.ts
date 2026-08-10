@@ -5,6 +5,9 @@ import { Numerado, NumeradoResumen } from 'app/ventas/models/model';
 import { VentasService } from 'app/ventas/ventas.service';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Router, RouterLink } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { EdicionNumeradosComponent } from '../edicion-numerados/edicion-numerados.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-listado-numerados-de-un-producto',
@@ -18,6 +21,7 @@ export class ListadoNumeradosDeUnProductoComponent {
   loadingIndicator = true;
   reorderable = true;
   scrollBarHorizontal = window.innerWidth < 1200;
+  error = '';
 
   numeradoResumenSeleccionado?: NumeradoResumen;
   rows: Numerado[] = [];
@@ -26,6 +30,7 @@ export class ListadoNumeradosDeUnProductoComponent {
   private ventaService = inject(VentasService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+  private modalService = inject(NgbModal);
 
   constructor() {
     const navigation = this.router.getCurrentNavigation();
@@ -64,6 +69,38 @@ export class ListadoNumeradosDeUnProductoComponent {
     this.rows = this.temp.filter(function (d: Numerado) {
       return d.nombreProducto.toLowerCase().indexOf(val) !== -1 || !val;
     }) || [];
+  }
+
+  agregarNumerado() {
+    const modalRef = this.modalService.open(EdicionNumeradosComponent);
+    modalRef.componentInstance.codigoProductoPreseleccionado = this.numeradoResumenSeleccionado?.codigoProducto;
+    modalRef.closed.subscribe(() => this.updateSalesByDate(this.numeradoResumenSeleccionado?.codigoProducto ?? ''));
+  }
+
+  eliminarNumerado(row: Numerado) {
+    Swal.fire({
+      title: 'Eliminar numerado',
+      text: `¿Eliminar el numerado ${row.numero} de ${row.nombreProducto} (${row.peso} kg)?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'No',
+      confirmButtonColor: '#d33'
+    }).then((result) => {
+      if (!result.isConfirmed) {
+        return;
+      }
+      this.error = '';
+      this.ventaService.eliminarNumerado(row.id)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: () => this.updateSalesByDate(this.numeradoResumenSeleccionado?.codigoProducto ?? ''),
+          error: (error: HttpErrorResponse) => {
+            console.error('Error al eliminar numerado:', error);
+            this.error = error.error?.message ?? 'No se pudo eliminar el numerado. Intente nuevamente.';
+          }
+        });
+    });
   }
 
 }

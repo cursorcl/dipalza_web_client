@@ -66,4 +66,30 @@ export class ListadoNumeradosDeUnProductoComponent {
     }) || [];
   }
 
+  agregarNumerado() {
+    this.router.navigate(['/numerados/formulario-numerado'], {
+      state: { codigoProductoPreseleccionado: this.numeradoResumenSeleccionado?.codigoProducto }
+    });
+  }
+
+  editarNumerado(row: Numerado) {
+    this.router.navigate(['/numerados/formulario-numerado'], {
+      state: { numerado: row }
+    });
+  }
+
+  eliminarNumerado(row: Numerado) {
+    if (!confirm(`¿Eliminar el numerado ${row.numero}?`)) {
+      return;
+    }
+    this.ventaService.eliminarNumerado(row.id)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.updateSalesByDate(this.numeradoResumenSeleccionado?.codigoProducto ?? ''),
+        error: (error: HttpErrorResponse) => {
+          console.error('Error al eliminar numerado:', error);
+        }
+      });
+  }
+
 }

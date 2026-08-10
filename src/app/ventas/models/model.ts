@@ -88,6 +88,14 @@ export interface Numerado {
     actualizadoEn: string;
 }
 
+export interface NumeradoPayload {
+    id?: number;
+    codigoProducto: string;
+    numero: number;
+    peso: number;
+    estado?: string;
+}
+
 export interface NumeradoResumen {
     codigoProducto: string;
     nombreProducto: string;

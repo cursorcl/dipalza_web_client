@@ -1,3 +1,10 @@
+# [1.6.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.5.0...v1.6.0) (2026-08-10)
+
+
+### Features
+
+* implementa el formulario de alta/edición de productos numerados ([#23](https://github.com/cursorcl/dipalza_web_client/issues/23)) ([52c0826](https://github.com/cursorcl/dipalza_web_client/commit/52c0826bbfe9d6711048c13d59c0c6bf097b4604))
+
 # [1.5.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.4.1...v1.5.0) (2026-08-08)
 
 

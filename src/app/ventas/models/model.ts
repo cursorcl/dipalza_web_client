@@ -121,3 +121,11 @@ export interface Producto {
     costo: number;
     numerados?: Numerado[];
 }
+
+export interface ProductoElegibleNumerado {
+    codigoProducto: string;
+    nombreProducto: string;
+    stock: number;
+    piezas: number;
+    tieneRegistrosAsociados: boolean;
+}

@@ -1,0 +1,70 @@
+<div class="modal-header">
+  <h5 class="modal-title">Gestionar productos numerados</h5>
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  @if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  <div class="form-group d-flex gap-2 align-items-end mb-3">
+    <div class="flex-grow-1">
+      <label>Agregar producto (busque por código o nombre)</label>
+      <input type="text" class="form-control" [formControl]="buscadorControl"
+        [ngbTypeahead]="buscarProducto" [resultFormatter]="formatearProducto"
+        [inputFormatter]="formatearProducto" (selectItem)="seleccionarProducto($event)"
+        placeholder="Ej: ART001 o Queso" />
+    </div>
+    <button type="button" class="btn btn-primary" [disabled]="!productoSeleccionado || agregando"
+      (click)="agregarProducto()">
+      @if (agregando) {
+        <span class="spinner-border spinner-border-sm me-1"></span>
+      }
+      Agregar
+    </button>
+  </div>
+
+  <ngx-datatable class="material" [rows]="rows" [loadingIndicator]="loading"
+    columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="7"
+    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
+    <ngx-datatable-column [width]="150" name="Código" headerClass="align-center-header" prop="codigoProducto">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <div>{{ row.codigoProducto }}</div>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="Nombre" headerClass="align-center-header" prop="nombreProducto">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <div>{{ row.nombreProducto }}</div>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column [width]="110" name="Piezas" headerClass="align-center-header"
+      cellClass="align-right-cell" prop="piezas">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        {{ row.piezas }}
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column [width]="140" name="Stock (peso)" headerClass="align-center-header"
+      cellClass="align-center-cell" prop="stock">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        {{ row.stock }}
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="" [width]="80" [sortable]="false" headerClass="align-center-header"
+      cellClass="align-center-cell">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <a class="msr-2 h-auto tblDelBtn"
+          [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
+          [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
+          [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
+          (click)="quitarProducto(row)">
+          <i class="fas fa-trash"></i>
+        </a>
+      </ng-template>
+    </ngx-datatable-column>
+  </ngx-datatable>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cerrar</button>
+</div>

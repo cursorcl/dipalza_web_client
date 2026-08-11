@@ -36,7 +36,7 @@
             <th>Nombre</th>
             <th>Piezas</th>
             <th>Stock (peso)</th>
-            <th></th>
+            <th class="text-center"></th>
           </tr>
         </thead>
         <tbody>
@@ -46,8 +46,8 @@
               <td>{{ row.nombreProducto }}</td>
               <td>{{ row.piezas }}</td>
               <td>{{ row.stock }}</td>
-              <td>
-                <a class="tblDelBtn"
+              <td class="text-center">
+                <a class="msr-2 h-auto tblDelBtn"
                   [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
                   [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
                   [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"

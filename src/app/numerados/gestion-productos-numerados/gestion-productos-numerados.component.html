@@ -25,46 +25,44 @@
     </button>
   </div>
 
-  @if (loading) {
-    <div>Cargando...</div>
-  } @else {
-    <div class="tabla-productos-numerados-scroll">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Código</th>
-            <th>Nombre</th>
-            <th>Piezas</th>
-            <th>Stock (peso)</th>
-            <th class="text-center"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (row of rows; track row.codigoProducto) {
-            <tr>
-              <td>{{ row.codigoProducto }}</td>
-              <td>{{ row.nombreProducto }}</td>
-              <td>{{ row.piezas }}</td>
-              <td>{{ row.stock }}</td>
-              <td class="text-center">
-                <a class="msr-2 h-auto tblDelBtn"
-                  [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
-                  [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
-                  [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
-                  (click)="quitarProducto(row)">
-                  <i class="fas fa-trash"></i>
-                </a>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="5">No hay productos numerados.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  }
+  <ngx-datatable class="material" [rows]="rows" [loadingIndicator]="loading"
+    columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
+    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
+    <ngx-datatable-column [width]="150" name="Código" headerClass="align-center-header" prop="codigoProducto">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <div>{{ row.codigoProducto }}</div>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="Nombre" headerClass="align-center-header" prop="nombreProducto">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <div>{{ row.nombreProducto }}</div>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column [width]="110" name="Piezas" headerClass="align-center-header"
+      cellClass="align-right-cell" prop="piezas">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        {{ row.piezas }}
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column [width]="140" name="Stock (peso)" headerClass="align-center-header"
+      cellClass="align-center-cell" prop="stock">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        {{ row.stock }}
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="" [width]="80" [sortable]="false" headerClass="align-center-header"
+      cellClass="align-center-cell">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <a class="msr-2 h-auto tblDelBtn"
+          [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
+          [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
+          [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
+          (click)="quitarProducto(row)">
+          <i class="fas fa-trash"></i>
+        </a>
+      </ng-template>
+    </ngx-datatable-column>
+  </ngx-datatable>
 </div>
 
 <div class="modal-footer">

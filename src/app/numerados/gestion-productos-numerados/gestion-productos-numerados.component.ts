@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 import { NgbActiveModal, NgbTypeahead, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Observable, OperatorFunction, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import Swal from 'sweetalert2';
 import { Producto, ProductoElegibleNumerado } from 'app/ventas/models/model';
@@ -9,7 +10,7 @@ import { VentasService } from 'app/ventas/ventas.service';
 
 @Component({
   selector: 'app-gestion-productos-numerados',
-  imports: [ReactiveFormsModule, NgbTypeahead],
+  imports: [ReactiveFormsModule, NgbTypeahead, NgxDatatableModule],
   templateUrl: './gestion-productos-numerados.component.html',
   styleUrl: './gestion-productos-numerados.component.scss'
 })
@@ -22,6 +23,8 @@ export class GestionProductosNumeradosComponent implements OnInit {
   loading = false;
   agregando = false;
   error = '';
+  reorderable = true;
+  scrollBarHorizontal = window.innerWidth < 1200;
 
   constructor(public activeModal: NgbActiveModal, private ventasService: VentasService) {}
 

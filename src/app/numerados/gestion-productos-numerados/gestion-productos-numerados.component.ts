@@ -17,7 +17,7 @@ export class GestionProductosNumeradosComponent implements OnInit {
   rows: ProductoElegibleNumerado[] = [];
   productosDisponibles: Producto[] = [];
   productoSeleccionado: Producto | null = null;
-  buscadorControl = new FormControl('');
+  buscadorControl = new FormControl<string | Producto | null>('');
 
   loading = false;
   agregando = false;
@@ -28,6 +28,11 @@ export class GestionProductosNumeradosComponent implements OnInit {
   ngOnInit(): void {
     this.cargarProductosElegibles();
     this.cargarProductosDisponibles();
+    this.buscadorControl.valueChanges.subscribe(v => {
+      if (v !== this.productoSeleccionado) {
+        this.productoSeleccionado = null;
+      }
+    });
   }
 
   buscarProducto: OperatorFunction<string, readonly Producto[]> = (text$: Observable<string>) =>

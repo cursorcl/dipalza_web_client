@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { environment } from 'environments/environment';
+import Swal from 'sweetalert2';
 
 import { GestionProductosNumeradosComponent } from './gestion-productos-numerados.component';
 import { Producto, ProductoElegibleNumerado } from 'app/ventas/models/model';
@@ -70,5 +71,55 @@ describe('GestionProductosNumeradosComponent', () => {
     httpMock.expectOne(`${environment.apiUrl}/productos`).flush([]);
 
     expect(component.productoSeleccionado).toBeNull();
+  });
+
+  it('quita un producto confirmado y refresca ambas listas', () => {
+    spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: true } as any);
+
+    component.quitarProducto(productoElegible);
+
+    return fixture.whenStable().then(() => {
+      const req = httpMock.expectOne(`${environment.apiUrl}/numerados/productos-elegibles/${productoElegible.codigoProducto}`);
+      expect(req.request.method).toBe('DELETE');
+      req.flush(null);
+
+      httpMock.expectOne(`${environment.apiUrl}/numerados/productos-elegibles`).flush([]);
+      httpMock.expectOne(`${environment.apiUrl}/productos`).flush([]);
+    });
+  });
+
+  it('no quita el producto si el usuario cancela la confirmación', () => {
+    spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: false } as any);
+
+    component.quitarProducto(productoElegible);
+
+    return fixture.whenStable().then(() => {
+      httpMock.expectNone(`${environment.apiUrl}/numerados/productos-elegibles/${productoElegible.codigoProducto}`);
+    });
+  });
+
+  it('muestra el mensaje de error del backend si falla el DELETE', () => {
+    spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: true } as any);
+
+    component.quitarProducto(productoElegible);
+
+    return fixture.whenStable().then(() => {
+      const req = httpMock.expectOne(`${environment.apiUrl}/numerados/productos-elegibles/${productoElegible.codigoProducto}`);
+      req.flush({ message: 'No se puede quitar: el producto tiene numerados asociados' }, { status: 400, statusText: 'Bad Request' });
+
+      expect(component.error).toBe('No se puede quitar: el producto tiene numerados asociados');
+    });
+  });
+
+  it('muestra un mensaje genérico si falla el PUT sin body de error', () => {
+    const producto: Producto = { articulo: 'ART003', descripcion: 'Salame' } as unknown as Producto;
+    component.productoSeleccionado = producto;
+
+    component.agregarProducto();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/numerados/productos-elegibles/ART003`);
+    req.flush('error', { status: 500, statusText: 'Server Error' });
+
+    expect(component.error).toBe('No se pudo agregar el producto a la lista de numerados.');
   });
 });

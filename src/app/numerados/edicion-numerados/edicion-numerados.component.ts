@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { ReactiveFormsModule, FormGroup, Validators, FormControl, AbstractControl, ValidationErrors } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgbActiveModal, NgbTypeahead } from '@ng-bootstrap/ng-bootstrap';
@@ -26,12 +26,15 @@ export class EdicionNumeradosComponent implements OnInit {
   @Input() numeradoEnEdicion: Numerado | null = null;
   @Input() codigoProductoPreseleccionado: string | null = null;
 
+  @ViewChild('pesoInput') pesoInputRef?: ElementRef<HTMLInputElement>;
+
   form: FormGroup;
 
   productos: Producto[] = [];
 
   loading = false;
   error = '';
+  guardadosCount = 0;
 
   constructor(public activeModal: NgbActiveModal, private ventasService: VentasService) {
     this.form = new FormGroup({
@@ -164,7 +167,12 @@ export class EdicionNumeradosComponent implements OnInit {
     peticion.subscribe({
       next: () => {
         this.loading = false;
-        this.activeModal.close(true);
+        if (this.esEdicion) {
+          this.activeModal.close(true);
+          return;
+        }
+        this.guardadosCount++;
+        this.prepararSiguienteNumerado(producto);
       },
       error: (err: HttpErrorResponse) => {
         this.loading = false;
@@ -173,5 +181,27 @@ export class EdicionNumeradosComponent implements OnInit {
           : 'No se pudo guardar el numerado. Intente nuevamente.';
       }
     });
+  }
+
+  /**
+   * Tras guardar un alta, deja el diálogo abierto con el mismo producto
+   * seleccionado y el próximo número sugerido, para poder cargar varios
+   * numerados seguidos del mismo producto sin reabrir el diálogo.
+   */
+  private prepararSiguienteNumerado(producto: Producto | null): void {
+    this.form.get('peso')?.reset(null);
+    this.form.get('peso')?.markAsUntouched();
+    if (producto) {
+      this.actualizarNumeroSugerido(producto);
+    }
+    setTimeout(() => this.pesoInputRef?.nativeElement.focus());
+  }
+
+  cerrar(): void {
+    if (this.guardadosCount > 0) {
+      this.activeModal.close(true);
+    } else {
+      this.activeModal.dismiss();
+    }
   }
 }

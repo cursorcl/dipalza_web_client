@@ -68,7 +68,7 @@ export class GestionProductosNumeradosComponent implements OnInit {
         this.agregando = false;
         this.productoSeleccionado = null;
         this.buscadorControl.setValue('');
-        this.cargarProductosElegibles();
+        this.cargarProductosElegibles(false);
         this.cargarProductosDisponibles();
       },
       error: (err: HttpErrorResponse) => {
@@ -99,7 +99,7 @@ export class GestionProductosNumeradosComponent implements OnInit {
       this.error = '';
       this.ventasService.quitarProductoElegibleNumerado(row.codigoProducto).subscribe({
         next: () => {
-          this.cargarProductosElegibles();
+          this.cargarProductosElegibles(false);
           this.cargarProductosDisponibles();
         },
         error: (err: HttpErrorResponse) => {
@@ -111,8 +111,10 @@ export class GestionProductosNumeradosComponent implements OnInit {
     });
   }
 
-  private cargarProductosElegibles(): void {
-    this.loading = true;
+  private cargarProductosElegibles(mostrarCarga = true): void {
+    if (mostrarCarga) {
+      this.loading = true;
+    }
     this.ventasService.obtainProductosElegiblesNumerado().subscribe({
       next: (rows) => {
         this.rows = rows;

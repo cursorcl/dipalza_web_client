@@ -7,6 +7,7 @@ import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { Router, RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { EdicionNumeradosComponent } from '../edicion-numerados/edicion-numerados.component';
+import { GestionProductosNumeradosComponent } from '../gestion-productos-numerados/gestion-productos-numerados.component';
 
 @Component({
   selector: 'app-listado-numerados',
@@ -74,6 +75,10 @@ export class ListadoNumeradosComponent implements OnInit {
 
   agregarNumerado(row: NumeradoResumen) {
     this.abrirDialogoNumerado(row.codigoProducto);
+  }
+
+  gestionarProductosNumerados() {
+    this.modalService.open(GestionProductosNumeradosComponent, { size: 'lg' });
   }
 
   private abrirDialogoNumerado(codigoProductoPreseleccionado?: string) {

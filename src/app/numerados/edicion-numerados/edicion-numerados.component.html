@@ -7,13 +7,10 @@
   <form [formGroup]="form" (ngSubmit)="submit()">
 
     <div class="form-group">
-      <label>Seleccione producto</label>
-      <select formControlName="producto" class="form-control">
-        <option [ngValue]="null">-- Seleccione --</option>
-        @for (p of productos; track p.articulo) {
-          <option [ngValue]="p">{{ p.descripcion }}</option>
-        }
-      </select>
+      <label>Seleccione producto (busque por código o nombre)</label>
+      <input type="text" formControlName="producto" class="form-control"
+        [ngbTypeahead]="buscarProducto" [resultFormatter]="formatearProducto"
+        [inputFormatter]="formatearProducto" placeholder="Ej: ART001 o Queso" />
       @if (form.get('producto')?.touched && form.get('producto')?.invalid) {
         <small style="color:red">Debe seleccionar un producto</small>
       }

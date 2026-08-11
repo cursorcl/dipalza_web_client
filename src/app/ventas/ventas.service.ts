@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { Numerado, NumeradoPayload, NumeradoResumen, Producto, Venta, VentaDetalle, VentaFacturaResultado } from './models/model';
+import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, VentaFacturaResultado } from './models/model';
 import { Observable } from 'rxjs';
 import { FiltroVentas } from './models/other-models';
 
@@ -18,6 +18,7 @@ export class VentasService {
   private urlNumeradosResumen = `${environment.apiUrl}/numerados/resumen`;
   private urlNumerados = `${environment.apiUrl}/numerados`;
   private urlProductos = `${environment.apiUrl}/productos`;
+  private urlProductosElegibles = `${environment.apiUrl}/numerados/productos-elegibles`;
   constructor(private httpClient: HttpClient) { }
 
 
@@ -82,5 +83,17 @@ export class VentasService {
 
   obtainProductos(): Observable<Producto[]> {
     return this.httpClient.get<Producto[]>(this.urlProductos);
+  }
+
+  obtainProductosElegiblesNumerado(): Observable<ProductoElegibleNumerado[]> {
+    return this.httpClient.get<ProductoElegibleNumerado[]>(this.urlProductosElegibles);
+  }
+
+  agregarProductoElegibleNumerado(articulo: string): Observable<void> {
+    return this.httpClient.put<void>(`${this.urlProductosElegibles}/${articulo}`, {});
+  }
+
+  quitarProductoElegibleNumerado(articulo: string): Observable<void> {
+    return this.httpClient.delete<void>(`${this.urlProductosElegibles}/${articulo}`);
   }
 }

@@ -1,0 +1,70 @@
+<div class="modal-header">
+  <h5 class="modal-title">Gestionar productos numerados</h5>
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  @if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  <div class="form-group d-flex gap-2 align-items-end mb-3">
+    <div class="flex-grow-1">
+      <label>Agregar producto (busque por código o nombre)</label>
+      <input type="text" class="form-control" [formControl]="buscadorControl"
+        [ngbTypeahead]="buscarProducto" [resultFormatter]="formatearProducto"
+        [inputFormatter]="formatearProducto" (selectItem)="seleccionarProducto($event)"
+        placeholder="Ej: ART001 o Queso" />
+    </div>
+    <button type="button" class="btn btn-primary" [disabled]="!productoSeleccionado || agregando"
+      (click)="agregarProducto()">
+      @if (agregando) {
+        <span class="spinner-border spinner-border-sm me-1"></span>
+      }
+      Agregar
+    </button>
+  </div>
+
+  @if (loading) {
+    <div>Cargando...</div>
+  } @else {
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Piezas</th>
+          <th>Stock (peso)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows; track row.codigoProducto) {
+          <tr>
+            <td>{{ row.codigoProducto }}</td>
+            <td>{{ row.nombreProducto }}</td>
+            <td>{{ row.piezas }}</td>
+            <td>{{ row.stock }}</td>
+            <td>
+              <a class="tblDelBtn"
+                [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
+                [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
+                [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
+                (click)="quitarProducto(row)">
+                <i class="fas fa-trash"></i>
+              </a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5">No hay productos numerados.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cerrar</button>
+</div>

@@ -78,7 +78,7 @@ export class ListadoNumeradosComponent implements OnInit {
   }
 
   gestionarProductosNumerados() {
-    this.modalService.open(GestionProductosNumeradosComponent, { size: 'lg' });
+    this.modalService.open(GestionProductosNumeradosComponent, { size: 'lg', scrollable: true });
   }
 
   private abrirDialogoNumerado(codigoProductoPreseleccionado?: string) {

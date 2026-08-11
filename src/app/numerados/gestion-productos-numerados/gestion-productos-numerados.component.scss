@@ -1,0 +1,15 @@
+.tabla-productos-numerados-scroll {
+  max-height: 50vh;
+  overflow-y: auto;
+
+  table {
+    margin-bottom: 0;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 1;
+  }
+}

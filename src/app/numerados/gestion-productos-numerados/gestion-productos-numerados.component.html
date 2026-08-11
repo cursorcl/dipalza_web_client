@@ -28,40 +28,42 @@
   @if (loading) {
     <div>Cargando...</div>
   } @else {
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Nombre</th>
-          <th>Piezas</th>
-          <th>Stock (peso)</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (row of rows; track row.codigoProducto) {
+    <div class="tabla-productos-numerados-scroll">
+      <table class="table">
+        <thead>
           <tr>
-            <td>{{ row.codigoProducto }}</td>
-            <td>{{ row.nombreProducto }}</td>
-            <td>{{ row.piezas }}</td>
-            <td>{{ row.stock }}</td>
-            <td>
-              <a class="tblDelBtn"
-                [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
-                [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
-                [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
-                (click)="quitarProducto(row)">
-                <i class="fas fa-trash"></i>
-              </a>
-            </td>
+            <th>Código</th>
+            <th>Nombre</th>
+            <th>Piezas</th>
+            <th>Stock (peso)</th>
+            <th></th>
           </tr>
-        } @empty {
-          <tr>
-            <td colspan="5">No hay productos numerados.</td>
-          </tr>
-        }
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          @for (row of rows; track row.codigoProducto) {
+            <tr>
+              <td>{{ row.codigoProducto }}</td>
+              <td>{{ row.nombreProducto }}</td>
+              <td>{{ row.piezas }}</td>
+              <td>{{ row.stock }}</td>
+              <td>
+                <a class="tblDelBtn"
+                  [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
+                  [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
+                  [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
+                  (click)="quitarProducto(row)">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5">No hay productos numerados.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
   }
 </div>
 

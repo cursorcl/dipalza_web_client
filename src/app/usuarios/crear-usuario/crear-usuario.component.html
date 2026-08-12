@@ -1,0 +1,54 @@
+<div class="modal-header">
+  <h5 class="modal-title">Agregar usuario</h5>
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" formControlName="username" class="form-control" placeholder="Ej: jperez" />
+      @if (form.get('username')?.touched && form.get('username')?.invalid) {
+        <small style="color:red">El username es obligatorio</small>
+      }
+    </div>
+
+    <div class="form-group">
+      <label>Correo (opcional)</label>
+      <input type="email" formControlName="email" class="form-control" placeholder="Ej: jperez@dipalza.cl" />
+    </div>
+
+    <div class="form-group">
+      <label>Vendedor asociado (opcional, busque por código o nombre)</label>
+      <input type="text" class="form-control" [formControl]="buscadorVendedorControl"
+        [ngbTypeahead]="buscarVendedor" [resultFormatter]="formatearVendedor"
+        [inputFormatter]="formatearVendedor" (selectItem)="seleccionarVendedor($event)"
+        placeholder="Ej: 001 o Juan Pérez" />
+    </div>
+
+    <div class="form-group">
+      <label>Clave inicial</label>
+      <div class="d-flex gap-2">
+        <input type="text" formControlName="password" class="form-control" placeholder="Mínimo 8 caracteres" />
+        <button type="button" class="btn btn-secondary" (click)="generarClave()">Generar clave</button>
+      </div>
+      @if (form.get('password')?.touched && form.get('password')?.invalid) {
+        <small style="color:red">La clave debe tener al menos 8 caracteres</small>
+      }
+    </div>
+
+    @if (error) {
+      <div class="alert alert-danger">{{ error }}</div>
+    }
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancelar</button>
+  <button type="button" class="btn btn-primary" [disabled]="form.invalid || loading" (click)="submit()">
+    @if (loading) {
+      <span class="spinner-border spinner-border-sm me-1"></span>
+    }
+    Guardar
+  </button>
+</div>

@@ -1,0 +1,37 @@
+<div class="modal-header">
+  <h5 class="modal-title">Detalle de usuario</h5>
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <dl class="row">
+    <dt class="col-sm-4">Username</dt>
+    <dd class="col-sm-8">{{ usuario.username }}</dd>
+
+    <dt class="col-sm-4">Correo</dt>
+    <dd class="col-sm-8">{{ usuario.email || '-' }}</dd>
+
+    <dt class="col-sm-4">Vendedor asociado</dt>
+    <dd class="col-sm-8">
+      @if (usuario.nombreVendedor) {
+        {{ usuario.nombreVendedor }} ({{ usuario.codigoVendedor }}-{{ usuario.tipoVendedor }})
+      } @else {
+        -
+      }
+    </dd>
+
+    <dt class="col-sm-4">Estado</dt>
+    <dd class="col-sm-8">
+      {{ usuario.enabled ? 'Habilitado' : 'Deshabilitado' }} / {{ usuario.locked ? 'Bloqueado' : 'Desbloqueado' }}
+    </dd>
+
+    @if (usuario.createdAt) {
+      <dt class="col-sm-4">Creado el</dt>
+      <dd class="col-sm-8">{{ usuario.createdAt }}</dd>
+    }
+  </dl>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cerrar</button>
+</div>

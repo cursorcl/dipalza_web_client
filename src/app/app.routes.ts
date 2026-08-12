@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import { MainLayoutComponent } from './layout/app-layout/main-layout/main-layout.component';
 import { AuthGuard } from './core/guard/auth.guard';
+import { AdminGuard } from './core/guard/admin.guard';
 import { AuthLayoutComponent } from './layout/app-layout/auth-layout/auth-layout.component';
 import { Page404Component } from './authentication/page404/page404.component';
 
@@ -30,6 +31,12 @@ export const APP_ROUTE: Route[] = [
                 path: 'numerados',
                 loadChildren: () =>
                     import('./numerados/numerados.routes').then((m) => m.NUMERADOS_ROUTES)
+            },
+            {
+                path: 'usuarios',
+                canActivate: [AdminGuard],
+                loadChildren: () =>
+                    import('./usuarios/usuarios.routes').then((m) => m.USUARIOS_ROUTES)
             }
 
         ],

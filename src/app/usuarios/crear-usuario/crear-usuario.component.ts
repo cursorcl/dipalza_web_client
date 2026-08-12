@@ -7,6 +7,7 @@ import { VendedorDTO } from 'app/mapa/models/model';
 import { VendedorService } from 'app/mapa/vendedor.service';
 import { UsuariosService } from '../usuarios.service';
 import { CrearUsuarioPayload } from '../models/model';
+import { mostrarErrorToast } from '../toast.util';
 
 @Component({
   selector: 'app-crear-usuario',
@@ -21,7 +22,6 @@ export class CrearUsuarioComponent implements OnInit {
   buscadorVendedorControl = new FormControl<string | VendedorDTO | null>('');
 
   loading = false;
-  error = '';
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -38,7 +38,7 @@ export class CrearUsuarioComponent implements OnInit {
   ngOnInit(): void {
     this.vendedorService.getVendedores().subscribe({
       next: (vendedores) => { this.vendedores = vendedores; },
-      error: () => { this.error = 'No se pudo cargar la lista de vendedores.'; }
+      error: () => { mostrarErrorToast('No se pudo cargar la lista de vendedores.'); }
     });
     this.buscadorVendedorControl.valueChanges.subscribe(v => {
       if (v !== this.vendedorSeleccionado) {
@@ -90,7 +90,6 @@ export class CrearUsuarioComponent implements OnInit {
       return;
     }
     this.loading = true;
-    this.error = '';
 
     const payload: CrearUsuarioPayload = {
       username: this.form.get('username')?.value,
@@ -107,9 +106,9 @@ export class CrearUsuarioComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.loading = false;
-        this.error = err.status === 400 && err.error?.message
+        mostrarErrorToast(err.status === 400 && err.error?.message
           ? err.error.message
-          : 'No se pudo crear el usuario. Intente nuevamente.';
+          : 'No se pudo crear el usuario. Intente nuevamente.');
       }
     });
   }

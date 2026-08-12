@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { environment } from 'environments/environment';
+import Swal from 'sweetalert2';
 
 import { CrearUsuarioComponent } from './crear-usuario.component';
 import { VendedorDTO } from 'app/mapa/models/model';
@@ -67,7 +68,8 @@ describe('CrearUsuarioComponent', () => {
     expect(closeSpy).toHaveBeenCalledWith(result);
   });
 
-  it('muestra el mensaje de error del backend si falla la creación', () => {
+  it('muestra un toast con el mensaje de error del backend si falla la creación', () => {
+    const swalSpy = spyOn(Swal, 'fire');
     component.form.patchValue({ username: 'jperez', password: 'claveLarga1' });
 
     component.submit();
@@ -75,7 +77,11 @@ describe('CrearUsuarioComponent', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/usuarios`);
     req.flush({ message: 'Ya existe un usuario con ese username' }, { status: 400, statusText: 'Bad Request' });
 
-    expect(component.error).toBe('Ya existe un usuario con ese username');
+    expect(swalSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      toast: true,
+      icon: 'error',
+      title: 'Ya existe un usuario con ese username'
+    }));
   });
 
   it('no permite guardar si el formulario es inválido', () => {

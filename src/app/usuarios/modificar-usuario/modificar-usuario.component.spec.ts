@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { environment } from 'environments/environment';
+import Swal from 'sweetalert2';
 
 import { ModificarUsuarioComponent } from './modificar-usuario.component';
 import { VendedorDTO } from 'app/mapa/models/model';
@@ -70,12 +71,18 @@ describe('ModificarUsuarioComponent', () => {
     expect(closeSpy).toHaveBeenCalledWith(actualizado);
   });
 
-  it('muestra el mensaje de error del backend si falla la actualización', () => {
+  it('muestra un toast con el mensaje de error del backend si falla la actualización', () => {
+    const swalSpy = spyOn(Swal, 'fire');
+
     component.submit();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/usuarios/1`);
     req.flush({ message: 'Ya existe un usuario con ese correo' }, { status: 400, statusText: 'Bad Request' });
 
-    expect(component.error).toBe('Ya existe un usuario con ese correo');
+    expect(swalSpy).toHaveBeenCalledWith(jasmine.objectContaining({
+      toast: true,
+      icon: 'error',
+      title: 'Ya existe un usuario con ese correo'
+    }));
   });
 });

@@ -7,6 +7,7 @@ import { VendedorDTO } from 'app/mapa/models/model';
 import { VendedorService } from 'app/mapa/vendedor.service';
 import { UsuariosService } from '../usuarios.service';
 import { ActualizarUsuarioPayload, Usuario } from '../models/model';
+import { mostrarErrorToast } from '../toast.util';
 
 @Component({
   selector: 'app-modificar-usuario',
@@ -23,7 +24,6 @@ export class ModificarUsuarioComponent implements OnInit {
   buscadorVendedorControl = new FormControl<string | VendedorDTO | null>('');
 
   loading = false;
-  error = '';
 
   constructor(
     public activeModal: NgbActiveModal,
@@ -56,7 +56,7 @@ export class ModificarUsuarioComponent implements OnInit {
           }
         }
       },
-      error: () => { this.error = 'No se pudo cargar la lista de vendedores.'; }
+      error: () => { mostrarErrorToast('No se pudo cargar la lista de vendedores.'); }
     });
 
     this.buscadorVendedorControl.valueChanges.subscribe(v => {
@@ -94,7 +94,6 @@ export class ModificarUsuarioComponent implements OnInit {
 
   submit(): void {
     this.loading = true;
-    this.error = '';
 
     const payload: ActualizarUsuarioPayload = {
       email: this.form.get('email')?.value || undefined,
@@ -111,9 +110,9 @@ export class ModificarUsuarioComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.loading = false;
-        this.error = err.status === 400 && err.error?.message
+        mostrarErrorToast(err.status === 400 && err.error?.message
           ? err.error.message
-          : 'No se pudo modificar el usuario. Intente nuevamente.';
+          : 'No se pudo modificar el usuario. Intente nuevamente.');
       }
     });
   }

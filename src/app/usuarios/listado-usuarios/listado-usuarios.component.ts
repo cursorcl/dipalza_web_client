@@ -10,6 +10,7 @@ import { Usuario } from '../models/model';
 import { VerUsuarioComponent } from '../ver-usuario/ver-usuario.component';
 import { CrearUsuarioComponent } from '../crear-usuario/crear-usuario.component';
 import { ModificarUsuarioComponent } from '../modificar-usuario/modificar-usuario.component';
+import { mostrarErrorToast } from '../toast.util';
 
 @Component({
   selector: 'app-listado-usuarios',
@@ -21,7 +22,6 @@ export class ListadoUsuariosComponent implements OnInit {
   loadingIndicator = true;
   reorderable = true;
   scrollBarHorizontal = window.innerWidth < 1200;
-  error = '';
 
   rows: Usuario[] = [];
   temp: Usuario[] = [];
@@ -45,7 +45,7 @@ export class ListadoUsuariosComponent implements OnInit {
           this.loadingIndicator = false;
         },
         error: (error: HttpErrorResponse) => {
-          this.error = 'No se pudo cargar la lista de usuarios.';
+          mostrarErrorToast('No se pudo cargar la lista de usuarios.');
           this.loadingIndicator = false;
         }
       });
@@ -88,11 +88,10 @@ export class ListadoUsuariosComponent implements OnInit {
       if (!result.isConfirmed) {
         return;
       }
-      this.error = '';
       const peticion = row.enabled ? this.usuariosService.deshabilitar(row.id) : this.usuariosService.habilitar(row.id);
       peticion.subscribe({
         next: () => this.cargar(),
-        error: () => { this.error = 'No se pudo actualizar el estado del usuario. Intente nuevamente.'; }
+        error: () => { mostrarErrorToast('No se pudo actualizar el estado del usuario. Intente nuevamente.'); }
       });
     });
   }
@@ -110,11 +109,10 @@ export class ListadoUsuariosComponent implements OnInit {
       if (!result.isConfirmed) {
         return;
       }
-      this.error = '';
       const peticion = row.locked ? this.usuariosService.desbloquear(row.id) : this.usuariosService.bloquear(row.id);
       peticion.subscribe({
         next: () => this.cargar(),
-        error: () => { this.error = 'No se pudo actualizar el bloqueo del usuario. Intente nuevamente.'; }
+        error: () => { mostrarErrorToast('No se pudo actualizar el bloqueo del usuario. Intente nuevamente.'); }
       });
     });
   }

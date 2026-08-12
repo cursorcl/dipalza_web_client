@@ -81,6 +81,20 @@ getToken() {
   return this.currentUserValue.token;
 }
 
+isAdmin(): boolean {
+  const token = this.getToken();
+  if (!token) {
+    return false;
+  }
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const roles: string[] = payload.roles ?? [];
+    return roles.includes('ROLE_ADMIN');
+  } catch {
+    return false;
+  }
+}
+
 // Cambio de clave estando logueado -- el interceptor agrega el Bearer
 // automáticamente por apuntar a environment.apiUrl.
 changePassword(claveActual: string, claveNueva: string) {

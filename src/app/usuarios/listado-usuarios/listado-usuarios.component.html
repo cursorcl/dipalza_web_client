@@ -44,32 +44,31 @@
                             <div>{{ row.nombreVendedor || '-' }}</div>
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Estado" headerClass="align-center-header" cellClass="align-center-cell">
+                    <ngx-datatable-column name="Habilitado" headerClass="align-center-header" cellClass="align-center-cell">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            @if (!row.enabled) {
-                                <span class="badge bg-secondary">Deshabilitado</span>
-                            } @else if (row.locked) {
-                                <span class="badge bg-danger">Bloqueado</span>
-                            } @else {
-                                <span class="badge bg-success">Activo</span>
-                            }
+                            <span class="badge" [class.bg-success]="row.enabled" [class.bg-secondary]="!row.enabled"
+                                style="cursor: pointer;" (click)="toggleHabilitado(row)"
+                                [title]="row.enabled ? 'Deshabilitar' : 'Habilitar'">
+                                {{ row.enabled ? 'Habilitado' : 'Deshabilitado' }}
+                            </span>
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="" [width]="160" [sortable]="false" headerClass="align-center-header" cellClass="align-center-cell">
+                    <ngx-datatable-column name="Bloqueado" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge" [class.bg-danger]="row.locked" [class.bg-secondary]="!row.locked"
+                                style="cursor: pointer;" (click)="toggleBloqueado(row)"
+                                [title]="row.locked ? 'Desbloquear' : 'Bloquear'">
+                                {{ row.locked ? 'Bloqueado' : 'Desbloqueado' }}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="" [width]="80" [sortable]="false" headerClass="align-center-header" cellClass="align-center-cell">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             <a class="msr-2 h-auto tblViewBtn" (click)="ver(row)" style="cursor: pointer;" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </a>
                             <a class="msr-2 h-auto tblEditBtn" (click)="modificar(row)" style="cursor: pointer;" title="Modificar">
                                 <i class="fas fa-pencil-alt"></i>
-                            </a>
-                            <a class="msr-2 h-auto tblEditBtn" (click)="toggleHabilitado(row)" style="cursor: pointer;"
-                                [title]="row.enabled ? 'Deshabilitar' : 'Habilitar'">
-                                <i class="fas" [class.fa-toggle-on]="row.enabled" [class.fa-toggle-off]="!row.enabled"></i>
-                            </a>
-                            <a class="msr-2 h-auto tblDelBtn" (click)="toggleBloqueado(row)" style="cursor: pointer;"
-                                [title]="row.locked ? 'Desbloquear' : 'Bloquear'">
-                                <i class="fas" [class.fa-lock]="row.locked" [class.fa-lock-open]="!row.locked"></i>
                             </a>
                         </ng-template>
                     </ngx-datatable-column>

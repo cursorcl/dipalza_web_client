@@ -49,13 +49,4 @@ export class ForgotComponent {
       },
     });
   }
-
-  irARestablecer() {
-    const valor = (this.f['usernameOrEmail'].value ?? '').toString();
-    this.router.navigate(['/authentication/reset'], {
-      // Reset-password exige el username exacto, no el correo -- solo se
-      // prellena si el usuario ya escribió su username (no un correo).
-      queryParams: valor.includes('@') ? {} : { username: valor },
-    });
-  }
 }

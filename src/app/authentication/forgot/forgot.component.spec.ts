@@ -48,22 +48,4 @@ describe('ForgotComponent', () => {
       expect(component.enviado).toBeTrue();
     });
   });
-
-  describe('irARestablecer', () => {
-    it('prellena el username si no es un correo', () => {
-      component.form.get('usernameOrEmail')?.setValue('juan');
-      component.irARestablecer();
-      expect(routerMock.navigate).toHaveBeenCalledWith(['/authentication/reset'], {
-        queryParams: { username: 'juan' },
-      });
-    });
-
-    it('no prellena el username si es un correo', () => {
-      component.form.get('usernameOrEmail')?.setValue('juan@test.cl');
-      component.irARestablecer();
-      expect(routerMock.navigate).toHaveBeenCalledWith(['/authentication/reset'], {
-        queryParams: {},
-      });
-    });
-  });
 });

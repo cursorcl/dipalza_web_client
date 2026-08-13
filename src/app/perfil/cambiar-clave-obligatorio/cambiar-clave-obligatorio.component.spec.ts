@@ -3,6 +3,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { environment } from 'environments/environment';
+import { AuthService } from '@core';
 
 import { CambiarClaveObligatorioComponent } from './cambiar-clave-obligatorio.component';
 
@@ -46,13 +47,27 @@ describe('CambiarClaveObligatorioComponent', () => {
     expect(closeSpy).toHaveBeenCalled();
   });
 
-  it('muestra un mensaje de error si falla el cambio', () => {
+  it('muestra el mensaje de error específico del backend cuando viene presente', () => {
     component.form.patchValue({ claveNueva: 'claveNueva123', confirmarClave: 'claveNueva123' });
 
     component.submit();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/usuario/cambiar-clave`);
-    req.flush({ message: 'error' }, { status: 500, statusText: 'Server Error' });
+    req.flush(
+      { message: 'La clave nueva debe ser distinta de la actual' },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    expect(component.error).toBe('La clave nueva debe ser distinta de la actual');
+  });
+
+  it('muestra un mensaje de error genérico si el backend no envía message', () => {
+    component.form.patchValue({ claveNueva: 'claveNueva123', confirmarClave: 'claveNueva123' });
+
+    component.submit();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/usuario/cambiar-clave`);
+    req.flush(null, { status: 500, statusText: 'Server Error' });
 
     expect(component.error).toBe('No se pudo cambiar la clave. Intente nuevamente.');
   });
@@ -63,5 +78,20 @@ describe('CambiarClaveObligatorioComponent', () => {
     component.submit();
 
     httpMock.expectNone(`${environment.apiUrl}/usuario/cambiar-clave`);
+  });
+
+  describe('cancelarYSalir', () => {
+    it('cierra la sesión y cierra el modal con close() (no dismiss())', () => {
+      const authService = TestBed.inject(AuthService);
+      const logoutSpy = spyOn(authService, 'logout').and.callThrough();
+      const closeSpy = spyOn(component.activeModal, 'close');
+      const dismissSpy = spyOn(component.activeModal, 'dismiss');
+
+      component.cancelarYSalir();
+
+      expect(logoutSpy).toHaveBeenCalled();
+      expect(closeSpy).toHaveBeenCalled();
+      expect(dismissSpy).not.toHaveBeenCalled();
+    });
   });
 });

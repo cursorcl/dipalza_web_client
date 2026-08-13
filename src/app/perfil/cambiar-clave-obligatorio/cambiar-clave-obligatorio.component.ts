@@ -48,6 +48,14 @@ export class CambiarClaveObligatorioComponent {
     return this.form.controls;
   }
 
+  cancelarYSalir(): void {
+    this.authService.logout();
+    // Se usa close() (no dismiss()) para que modalRef.closed en signin.component
+    // dispare y navegue de vuelta al login -- es el mismo camino que sigue un
+    // cambio de clave exitoso, solo que sin sesión activa.
+    this.activeModal.close();
+  }
+
   submit(): void {
     this.submitted = true;
     this.error = '';
@@ -66,7 +74,7 @@ export class CambiarClaveObligatorioComponent {
         },
         error: (err: HttpErrorResponse) => {
           this.loading = false;
-          this.error = 'No se pudo cambiar la clave. Intente nuevamente.';
+          this.error = err.error?.message ?? 'No se pudo cambiar la clave. Intente nuevamente.';
         },
       });
   }

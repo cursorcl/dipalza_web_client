@@ -28,6 +28,9 @@
 </div>
 
 <div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" [disabled]="loading" (click)="cancelarYSalir()">
+    Cancelar y salir
+  </button>
   <button type="button" class="btn btn-primary" [disabled]="loading" (click)="submit()">
     @if (loading) {
       <span class="spinner-border spinner-border-sm me-1"></span>

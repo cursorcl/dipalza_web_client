@@ -61,6 +61,35 @@ describe('SigninComponent', () => {
   });
 
   describe('ngOnInit', () => {
+    it('reabre el diálogo bloqueante al montar si mustChangePassword es true', () => {
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+
+      component.ngOnInit();
+
+      expect(ngbModalMock.open).toHaveBeenCalledWith(
+        CambiarClaveObligatorioComponent,
+        jasmine.objectContaining({ backdrop: 'static', keyboard: false }),
+      );
+    });
+
+    it('no abre el diálogo al montar si mustChangePassword es false', () => {
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: false };
+
+      component.ngOnInit();
+
+      expect(ngbModalMock.open).not.toHaveBeenCalled();
+    });
+
+    it('no envía claveActualForzada al reabrir el diálogo al montar (no la tenemos disponible)', () => {
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+      const modalRef = { componentInstance: {} as any, closed: of(undefined) };
+      ngbModalMock.open.and.returnValue(modalRef);
+
+      component.ngOnInit();
+
+      expect(modalRef.componentInstance.claveActualForzada).toBeUndefined();
+    });
+
     it('debería crear el formulario con valores por defecto', () => {
       component.ngOnInit();
       expect(component.loginForm).toBeTruthy();
@@ -374,6 +403,25 @@ describe('SigninComponent', () => {
       component.onSubmit();
 
       expect(modalRef.componentInstance.claveActualForzada).toBe('claveTemp123');
+    });
+
+    it('no guarda la cuenta recordada si mustChangePassword es true, aunque "recordarme" esté marcado', () => {
+      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+      component.loginForm.get('remember')?.setValue(true);
+
+      component.onSubmit();
+
+      expect(rememberedAccountsServiceMock.saveAccount).not.toHaveBeenCalled();
+    });
+
+    it('no carga productos si mustChangePassword es true', () => {
+      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+
+      component.onSubmit();
+
+      expect(productoServiceMock.loadProductos).not.toHaveBeenCalled();
     });
   });
 });

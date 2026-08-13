@@ -10,6 +10,10 @@ export class AuthGuard  {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+    if (this.authService.currentUserValue?.mustChangePassword) {
+      this.router.navigate(['/authentication/signin']);
+      return false;
+    }
     if (this.authService.currentUserValue) {
       return true;
     }

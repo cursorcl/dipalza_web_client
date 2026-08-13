@@ -56,4 +56,59 @@ describe('AuthService.isAdmin', () => {
     service = TestBed.inject(AuthService);
     expect(service.isAdmin()).toBeFalse();
   });
+
+  it('decodifica correctamente un payload en base64url (con "-" y "_")', () => {
+    // Payload { roles: ['ROLE_ADMIN', 'ROLE_VENDEDOR'], sub: 'jp>>>???///+++' }
+    // codificado en base64url -- su equivalente en base64 estándar contiene
+    // "+" y "/", que atob() por sí solo no interpreta correctamente.
+    const base64UrlPayload = 'eyJyb2xlcyI6WyJST0xFX0FETUlOIiwiUk9MRV9WRU5ERURPUiJdLCJzdWIiOiJqcD4-Pj8_Py8vLysrKyJ9';
+    const token = `header.${base64UrlPayload}.firma-invalida`;
+    localStorage.setItem('currentUser', JSON.stringify({ token }));
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    service = TestBed.inject(AuthService);
+    expect(service.isAdmin()).toBeTrue();
+  });
+});
+
+describe('AuthService.logout', () => {
+  let service: AuthService;
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
+  });
+
+  it('limpia el estado en memoria (currentUserValue queda null) y no solo localStorage', () => {
+    localStorage.setItem('currentUser', JSON.stringify({ username: 'jperez', token: 'tok' }));
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    service = TestBed.inject(AuthService);
+    expect(service.currentUserValue).toBeTruthy();
+
+    service.logout();
+
+    expect(service.currentUserValue).toBeFalsy();
+    expect(localStorage.getItem('currentUser')).toBeNull();
+  });
+
+  it('notifica a los suscriptores de currentUser que la sesión terminó', () => {
+    localStorage.setItem('currentUser', JSON.stringify({ username: 'jperez', token: 'tok' }));
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    service = TestBed.inject(AuthService);
+
+    let ultimoValor: any = 'sin-emitir';
+    service.currentUser.subscribe(u => (ultimoValor = u));
+
+    service.logout();
+
+    expect(ultimoValor).toBeFalsy();
+  });
 });

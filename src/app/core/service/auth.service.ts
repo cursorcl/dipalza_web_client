@@ -53,7 +53,7 @@ export class AuthService {
   logout() {
     // remove user from local storage to log user out
     localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(this.currentUserValue);
+    this.currentUserSubject.next(null!);
     return of({ success: false });
   }
 
@@ -86,7 +86,8 @@ isAdmin(): boolean {
     return false;
   }
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
     const roles: string[] = payload.roles ?? [];
     return roles.includes('ROLE_ADMIN');
   } catch {

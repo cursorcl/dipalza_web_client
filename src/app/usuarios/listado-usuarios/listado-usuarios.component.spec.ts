@@ -74,4 +74,45 @@ describe('ListadoUsuariosComponent', () => {
       httpMock.expectNone(`${environment.apiUrl}/usuarios/1/bloquear`);
     });
   });
+
+  describe('agregar', () => {
+    it('muestra un aviso si el usuario se creó pero no se pudo enviar el correo', () => {
+      const swalSpy = spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: true } as any);
+      modalSpy.open.and.returnValue({
+        componentInstance: {},
+        closed: of({ usuario, correoEnviado: false })
+      } as any);
+
+      component.agregar();
+
+      expect(swalSpy).toHaveBeenCalledWith(jasmine.objectContaining({ icon: 'warning' }));
+      httpMock.expectOne(`${environment.apiUrl}/usuarios`).flush([usuario]);
+    });
+
+    it('no muestra ningún aviso si el correo se envió correctamente', () => {
+      const swalSpy = spyOn(Swal, 'fire');
+      modalSpy.open.and.returnValue({
+        componentInstance: {},
+        closed: of({ usuario, correoEnviado: true })
+      } as any);
+
+      component.agregar();
+
+      expect(swalSpy).not.toHaveBeenCalled();
+      httpMock.expectOne(`${environment.apiUrl}/usuarios`).flush([usuario]);
+    });
+
+    it('no muestra ningún aviso si el modal se cerró sin resultado (cancelado)', () => {
+      const swalSpy = spyOn(Swal, 'fire');
+      modalSpy.open.and.returnValue({
+        componentInstance: {},
+        closed: of(undefined)
+      } as any);
+
+      component.agregar();
+
+      expect(swalSpy).not.toHaveBeenCalled();
+      httpMock.expectOne(`${environment.apiUrl}/usuarios`).flush([usuario]);
+    });
+  });
 });

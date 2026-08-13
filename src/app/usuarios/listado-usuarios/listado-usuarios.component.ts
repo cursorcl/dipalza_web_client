@@ -1,16 +1,15 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { RouterLink } from '@angular/router';
 import Swal from 'sweetalert2';
 import { UsuariosService } from '../usuarios.service';
-import { Usuario } from '../models/model';
+import { CrearUsuarioResult, Usuario } from '../models/model';
 import { VerUsuarioComponent } from '../ver-usuario/ver-usuario.component';
 import { CrearUsuarioComponent } from '../crear-usuario/crear-usuario.component';
 import { ModificarUsuarioComponent } from '../modificar-usuario/modificar-usuario.component';
-import { mostrarErrorToast } from '../toast.util';
+import { mostrarAvisoToast, mostrarErrorToast } from '../toast.util';
 
 @Component({
   selector: 'app-listado-usuarios',
@@ -44,7 +43,7 @@ export class ListadoUsuariosComponent implements OnInit {
           this.temp = usuarios;
           this.loadingIndicator = false;
         },
-        error: (error: HttpErrorResponse) => {
+        error: () => {
           mostrarErrorToast('No se pudo cargar la lista de usuarios.');
           this.loadingIndicator = false;
         }
@@ -61,7 +60,12 @@ export class ListadoUsuariosComponent implements OnInit {
 
   agregar(): void {
     const modalRef = this.modalService.open(CrearUsuarioComponent);
-    modalRef.closed.subscribe(() => this.cargar());
+    modalRef.closed.subscribe((result?: CrearUsuarioResult) => {
+      if (result && result.correoEnviado === false) {
+        mostrarAvisoToast('Usuario creado, pero no se pudo enviar el correo con la clave inicial — compártela manualmente.');
+      }
+      this.cargar();
+    });
   }
 
   ver(row: Usuario): void {

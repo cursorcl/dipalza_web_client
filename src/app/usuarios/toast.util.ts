@@ -11,3 +11,15 @@ export function mostrarErrorToast(mensaje: string): void {
     timerProgressBar: true
   });
 }
+
+export function mostrarAvisoToast(mensaje: string): void {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon: 'warning',
+    title: mensaje,
+    showConfirmButton: false,
+    timer: 5000,
+    timerProgressBar: true
+  });
+}

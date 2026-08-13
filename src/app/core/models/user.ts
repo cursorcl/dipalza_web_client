@@ -7,4 +7,5 @@ export class User {
   token!: string;
   refreshToken!: string;
   expiresInSeconds!: number;
+  mustChangePassword!: boolean;
 }

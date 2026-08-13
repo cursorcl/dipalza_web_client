@@ -11,7 +11,6 @@ export class AuthService {
   private loginurl = `${environment.authUrl}/weblogin`;
   private refreshTokenUrl = `${environment.authUrl}/webrefresh`;
   private forgotPasswordUrl = `${environment.authUrl}/forgot-password`;
-  private resetPasswordUrl = `${environment.authUrl}/reset-password`;
   private changePasswordUrl = `${environment.apiUrl}/usuario/cambiar-clave`;
   private currentUserSubject: BehaviorSubject<User>;
   public currentUser: Observable<User>;
@@ -104,10 +103,6 @@ changePassword(claveActual: string, claveNueva: string) {
 // Flujo "olvidé mi clave", sin sesión -- van contra environment.authUrl.
 forgotPassword(usernameOrEmail: string) {
   return this.httpClient.post<void>(this.forgotPasswordUrl, { usernameOrEmail });
-}
-
-resetPassword(username: string, codigo: string, claveNueva: string) {
-  return this.httpClient.post<void>(this.resetPasswordUrl, { username, codigo, claveNueva });
 }
 }
 

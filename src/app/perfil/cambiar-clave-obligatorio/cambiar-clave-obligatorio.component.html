@@ -1,0 +1,37 @@
+<div class="modal-header">
+  <h5 class="modal-title">Debes cambiar tu clave</h5>
+</div>
+
+<div class="modal-body">
+  <p>Por seguridad, debes elegir una clave nueva antes de continuar.</p>
+  <form [formGroup]="form" (ngSubmit)="submit()">
+    <div class="form-group">
+      <label>Clave nueva</label>
+      <input type="password" class="form-control" formControlName="claveNueva"
+        [class.is-invalid]="submitted && f['claveNueva'].errors">
+      @if (submitted && f['claveNueva'].errors) {
+        <div class="invalid-feedback">La clave nueva debe tener al menos 8 caracteres.</div>
+      }
+    </div>
+    <div class="form-group">
+      <label>Confirmar clave nueva</label>
+      <input type="password" class="form-control" formControlName="confirmarClave"
+        [class.is-invalid]="submitted && (f['confirmarClave'].errors || form.errors?.['clavesNoCoinciden'])">
+      @if (submitted && form.errors?.['clavesNoCoinciden']) {
+        <div class="invalid-feedback">Las claves no coinciden.</div>
+      }
+    </div>
+    @if (error) {
+      <div class="alert alert-danger">{{ error }}</div>
+    }
+  </form>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-primary" [disabled]="loading" (click)="submit()">
+    @if (loading) {
+      <span class="spinner-border spinner-border-sm me-1"></span>
+    }
+    Guardar
+  </button>
+</div>

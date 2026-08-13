@@ -405,6 +405,17 @@ describe('SigninComponent', () => {
       expect(modalRef.componentInstance.claveActualForzada).toBe('claveTemp123');
     });
 
+    it('resetea submitted a false cuando se cierra el diálogo (el botón Ingresar no debe quedar deshabilitado)', () => {
+      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+      const modalRef = { componentInstance: {} as any, closed: of(undefined) };
+      ngbModalMock.open.and.returnValue(modalRef);
+
+      component.onSubmit();
+
+      expect(component.submitted).toBeFalse();
+    });
+
     it('no guarda la cuenta recordada si mustChangePassword es true, aunque "recordarme" esté marcado', () => {
       authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
       authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };

@@ -62,6 +62,7 @@ export class SigninComponent implements OnInit {
     }
     modalRef.closed.subscribe(() => {
       this.authService.logout();
+      this.submitted = false;
       this.router.navigate(['/authentication/signin']);
     });
   }

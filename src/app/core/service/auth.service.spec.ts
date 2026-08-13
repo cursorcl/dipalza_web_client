@@ -111,4 +111,17 @@ describe('AuthService.logout', () => {
 
     expect(ultimoValor).toBeFalsy();
   });
+
+  it('getToken() no lanza tras logout() -- retorna undefined en vez de fallar', () => {
+    localStorage.setItem('currentUser', JSON.stringify({ username: 'jperez', token: 'tok' }));
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient(), provideHttpClientTesting()]
+    });
+    service = TestBed.inject(AuthService);
+
+    service.logout();
+
+    expect(() => service.getToken()).not.toThrow();
+    expect(service.getToken()).toBeUndefined();
+  });
 });

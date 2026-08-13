@@ -77,7 +77,7 @@ private storeTokens(data: any) {
 }
 
 getToken() {
-  return this.currentUserValue.token;
+  return this.currentUserValue?.token;
 }
 
 isAdmin(): boolean {

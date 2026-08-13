@@ -4,6 +4,8 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators, FormsModule, Reactive
 import { FeatherModule } from 'angular-feather';
 import { AuthService, RememberedAccountsService, RememberedAccount } from '@core';
 import { ProductoService } from 'app/services/producto.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { CambiarClaveObligatorioComponent } from 'app/perfil/cambiar-clave-obligatorio/cambiar-clave-obligatorio.component';
 @Component({
   selector: 'app-signin',
   templateUrl: './signin.component.html',
@@ -30,7 +32,8 @@ export class SigninComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private productoService: ProductoService,
-    private rememberedAccountsService: RememberedAccountsService
+    private rememberedAccountsService: RememberedAccountsService,
+    private modalService: NgbModal
   ) { }
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
@@ -119,7 +122,19 @@ export class SigninComponent implements OnInit {
                     next: () => console.log('Productos cargados en segundo plano'),
                     error: (err) => console.error('Error cargando productos post-login', err)
                   });
-                  this.router.navigate(['/']);
+                  if (this.authService.currentUserValue.mustChangePassword) {
+                    const modalRef = this.modalService.open(CambiarClaveObligatorioComponent, {
+                      backdrop: 'static',
+                      keyboard: false,
+                    });
+                    modalRef.componentInstance.claveActualForzada = this.f['password'].value;
+                    modalRef.closed.subscribe(() => {
+                      this.authService.logout();
+                      this.router.navigate(['/authentication/signin']);
+                    });
+                  } else {
+                    this.router.navigate(['/']);
+                  }
                 }
               } else {
                 this.error = 'Usuario inválido';

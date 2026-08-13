@@ -2,6 +2,8 @@
 import { UntypedFormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService, RememberedAccountsService } from '@core';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { CambiarClaveObligatorioComponent } from 'app/perfil/cambiar-clave-obligatorio/cambiar-clave-obligatorio.component';
 import { of, throwError } from 'rxjs';
 import { SigninComponent } from './signin.component';
 import { ProductoService } from 'app/services/producto.service';
@@ -13,11 +15,13 @@ describe('SigninComponent', () => {
   let routerMock: any;
   let productoServiceMock: any;
   let rememberedAccountsServiceMock: any;
+  let ngbModalMock: any;
 
   beforeEach(() => {
     authServiceMock = {
-      login: jasmine.createSpy('login').and.returnValue(of({ token: 'test-token' })),
-      currentUserValue: { token: 'test-token' }
+      login: jasmine.createSpy('login').and.returnValue(of({ token: 'test-token', mustChangePassword: false })),
+      currentUserValue: { token: 'test-token', mustChangePassword: false },
+      logout: jasmine.createSpy('logout')
     };
 
     routerMock = {
@@ -33,6 +37,13 @@ describe('SigninComponent', () => {
       saveAccount: jasmine.createSpy('saveAccount')
     };
 
+    ngbModalMock = {
+      open: jasmine.createSpy('open').and.returnValue({
+        componentInstance: {},
+        closed: of(undefined),
+      }),
+    };
+
     formBuilder = new UntypedFormBuilder();
 
     component = new SigninComponent(
@@ -40,7 +51,8 @@ describe('SigninComponent', () => {
       routerMock,
       authServiceMock as AuthService,
       productoServiceMock as ProductoService,
-      rememberedAccountsServiceMock as RememberedAccountsService
+      rememberedAccountsServiceMock as RememberedAccountsService,
+      ngbModalMock as unknown as NgbModal
     );
   });
 
@@ -324,6 +336,44 @@ describe('SigninComponent', () => {
     it('debería retornar controles del formulario', () => {
       component.ngOnInit();
       expect(component.f).toBe(component.loginForm.controls);
+    });
+  });
+
+  describe('onSubmit con mustChangePassword', () => {
+    beforeEach(() => {
+      component.ngOnInit();
+      component.loginForm.get('username')?.setValue('jperez');
+      component.loginForm.get('password')?.setValue('claveTemp123');
+    });
+
+    it('navega a home si mustChangePassword es false', () => {
+      component.onSubmit();
+      expect(routerMock.navigate).toHaveBeenCalledWith(['/']);
+      expect(ngbModalMock.open).not.toHaveBeenCalled();
+    });
+
+    it('abre el diálogo bloqueante si mustChangePassword es true, sin navegar', () => {
+      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+
+      component.onSubmit();
+
+      expect(ngbModalMock.open).toHaveBeenCalledWith(
+        CambiarClaveObligatorioComponent,
+        jasmine.objectContaining({ backdrop: 'static', keyboard: false }),
+      );
+      expect(routerMock.navigate).not.toHaveBeenCalledWith(['/']);
+    });
+
+    it('pasa la clave recién escrita al diálogo', () => {
+      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+      const modalRef = { componentInstance: {} as any, closed: of(undefined) };
+      ngbModalMock.open.and.returnValue(modalRef);
+
+      component.onSubmit();
+
+      expect(modalRef.componentInstance.claveActualForzada).toBe('claveTemp123');
     });
   });
 });

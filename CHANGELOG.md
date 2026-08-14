@@ -1,3 +1,10 @@
+## [1.7.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.7.0...v1.7.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* dispara el release pendiente (gestión de usuarios / cambio de clave) ([#26](https://github.com/cursorcl/dipalza_web_client/issues/26)) ([d789112](https://github.com/cursorcl/dipalza_web_client/commit/d7891123eb6d24ba0857264026c81af665200515))
+
 # [1.7.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.6.0...v1.7.0) (2026-08-11)
 
 

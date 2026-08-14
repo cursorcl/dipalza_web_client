@@ -1,3 +1,12 @@
+// Este repo usa squash-merge: el título del PR pasa a ser el mensaje del
+// commit final en main. commit-analyzer (preset Angular) solo libera versión
+// ante commits fix:/feat:/BREAKING CHANGE -- un título sin ese prefijo hace
+// que el workflow Release corra en verde pero sin publicar nada ("no
+// relevant changes, so no new version is released"), y sin release tampoco
+// se dispara sync-frontend.yml en dipalza_server (ver successCmd abajo).
+// Ya pasó una vez (PR #16 -> #17, ver docs/frontend-embebido-static.md de
+// dipalza_server) y de nuevo con el PR #25 (gestión de usuarios + cambio de
+// clave obligatorio) -- verificar el título ANTES de mergear.
 module.exports = {
   branches: ['main'],
   plugins: [

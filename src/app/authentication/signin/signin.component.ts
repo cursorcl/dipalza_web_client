@@ -4,6 +4,8 @@ import { UntypedFormBuilder, UntypedFormGroup, Validators, FormsModule, Reactive
 import { FeatherModule } from 'angular-feather';
 import { AuthService, RememberedAccountsService, RememberedAccount } from '@core';
 import { ProductoService } from 'app/services/producto.service';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { CambiarClaveObligatorioComponent } from 'app/perfil/cambiar-clave-obligatorio/cambiar-clave-obligatorio.component';
 @Component({
   selector: 'app-signin',
   templateUrl: './signin.component.html',
@@ -30,7 +32,8 @@ export class SigninComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private productoService: ProductoService,
-    private rememberedAccountsService: RememberedAccountsService
+    private rememberedAccountsService: RememberedAccountsService,
+    private modalService: NgbModal
   ) { }
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
@@ -39,6 +42,29 @@ export class SigninComponent implements OnInit {
       remember: [''],
     });
     this.accounts = this.rememberedAccountsService.getAccounts();
+
+    if (this.authService.currentUserValue?.mustChangePassword) {
+      this.abrirModalCambioObligatorio();
+    }
+  }
+
+  // claveActualForzada solo está disponible justo tras un login exitoso (la
+  // acabamos de recibir en el formulario). Si el modal se reabre al montar el
+  // componente (F5, navegación hacia atrás, etc.) no tenemos la clave temporal
+  // -- el usuario deberá usar "Cancelar y salir" y volver a loguearse.
+  private abrirModalCambioObligatorio(claveActualForzada?: string): void {
+    const modalRef = this.modalService.open(CambiarClaveObligatorioComponent, {
+      backdrop: 'static',
+      keyboard: false,
+    });
+    if (claveActualForzada) {
+      modalRef.componentInstance.claveActualForzada = claveActualForzada;
+    }
+    modalRef.closed.subscribe(() => {
+      this.authService.logout();
+      this.submitted = false;
+      this.router.navigate(['/authentication/signin']);
+    });
   }
   get f() {
     return this.loginForm.controls;
@@ -109,17 +135,21 @@ export class SigninComponent implements OnInit {
               if (res) {
                 const token = this.authService.currentUserValue.token;
                 if (token) {
-                  if (this.f['remember'].value) {
-                    this.rememberedAccountsService.saveAccount(
-                      this.f['username'].value,
-                      this.f['password'].value
-                    );
+                  if (this.authService.currentUserValue.mustChangePassword) {
+                    this.abrirModalCambioObligatorio(this.f['password'].value);
+                  } else {
+                    if (this.f['remember'].value) {
+                      this.rememberedAccountsService.saveAccount(
+                        this.f['username'].value,
+                        this.f['password'].value
+                      );
+                    }
+                    this.productoService.loadProductos().subscribe({
+                      next: () => console.log('Productos cargados en segundo plano'),
+                      error: (err) => console.error('Error cargando productos post-login', err)
+                    });
+                    this.router.navigate(['/']);
                   }
-                  this.productoService.loadProductos().subscribe({
-                    next: () => console.log('Productos cargados en segundo plano'),
-                    error: (err) => console.error('Error cargando productos post-login', err)
-                  });
-                  this.router.navigate(['/']);
                 }
               } else {
                 this.error = 'Usuario inválido';

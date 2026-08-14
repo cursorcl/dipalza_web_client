@@ -1,0 +1,76 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Gestionar Usuarios</h5>
+        </li>
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group row">
+                    <div class="col-sm-4">
+                        <div class="d-flex">
+                            <label class="col-form-label msr-3">Buscar:</label>
+                            <input type="text" class="form-control" (keyup)='updateFilter($event)'>
+                        </div>
+                    </div>
+                    <div class="col-sm-auto ms-auto">
+                        <button class="btn btn-primary" (click)="agregar()">Agregar</button>
+                    </div>
+                </div>
+                <ngx-datatable class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                    columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
+                    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
+                    <ngx-datatable-column name="Username" headerClass="align-center-header" prop="username">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div>{{ row.username }}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Correo" headerClass="align-center-header" prop="email">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div>{{ row.email || '-' }}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Vendedor" headerClass="align-center-header" prop="nombreVendedor">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div>{{ row.nombreVendedor || '-' }}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Habilitado" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge" [class.bg-success]="row.enabled" [class.bg-secondary]="!row.enabled"
+                                style="cursor: pointer;" (click)="toggleHabilitado(row)"
+                                [title]="row.enabled ? 'Deshabilitar' : 'Habilitar'">
+                                {{ row.enabled ? 'Habilitado' : 'Deshabilitado' }}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Bloqueado" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge" [class.bg-danger]="row.locked" [class.bg-secondary]="!row.locked"
+                                style="cursor: pointer;" (click)="toggleBloqueado(row)"
+                                [title]="row.locked ? 'Desbloquear' : 'Bloquear'">
+                                {{ row.locked ? 'Bloqueado' : 'Desbloqueado' }}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="" [width]="80" [sortable]="false" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <a class="msr-2 h-auto tblViewBtn" (click)="ver(row)" style="cursor: pointer;" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a class="msr-2 h-auto tblEditBtn" (click)="modificar(row)" style="cursor: pointer;" title="Modificar">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

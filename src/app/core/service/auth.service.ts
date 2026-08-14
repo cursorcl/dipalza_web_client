@@ -11,7 +11,6 @@ export class AuthService {
   private loginurl = `${environment.authUrl}/weblogin`;
   private refreshTokenUrl = `${environment.authUrl}/webrefresh`;
   private forgotPasswordUrl = `${environment.authUrl}/forgot-password`;
-  private resetPasswordUrl = `${environment.authUrl}/reset-password`;
   private changePasswordUrl = `${environment.apiUrl}/usuario/cambiar-clave`;
   private currentUserSubject: BehaviorSubject<User>;
   public currentUser: Observable<User>;
@@ -54,7 +53,7 @@ export class AuthService {
   logout() {
     // remove user from local storage to log user out
     localStorage.removeItem('currentUser');
-    this.currentUserSubject.next(this.currentUserValue);
+    this.currentUserSubject.next(null!);
     return of({ success: false });
   }
 
@@ -78,7 +77,22 @@ private storeTokens(data: any) {
 }
 
 getToken() {
-  return this.currentUserValue.token;
+  return this.currentUserValue?.token;
+}
+
+isAdmin(): boolean {
+  const token = this.getToken();
+  if (!token) {
+    return false;
+  }
+  try {
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const payload = JSON.parse(atob(base64));
+    const roles: string[] = payload.roles ?? [];
+    return roles.includes('ROLE_ADMIN');
+  } catch {
+    return false;
+  }
 }
 
 // Cambio de clave estando logueado -- el interceptor agrega el Bearer
@@ -90,10 +104,6 @@ changePassword(claveActual: string, claveNueva: string) {
 // Flujo "olvidé mi clave", sin sesión -- van contra environment.authUrl.
 forgotPassword(usernameOrEmail: string) {
   return this.httpClient.post<void>(this.forgotPasswordUrl, { usernameOrEmail });
-}
-
-resetPassword(username: string, codigo: string, claveNueva: string) {
-  return this.httpClient.post<void>(this.resetPasswordUrl, { username, codigo, claveNueva });
 }
 }
 

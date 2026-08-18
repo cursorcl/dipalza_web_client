@@ -1,3 +1,10 @@
+# [1.8.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.7.1...v1.8.0) (2026-08-18)
+
+
+### Features
+
+* historial de recorridos por fecha en el mapa de vendedores ([#27](https://github.com/cursorcl/dipalza_web_client/issues/27)) ([adbe743](https://github.com/cursorcl/dipalza_web_client/commit/adbe743638284fc72796e0c941e175a008afbaa2))
+
 ## [1.7.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.7.0...v1.7.1) (2026-08-14)
 
 

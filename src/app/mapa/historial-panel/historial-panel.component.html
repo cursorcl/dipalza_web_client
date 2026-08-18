@@ -1,0 +1,32 @@
+<div class="historial-panel__header">
+  <span class="historial-panel__titulo">Historial de {{ vendedorNombre }}</span>
+  <button type="button" class="historial-panel__cerrar" (click)="onCerrar()">✕</button>
+</div>
+<div class="historial-panel__body">
+  @if (cargando) {
+    <div class="historial-panel__mensaje">Cargando historial…</div>
+  } @else if (fechas.length === 0) {
+    <div class="historial-panel__mensaje">Sin historial disponible</div>
+  } @else {
+    <table class="historial-panel__tabla">
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Puntos</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fecha of fechas; track fecha.dia) {
+          <tr class="historial-panel__fila" (click)="onSeleccionar(fecha)">
+            <td>{{ formatearFecha(fecha.dia) }}</td>
+            <td>{{ fecha.cantidadPuntos }}</td>
+            <td>{{ formatearHora(fecha.horaInicio) }}</td>
+            <td>{{ formatearHora(fecha.horaFin) }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

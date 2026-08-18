@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
-import { HistorialPosicionDTO, PosicionDTO, PositionFilter, VendedorDTO, VendedorId, VendedorListItem } from './models/model';
+import { HistorialPosicionDTO, HistorialResumenDiaDTO, PosicionDTO, PositionFilter, VendedorDTO, VendedorId, VendedorListItem } from './models/model';
 import { Subscription, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { WSPositionService } from './ws-position.service';
@@ -12,11 +12,12 @@ import { colorForVendedor } from './vendor-color';
 import { detectarParadas, NodoParada } from './detectar-paradas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { TramosTableComponent } from './tramos-table/tramos-table.component';
+import { HistorialPanelComponent } from './historial-panel/historial-panel.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-mapa',
-  imports: [VendorListComponent, TramosTableComponent],
+  imports: [VendorListComponent, TramosTableComponent, HistorialPanelComponent],
   templateUrl: './mapa.component.html',
   styleUrl: './mapa.component.scss'
 })
@@ -44,6 +45,11 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private desiredSelection: string | null = null; // Tracks the most recently desired selection while loads are in flight
   seleccionado = signal<string | null>(null);
   nodosSeleccionados = signal<NodoParada[]>([]);
+
+  historialAbierto = signal(false);
+  historialVendedor = signal<VendedorListItem | null>(null);
+  historialFechas = signal<HistorialResumenDiaDTO[]>([]);
+  historialCargando = signal(false);
 
   private mapInit = inject(MapInitializerService);
   private wsPosicionService = inject(WSPositionService);
@@ -257,6 +263,58 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
+    const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
+    this.cargarTrayectoria(vendedor, hoy, `Sin recorrido registrado hoy para ${vendedor.nombre}`);
+  }
+
+  abrirHistorial(vendedor: VendedorListItem): void {
+    const key = `${vendedor.vendedorId}_${vendedor.vendedorCodigo}`;
+    this.historialVendedor.set(vendedor);
+    this.historialAbierto.set(true);
+    this.historialCargando.set(true);
+    this.historialFechas.set([]);
+
+    if (this.seleccionado() !== key) {
+      const hoy = new Date().toLocaleDateString('en-CA');
+      this.cargarTrayectoria(
+        { codigo: vendedor.vendedorId, tipo: vendedor.vendedorCodigo, nombre: vendedor.vendedorNombre },
+        hoy,
+        `Sin recorrido registrado hoy para ${vendedor.vendedorNombre}`
+      );
+    }
+
+    this.positionService.getResumenHistorico(vendedor.vendedorId, vendedor.vendedorCodigo)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: fechas => {
+          this.historialCargando.set(false);
+          this.historialFechas.set(fechas);
+        },
+        error: () => {
+          this.historialCargando.set(false);
+          this.mostrarToast(`No se pudo obtener el historial de ${vendedor.vendedorNombre}`);
+        }
+      });
+  }
+
+  seleccionarFechaHistorial(dia: string): void {
+    const vendedor = this.historialVendedor();
+    if (!vendedor) return;
+    this.historialAbierto.set(false);
+    this.cargarTrayectoria(
+      { codigo: vendedor.vendedorId, tipo: vendedor.vendedorCodigo, nombre: vendedor.vendedorNombre },
+      dia,
+      `Sin recorrido registrado el ${dia} para ${vendedor.vendedorNombre}`
+    );
+  }
+
+  cerrarHistorial(): void {
+    this.historialAbierto.set(false);
+  }
+
+  private cargarTrayectoria(vendedor: VendedorId & { nombre: string }, fecha: string, mensajeVacio: string): void {
+    const key = `${vendedor.codigo}_${vendedor.tipo}`;
+
     // Hide any currently displayed trajectory (whether in-flight or completed)
     const anterior = this.seleccionado();
     if (anterior !== null) {
@@ -267,10 +325,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     // Track that this key is the currently desired selection
     this.desiredSelection = key;
 
-    const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
     const filter: PositionFilter = {
       vendedorIds: [{ codigo: vendedor.codigo, tipo: vendedor.tipo }],
-      dia: hoy
+      dia: fecha
     };
 
     this.cargando.add(key);
@@ -285,7 +342,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
             return;
           }
           if (puntos.length === 0) {
-            this.mostrarToast(`Sin recorrido registrado hoy para ${vendedor.nombre}`);
+            this.mostrarToast(mensajeVacio);
             return;
           }
           this.mostrarTrayectoria(key, puntos);

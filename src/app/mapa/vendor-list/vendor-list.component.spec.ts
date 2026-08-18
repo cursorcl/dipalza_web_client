@@ -117,6 +117,40 @@ describe('VendorListComponent', () => {
     expect(fixture.nativeElement.querySelector('.vendor-list__body')).toBeTruthy();
   });
 
+  it('renderiza un botón de historial por cada vendedor', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const boton = fixture.nativeElement.querySelector('.vendor-list__historial-btn');
+    expect(boton).toBeTruthy();
+  });
+
+  it('emite historialSolicitado con el vendedor completo al hacer clic en el botón de historial', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const emitidos: VendedorListItem[] = [];
+    component.historialSolicitado.subscribe((v) => emitidos.push(v));
+
+    const boton: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__historial-btn');
+    boton.dispatchEvent(new Event('click', { bubbles: true }));
+
+    expect(emitidos).toEqual([vendedorEjemplo]);
+  });
+
+  it('el clic en el botón de historial no dispara trayectoriaToggled (no altera la selección de fila)', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const alternados: VendedorListItem[] = [];
+    component.trayectoriaToggled.subscribe((v) => alternados.push(v));
+
+    const boton: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__historial-btn');
+    boton.dispatchEvent(new Event('click', { bubbles: true }));
+
+    expect(alternados).toEqual([]);
+  });
+
   it('con más vendedores de los que caben en el panel, el cuerpo se vuelve desplazable en vez de recortar filas', () => {
     // El :host es position:absolute con max-height: calc(100% - 32px), así que
     // necesita un ancestro posicionado con altura definida y estar realmente

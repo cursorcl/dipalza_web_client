@@ -43,3 +43,10 @@ export interface VendedorDTO {
   tipo: string;
   nombre: string;
 }
+
+export interface HistorialResumenDiaDTO {
+  dia: string;
+  cantidadPuntos: number;
+  horaInicio: string;
+  horaFin: string;
+}

@@ -15,6 +15,13 @@
           <span class="vendor-list__nombre">{{ vendedor.vendedorNombre }}</span>
           <span class="vendor-list__tiempo">{{ vendedor.tiempoRelativo }}</span>
         </div>
+        <button
+          type="button"
+          class="vendor-list__historial-btn"
+          title="Ver historial de recorridos"
+          (click)="onHistorial($event, vendedor)">
+          🕘
+        </button>
         <span
           class="vendor-list__estado"
           [class.vendor-list__estado--online]="vendedor.online"

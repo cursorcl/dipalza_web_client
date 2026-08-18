@@ -515,4 +515,143 @@ describe('MapaComponent', () => {
 
     expect(component.nodosSeleccionados().length).toBe(2);
   });
+
+  it('abrirHistorial en un vendedor no seleccionado carga su recorrido de hoy y pide el resumen histórico', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.abrirHistorial({
+      vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez',
+      color: '#000', fechaHora: '', tiempoRelativo: '', online: false
+    });
+
+    const reqTrayectoria = httpMock.expectOne(`${environment.apiUrl}/posicion/historico`);
+    expect(reqTrayectoria.request.body.dia).toBe(new Date().toLocaleDateString('en-CA'));
+    reqTrayectoria.flush([]);
+
+    const reqResumen = httpMock.expectOne(
+      r => r.url === `${environment.apiUrl}/posicion/historico/resumen`
+        && r.params.get('vendedorCodigo') === '001' && r.params.get('vendedorTipo') === '0'
+    );
+    reqResumen.flush([
+      { dia: '2026-08-10', cantidadPuntos: 120, horaInicio: '2026-08-10T10:00:00', horaFin: '2026-08-10T19:00:00' }
+    ]);
+
+    expect(component.historialAbierto()).toBeTrue();
+    expect(component.historialFechas().length).toBe(1);
+    expect(component.historialCargando()).toBeFalse();
+  });
+
+  it('abrirHistorial en un vendedor ya seleccionado no vuelve a pedir su recorrido, solo el resumen histórico', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    expect(component.seleccionado()).toBe('001_0');
+
+    component.abrirHistorial({
+      vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez',
+      color: '#000', fechaHora: '', tiempoRelativo: '', online: false
+    });
+
+    httpMock.expectNone(`${environment.apiUrl}/posicion/historico`);
+    const reqResumen = httpMock.expectOne(`${environment.apiUrl}/posicion/historico/resumen?vendedorCodigo=001&vendedorTipo=0`);
+    reqResumen.flush([]);
+
+    expect(component.historialAbierto()).toBeTrue();
+  });
+
+  it('mientras el historial está abierto, el panel de tramos no se muestra aunque haya nodosSeleccionados', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    httpMock.match(`${environment.apiUrl}/geocodificacion/inversa`).forEach(req => req.flush({ calle: 'Calle de prueba' }));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('app-tramos-table')).toBeTruthy();
+
+    component.abrirHistorial({
+      vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez',
+      color: '#000', fechaHora: '', tiempoRelativo: '', online: false
+    });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico/resumen?vendedorCodigo=001&vendedorTipo=0`).flush([]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('app-tramos-table')).toBeNull();
+    expect(fixture.nativeElement.querySelector('app-historial-panel')).toBeTruthy();
+  });
+
+  it('seleccionarFechaHistorial cierra el panel de historial y carga el recorrido de la fecha elegida', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.abrirHistorial({
+      vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez',
+      color: '#000', fechaHora: '', tiempoRelativo: '', online: false
+    });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico/resumen?vendedorCodigo=001&vendedorTipo=0`).flush([
+      { dia: '2026-08-10', cantidadPuntos: 120, horaInicio: '2026-08-10T10:00:00', horaFin: '2026-08-10T19:00:00' }
+    ]);
+
+    component.seleccionarFechaHistorial('2026-08-10');
+
+    expect(component.historialAbierto()).toBeFalse();
+    const req = httpMock.expectOne(`${environment.apiUrl}/posicion/historico`);
+    expect(req.request.body.dia).toBe('2026-08-10');
+    req.flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-08-10T10:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+
+    expect(component.seleccionado()).toBe('001_0');
+  });
+
+  it('cerrarHistorial oculta el panel de historial', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.abrirHistorial({
+      vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez',
+      color: '#000', fechaHora: '', tiempoRelativo: '', online: false
+    });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico/resumen?vendedorCodigo=001&vendedorTipo=0`).flush([]);
+    expect(component.historialAbierto()).toBeTrue();
+
+    component.cerrarHistorial();
+
+    expect(component.historialAbierto()).toBeFalse();
+  });
+
+  it('si getResumenHistorico falla, muestra un toast y no lanza error', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    component.abrirHistorial({
+      vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez',
+      color: '#000', fechaHora: '', tiempoRelativo: '', online: false
+    });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
+    const reqResumen = httpMock.expectOne(`${environment.apiUrl}/posicion/historico/resumen?vendedorCodigo=001&vendedorTipo=0`);
+    reqResumen.flush(null, { status: 500, statusText: 'Server Error' });
+
+    expect(component.toastMensaje()).toBe('No se pudo obtener el historial de Juan Perez');
+    expect(component.historialCargando()).toBeFalse();
+  });
+
+  it('el ícono de historial de la lista de vendedores dispara abrirHistorial', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([]);
+    httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '001', tipo: '0', nombre: 'Juan Perez' }]);
+    fixture.detectChanges();
+
+    const boton: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__historial-btn');
+    boton.dispatchEvent(new Event('click', { bubbles: true }));
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico/resumen?vendedorCodigo=001&vendedorTipo=0`).flush([]);
+
+    expect(component.historialAbierto()).toBeTrue();
+  });
 });

@@ -9,9 +9,18 @@
       [vendedores]="vendedores()"
       [selectedId]="seleccionado()"
       (vendedorSeleccionado)="centrarEnVendedor($event)"
-      (trayectoriaToggled)="toggleTrayectoria({ codigo: $event.vendedorId, tipo: $event.vendedorCodigo, nombre: $event.vendedorNombre })">
+      (trayectoriaToggled)="toggleTrayectoria({ codigo: $event.vendedorId, tipo: $event.vendedorCodigo, nombre: $event.vendedorNombre })"
+      (historialSolicitado)="abrirHistorial($event)">
     </app-vendor-list>
-    @if (nodosSeleccionados().length > 0) {
+    @if (historialAbierto()) {
+      <app-historial-panel
+        [vendedorNombre]="historialVendedor()?.vendedorNombre ?? ''"
+        [fechas]="historialFechas()"
+        [cargando]="historialCargando()"
+        (fechaSeleccionada)="seleccionarFechaHistorial($event)"
+        (cerrar)="cerrarHistorial()">
+      </app-historial-panel>
+    } @else if (nodosSeleccionados().length > 0) {
       <app-tramos-table [nodos]="nodosSeleccionados()" (centrarEnNodo)="centrarEnNodoDelMapa($event)"></app-tramos-table>
     }
   </div>

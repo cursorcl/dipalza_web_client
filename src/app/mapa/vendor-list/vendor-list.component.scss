@@ -87,6 +87,21 @@
     color: #6c757d;
 }
 
+.vendor-list__historial-btn {
+    flex-shrink: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.vendor-list__historial-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+}
+
 .vendor-list__estado {
     width: 8px;
     height: 8px;

@@ -1,3 +1,10 @@
+# [1.9.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.8.0...v1.9.0) (2026-08-25)
+
+
+### Features
+
+* página y gestión de listas de precio (Principal/Secundaria) ([#28](https://github.com/cursorcl/dipalza_web_client/issues/28)) ([809cefe](https://github.com/cursorcl/dipalza_web_client/commit/809cefe90ae67a44d7f15e760381fd017c4c309f))
+
 # [1.8.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.7.1...v1.8.0) (2026-08-18)
 
 

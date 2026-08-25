@@ -1,0 +1,45 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Listas de Precio</h5>
+        </li>
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group row">
+                    <div class="col-sm-auto ms-auto">
+                        <button class="btn btn-primary" (click)="cargarListas()">Actualizar</button>
+                    </div>
+                </div>
+                <ngx-datatable #table class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                    columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
+                    [scrollbarH]="scrollBarHorizontal">
+                    <ngx-datatable-column [width]="150" name="Código" headerClass="align-center-header" prop="codigo">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div>{{row.codigo}}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Nombre" headerClass="align-center-header" prop="nombre">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div>{{row.nombre || '(sin nombre)'}}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column [width]="150" name="Estado" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge" [class.badge-primary]="row.rol === 'P'"
+                                  [class.badge-info]="row.rol === 'S'" [class.badge-secondary]="!row.rol">
+                                {{etiquetaRol(row.rol)}}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

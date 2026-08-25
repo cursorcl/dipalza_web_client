@@ -76,6 +76,17 @@
       "badge": "",
       "badgeClass": "",
       "submenu": []
+    },
+    {
+      "path": "listas-precio",
+      "title": "Listas de Precio",
+      "iconType": "feather",
+      "icon": "dollar-sign",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
     }
   ]
 }

@@ -33,6 +33,12 @@ export const APP_ROUTE: Route[] = [
                     import('./numerados/numerados.routes').then((m) => m.NUMERADOS_ROUTES)
             },
             {
+                path: 'listas-precio',
+                canActivate: [AdminGuard],
+                loadComponent: () =>
+                    import('./listas-precio/listas-precio.component').then((m) => m.ListasPrecioComponent)
+            },
+            {
                 path: 'usuarios',
                 canActivate: [AdminGuard],
                 loadChildren: () =>

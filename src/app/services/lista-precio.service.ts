@@ -1,0 +1,34 @@
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from 'environments/environment';
+
+export interface ListaPrecio {
+    codigo: string;
+    nombre: string;
+    rol: string | null;
+}
+
+@Injectable({
+    providedIn: 'root'
+})
+export class ListaPrecioService {
+
+    constructor(private http: HttpClient) { }
+
+    getListasPrecio(): Observable<ListaPrecio[]> {
+        return this.http.get<ListaPrecio[]>(`${environment.apiUrl}/listas-precio`);
+    }
+
+    marcarComoPrincipal(codigoLista: string): Observable<void> {
+        return this.http.put<void>(`${environment.apiUrl}/listas-precio/P`, { codigoLista });
+    }
+
+    marcarComoSecundaria(codigoLista: string): Observable<void> {
+        return this.http.put<void>(`${environment.apiUrl}/listas-precio/S`, { codigoLista });
+    }
+
+    quitarSecundaria(): Observable<void> {
+        return this.http.delete<void>(`${environment.apiUrl}/listas-precio/secundaria`);
+    }
+}

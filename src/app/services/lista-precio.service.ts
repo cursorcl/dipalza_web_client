@@ -19,4 +19,16 @@ export class ListaPrecioService {
     getListasPrecio(): Observable<ListaPrecio[]> {
         return this.http.get<ListaPrecio[]>(`${environment.apiUrl}/listas-precio`);
     }
+
+    marcarComoPrincipal(codigoLista: string): Observable<void> {
+        return this.http.put<void>(`${environment.apiUrl}/listas-precio/P`, { codigoLista });
+    }
+
+    marcarComoSecundaria(codigoLista: string): Observable<void> {
+        return this.http.put<void>(`${environment.apiUrl}/listas-precio/S`, { codigoLista });
+    }
+
+    quitarSecundaria(): Observable<void> {
+        return this.http.delete<void>(`${environment.apiUrl}/listas-precio/secundaria`);
+    }
 }

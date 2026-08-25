@@ -1,0 +1,50 @@
+<div class="modal-header">
+  <h5 class="modal-title">Gestionar listas de precio</h5>
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="activeModal.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  @if (error) {
+    <div class="alert alert-danger">{{ error }}</div>
+  }
+
+  <ngx-datatable class="material" [rows]="rows" [loadingIndicator]="loading"
+    columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
+    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
+    <ngx-datatable-column [width]="120" name="Código" headerClass="align-center-header" prop="codigo">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <div>{{ row.codigo }}</div>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="Nombre" headerClass="align-center-header" prop="nombre">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <div>{{ row.nombre || '(sin nombre)' }}</div>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column [width]="120" name="Estado" headerClass="align-center-header" cellClass="align-center-cell">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        <span class="badge" [class.badge-primary]="row.rol === 'P'"
+              [class.badge-info]="row.rol === 'S'" [class.badge-secondary]="!row.rol">
+          {{ row.rol === 'P' ? 'Principal' : row.rol === 'S' ? 'Secundaria' : 'Inactiva' }}
+        </span>
+      </ng-template>
+    </ngx-datatable-column>
+    <ngx-datatable-column name="" [width]="280" [sortable]="false" headerClass="align-center-header" cellClass="align-center-cell">
+      <ng-template let-row="row" ngx-datatable-cell-template>
+        @if (row.rol !== 'P') {
+          <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="marcarComoPrincipal(row)">Marcar Principal</button>
+        }
+        @if (row.rol !== 'S') {
+          <button type="button" class="btn btn-sm btn-outline-info me-1" (click)="marcarComoSecundaria(row)">Marcar Secundaria</button>
+        }
+        @if (row.rol === 'S') {
+          <button type="button" class="btn btn-sm btn-outline-danger" (click)="quitarSecundaria(row)">Quitar</button>
+        }
+      </ng-template>
+    </ngx-datatable-column>
+  </ngx-datatable>
+</div>
+
+<div class="modal-footer">
+  <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cerrar</button>
+</div>

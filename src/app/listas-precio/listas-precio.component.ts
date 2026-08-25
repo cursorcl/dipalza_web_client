@@ -3,7 +3,9 @@ import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { RouterLink } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ListaPrecio, ListaPrecioService } from '../services/lista-precio.service';
+import { GestionListasPrecioComponent } from './gestion-listas-precio/gestion-listas-precio.component';
 
 @Component({
   selector: 'app-listas-precio',
@@ -19,6 +21,7 @@ export class ListasPrecioComponent implements OnInit {
 
   private listaPrecioService = inject(ListaPrecioService);
   private destroyRef = inject(DestroyRef);
+  private modalService = inject(NgbModal);
 
   ngOnInit(): void {
     this.cargarListas();
@@ -38,6 +41,11 @@ export class ListasPrecioComponent implements OnInit {
           this.loadingIndicator = false;
         }
       });
+  }
+
+  gestionar(): void {
+    const modalRef = this.modalService.open(GestionListasPrecioComponent, { size: 'lg', scrollable: true });
+    modalRef.closed.subscribe(() => this.cargarListas());
   }
 
   etiquetaRol(rol: string | null): string {

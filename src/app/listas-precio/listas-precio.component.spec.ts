@@ -2,10 +2,13 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
+import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { EMPTY } from 'rxjs';
 import { environment } from 'environments/environment';
 
 import { ListasPrecioComponent } from './listas-precio.component';
 import { ListaPrecio } from '../services/lista-precio.service';
+import { GestionListasPrecioComponent } from './gestion-listas-precio/gestion-listas-precio.component';
 
 describe('ListasPrecioComponent', () => {
   let component: ListasPrecioComponent;
@@ -40,5 +43,18 @@ describe('ListasPrecioComponent', () => {
 
     expect(component.rows.length).toBe(3);
     expect(component.rows.find(l => l.codigo === '001')?.rol).toBe('P');
+  });
+
+  it('gestionar abre el modal de gestión y recarga la tabla al cerrarse', () => {
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/listas-precio`).flush(listas);
+
+    const modalService = TestBed.inject(NgbModal);
+    const modalRefStub = { closed: EMPTY, dismissed: EMPTY } as unknown as NgbModalRef;
+    const openSpy = spyOn(modalService, 'open').and.returnValue(modalRefStub);
+
+    component.gestionar();
+
+    expect(openSpy).toHaveBeenCalledWith(GestionListasPrecioComponent, jasmine.objectContaining({ size: 'lg' }));
   });
 });

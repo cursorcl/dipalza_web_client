@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { RouterLink } from '@angular/router';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { merge } from 'rxjs';
 import { ListaPrecio, ListaPrecioService } from '../services/lista-precio.service';
 import { GestionListasPrecioComponent } from './gestion-listas-precio/gestion-listas-precio.component';
 
@@ -45,7 +46,9 @@ export class ListasPrecioComponent implements OnInit {
 
   gestionar(): void {
     const modalRef = this.modalService.open(GestionListasPrecioComponent, { size: 'lg', scrollable: true });
-    modalRef.closed.subscribe(() => this.cargarListas());
+    // El modal solo cierra con dismiss() (botones "Cerrar"/X, ESC, backdrop) -- nunca
+    // con close(). Se escuchan ambos streams para no depender de cuál use el modal.
+    merge(modalRef.closed, modalRef.dismissed).subscribe(() => this.cargarListas());
   }
 
   etiquetaRol(rol: string | null): string {

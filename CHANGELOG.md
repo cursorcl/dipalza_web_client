@@ -1,3 +1,10 @@
+## [1.9.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.9.0...v1.9.1) (2026-08-28)
+
+
+### Bug Fixes
+
+* la página de listas de precio no se refrescaba al cerrar el modal ([#29](https://github.com/cursorcl/dipalza_web_client/issues/29)) ([125eb8f](https://github.com/cursorcl/dipalza_web_client/commit/125eb8f12ab86c9318b9586f9fd747ab0eb35866))
+
 # [1.9.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.8.0...v1.9.0) (2026-08-25)
 
 

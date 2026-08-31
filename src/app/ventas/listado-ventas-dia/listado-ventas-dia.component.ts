@@ -2,7 +2,7 @@ import { Component, DestroyRef, HostListener, inject, OnInit, ViewChild } from '
 import { DatatableComponent, NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { CommonModule } from '@angular/common';
 import { VentasService } from '../ventas.service';
-import { Venta, VentaFacturaResultado } from '../models/model';
+import { Venta, VentaFacturaResultado, FacturacionResponse } from '../models/model';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { DataResultService } from '../models/data-results.service';
@@ -83,10 +83,10 @@ export class ListadoVentasDiaComponent implements OnInit {
     this.ventaService.facture()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response: VentaFacturaResultado[]) => {
+        next: (response: FacturacionResponse) => {
           console.log('Facturación exitosa:', response);
           this.updateSalesByDate();
-          this.dataResultService.setResults(response);
+          this.dataResultService.setResults(response.resultados);
           this.router.navigate(['/ventas/resultados-facturacion']);
         },
         error: (error: HttpErrorResponse) => {

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, VentaFacturaResultado } from './models/model';
+import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, VentaFacturaResultado, FacturacionResponse, LoteFacturacionDetalle, LoteFacturacionResumen, PageResponse } from './models/model';
 import { Observable } from 'rxjs';
 import { FiltroVentas } from './models/other-models';
 
@@ -19,6 +19,7 @@ export class VentasService {
   private urlNumerados = `${environment.apiUrl}/numerados`;
   private urlProductos = `${environment.apiUrl}/productos`;
   private urlProductosElegibles = `${environment.apiUrl}/numerados/productos-elegibles`;
+  private urlLotesFacturacion = `${environment.apiUrl}/facturacion/lotes`;
   constructor(private httpClient: HttpClient) { }
 
 
@@ -54,8 +55,17 @@ export class VentasService {
   }
 
 
-  facture(): Observable<VentaFacturaResultado[]> {
-    return this.httpClient.post<VentaFacturaResultado[]>(this.urlFacturar, {});
+  facture(): Observable<FacturacionResponse> {
+    return this.httpClient.post<FacturacionResponse>(this.urlFacturar, {});
+  }
+
+  obtenerLotesFacturacion(page: number = 0, size: number = 20): Observable<PageResponse<LoteFacturacionResumen>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.httpClient.get<PageResponse<LoteFacturacionResumen>>(this.urlLotesFacturacion, { params });
+  }
+
+  obtenerLoteFacturacionDetalle(id: number): Observable<LoteFacturacionDetalle> {
+    return this.httpClient.get<LoteFacturacionDetalle>(`${this.urlLotesFacturacion}/${id}`);
   }
 
   obtainNumerados(codigoProducto: string): Observable<Numerado[]> {

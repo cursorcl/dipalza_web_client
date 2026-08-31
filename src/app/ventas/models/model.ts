@@ -129,3 +129,72 @@ export interface ProductoElegibleNumerado {
     piezas: number;
     tieneRegistrosAsociados: boolean;
 }
+
+export interface FacturacionResponse {
+    resultados: VentaFacturaResultado[];
+    loteId: number | null;
+}
+
+export interface PageResponse<T> {
+    content: T[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+}
+
+export interface LoteFacturacionResumen {
+    id: number;
+    iniciadoEn: string;
+    finalizadoEn: string | null;
+    cantidadVentasProcesadas: number;
+    cantidadVentasExitosas: number;
+    cantidadVentasConError: number;
+    auditoriaIncompleta: boolean;
+    totalFacturado: number;
+}
+
+export interface ItemComparado {
+    codigoProducto: string;
+    nroLinea: number;
+    precioVentaNetoEsperado: number;
+    cantidadAsignadaEsperada: number;
+    valorTotalVentaNetaEsperado: number;
+    valorTotalIvaEsperado: number;
+    valorTotalIlaEsperado: number;
+    valorTotalDescuentoEsperado: number;
+    error: string | null;
+    precioVentaReal: number | null;
+    totalLineaReal: number | null;
+    precioCostoReal: number | null;
+    numerosAsignados: string[];
+}
+
+export interface FacturaAuditoria {
+    identificador: string;
+    nroFactura: string;
+    items: ItemComparado[];
+}
+
+export interface VentaAuditoria {
+    ventaId: number;
+    exitosa: boolean;
+    mensaje: string;
+    facturas: FacturaAuditoria[];
+}
+
+export interface StockProducto {
+    articulo: string;
+    stockAntes: number;
+    stockDespues: number | null;
+    totalFacturado: number;
+}
+
+export interface LoteFacturacionDetalle {
+    id: number;
+    iniciadoEn: string;
+    finalizadoEn: string | null;
+    auditoriaIncompleta: boolean;
+    ventas: VentaAuditoria[];
+    stock: StockProducto[];
+}

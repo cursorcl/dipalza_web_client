@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, VentaFacturaResultado, FacturacionResponse, LoteFacturacionDetalle, LoteFacturacionResumen, PageResponse } from './models/model';
+import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, FacturacionResponse, LoteFacturacionDetalle, LoteFacturacionResumen, PageResponse } from './models/model';
 import { Observable } from 'rxjs';
 import { FiltroVentas } from './models/other-models';
 

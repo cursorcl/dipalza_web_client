@@ -61,17 +61,17 @@
                                         <tr *ngFor="let item of factura.items">
                                             <td>{{ item.codigoProducto }}</td>
                                             <td>{{ item.nroLinea }}</td>
-                                            <td>{{ item.precioVentaNetoEsperado | currency }}</td>
+                                            <td>{{ item.precioVentaNetoEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
                                             <td [class.text-danger]="diferenciaSignificativa(item.precioVentaNetoEsperado, item.precioVentaReal)">
-                                                {{ item.precioVentaReal !== null ? (item.precioVentaReal | currency) : 'sin dato real' }}
+                                                {{ item.precioVentaReal !== null ? (item.precioVentaReal | currency:'$ ': 'symbol':'1.0-0') : 'sin dato real' }}
                                             </td>
-                                            <td>{{ item.valorTotalVentaNetaEsperado | currency }}</td>
+                                            <td>{{ item.valorTotalVentaNetaEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
                                             <td [class.text-danger]="diferenciaSignificativa(item.valorTotalVentaNetaEsperado, item.totalLineaReal)">
-                                                {{ item.totalLineaReal !== null ? (item.totalLineaReal | currency) : 'sin dato real' }}
+                                                {{ item.totalLineaReal !== null ? (item.totalLineaReal | currency:'$ ': 'symbol':'1.0-0') : 'sin dato real' }}
                                             </td>
-                                            <td>{{ item.valorTotalIvaEsperado | currency }}</td>
-                                            <td>{{ item.valorTotalIlaEsperado | currency }}</td>
-                                            <td>{{ item.valorTotalDescuentoEsperado | currency }}</td>
+                                            <td>{{ item.valorTotalIvaEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
+                                            <td>{{ item.valorTotalIlaEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
+                                            <td>{{ item.valorTotalDescuentoEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
                                             <td>
                                                 <small class="badge bg-info text-dark" *ngFor="let nro of item.numerosAsignados">
                                                     {{ nro }}
@@ -101,7 +101,7 @@
                             <td>{{ s.articulo }}</td>
                             <td>{{ s.stockAntes }}</td>
                             <td>{{ s.stockDespues !== null ? s.stockDespues : 'sin dato' }}</td>
-                            <td>{{ s.totalFacturado | currency }}</td>
+                            <td>{{ s.totalFacturado | currency:'$ ': 'symbol':'1.0-0' }}</td>
                         </tr>
                     </tbody>
                 </table>

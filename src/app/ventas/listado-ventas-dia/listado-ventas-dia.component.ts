@@ -82,15 +82,16 @@ export class ListadoVentasDiaComponent implements OnInit {
     this.ventaService.facture()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (response: FacturacionResponse) => {
+        next: (response: FacturacionResponse | null) => {
           console.log('Facturación exitosa:', response);
           this.updateSalesByDate();
-          if (response.loteId !== null) {
+          const loteId = response?.loteId ?? null;
+          if (loteId !== null) {
             // Modo auditoría activo: la corrida quedó persistida, se navega al detalle real.
-            this.router.navigate(['/ventas/lotes-facturacion', response.loteId]);
+            this.router.navigate(['/ventas/lotes-facturacion', loteId]);
           } else {
             // Modo producción (sin auditoría): mismo comportamiento que hoy.
-            this.dataResultService.setResults(response.resultados);
+            this.dataResultService.setResults(response?.resultados ?? []);
             this.router.navigate(['/ventas/resultados-facturacion']);
           }
         },

@@ -14,7 +14,10 @@
             </a>
         </li>
     </ul>
-    <div class="section-body">
+    <div class="section-body" *ngIf="error">
+        <div class="alert alert-danger">No se pudo cargar el listado de corridas de facturación.</div>
+    </div>
+    <div class="section-body" *ngIf="!error">
         <div class="row">
             <div class="col-sm-12">
                 <ngx-datatable class="material" [rows]="rows" [columnMode]="'force'" [headerHeight]="50"
@@ -32,7 +35,7 @@
                     <ngx-datatable-column name="Con error" prop="cantidadVentasConError"></ngx-datatable-column>
                     <ngx-datatable-column name="Total facturado" prop="totalFacturado">
                         <ng-template let-value="value" ngx-datatable-cell-template>
-                            {{ value | currency }}
+                            {{ value | currency:'$ ': 'symbol':'1.0-0' }}
                         </ng-template>
                     </ngx-datatable-column>
                     <ngx-datatable-column name="Auditoría" prop="auditoriaIncompleta">

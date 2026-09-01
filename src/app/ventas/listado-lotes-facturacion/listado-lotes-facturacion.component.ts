@@ -18,6 +18,7 @@ export class ListadoLotesFacturacionComponent implements OnInit {
   page = 0;
   size = 20;
   totalElements = 0;
+  error = false;
 
   private ventasService = inject(VentasService);
   private router = inject(Router);
@@ -29,6 +30,7 @@ export class ListadoLotesFacturacionComponent implements OnInit {
 
   cargarPagina(): void {
     this.loadingIndicator = true;
+    this.error = false;
     this.ventasService.obtenerLotesFacturacion(this.page, this.size).subscribe({
       next: pagina => {
         this.rows = pagina.content;
@@ -36,6 +38,7 @@ export class ListadoLotesFacturacionComponent implements OnInit {
         this.loadingIndicator = false;
       },
       error: () => {
+        this.error = true;
         this.loadingIndicator = false;
       }
     });

@@ -29,5 +29,9 @@ export const VENTAS_ROUTES: Route[] = [
     {
         path: 'resultados-facturacion',
         loadComponent: () => import('./listado-resultados-facturacion-dia/listado-resultados-facturacion-dia.component').then((m) => m.ListadoResultadosFacturacionDiaComponent)
+    },
+    {
+        path: 'lotes-facturacion',
+        loadComponent: () => import('./listado-lotes-facturacion/listado-lotes-facturacion.component').then((m) => m.ListadoLotesFacturacionComponent)
     }
 ];

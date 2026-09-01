@@ -1,0 +1,55 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Corridas de Facturación</h5>
+        </li>
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item bcrumb-2">
+            <a routerLink="/ventas" class="d-flex align-items-center">
+                Ventas por Facturar
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <ngx-datatable class="material" [rows]="rows" [columnMode]="'force'" [headerHeight]="50"
+                    [footerHeight]="50" [rowHeight]="'auto'" [loadingIndicator]="loadingIndicator"
+                    [externalPaging]="true" [count]="totalElements" [offset]="page" [limit]="size"
+                    (page)="onPage($event)">
+
+                    <ngx-datatable-column name="Fecha inicio" prop="iniciadoEn">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            {{ value | date: 'dd/MM/yyyy HH:mm' }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Ventas" prop="cantidadVentasProcesadas"></ngx-datatable-column>
+                    <ngx-datatable-column name="Exitosas" prop="cantidadVentasExitosas"></ngx-datatable-column>
+                    <ngx-datatable-column name="Con error" prop="cantidadVentasConError"></ngx-datatable-column>
+                    <ngx-datatable-column name="Total facturado" prop="totalFacturado">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            {{ value | currency }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Auditoría" prop="auditoriaIncompleta">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            <span class="badge" [class.bg-danger]="value" [class.bg-success]="!value">
+                                {{ value ? 'Incompleta' : 'Completa' }}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="" [sortable]="false">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <button class="btn btn-sm btn-primary" (click)="verDetalle(row)">Ver</button>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

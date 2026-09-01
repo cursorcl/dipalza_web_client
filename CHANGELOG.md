@@ -1,3 +1,10 @@
+# [1.11.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.10.0...v1.11.0) (2026-09-01)
+
+
+### Features
+
+* muestra la fecha de la venta en los listados ([#31](https://github.com/cursorcl/dipalza_web_client/issues/31)) ([f30944d](https://github.com/cursorcl/dipalza_web_client/commit/f30944d406fda27c7d5f34aba43b43a3540a50af))
+
 # [1.10.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.9.1...v1.10.0) (2026-09-01)
 
 

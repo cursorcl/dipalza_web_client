@@ -1,3 +1,10 @@
+# [1.10.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.9.1...v1.10.0) (2026-09-01)
+
+
+### Features
+
+* páginas de lotes de facturación (auditoría) ([#30](https://github.com/cursorcl/dipalza_web_client/issues/30)) ([512995c](https://github.com/cursorcl/dipalza_web_client/commit/512995ce54e73c3e199afbdbb43c5f76ff88ebf5))
+
 ## [1.9.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.9.0...v1.9.1) (2026-08-28)
 
 

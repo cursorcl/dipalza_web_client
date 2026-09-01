@@ -1,0 +1,117 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Detalle de Corrida de Facturación</h5>
+        </li>
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+        <li class="breadcrumb-item bcrumb-2">
+            <a routerLink="/ventas/lotes-facturacion" class="d-flex align-items-center">
+                Corridas de Facturación
+            </a>
+        </li>
+    </ul>
+    <div class="section-body" *ngIf="!cargando && detalle">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6>
+                        Iniciado: {{ detalle.iniciadoEn | date: 'dd/MM/yyyy HH:mm' }} —
+                        Finalizado: {{ detalle.finalizadoEn | date: 'dd/MM/yyyy HH:mm' }}
+                    </h6>
+                    <span class="badge" [class.bg-danger]="detalle.auditoriaIncompleta" [class.bg-success]="!detalle.auditoriaIncompleta">
+                        {{ detalle.auditoriaIncompleta ? 'Auditoría incompleta' : 'Auditoría completa' }}
+                    </span>
+                </div>
+
+                <h5>Ventas</h5>
+                <div class="card mb-3" *ngFor="let venta of detalle.ventas">
+                    <div class="card-header d-flex justify-content-between">
+                        <span>Venta #{{ venta.ventaId }}</span>
+                        <span class="badge" [class.bg-success]="venta.exitosa" [class.bg-danger]="!venta.exitosa">
+                            {{ venta.exitosa ? 'Exitosa' : 'Con error' }}
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">{{ venta.mensaje }}</p>
+
+                        <div *ngFor="let factura of venta.facturas" class="mb-3">
+                            <h6>Factura {{ factura.nroFactura }} (id Mastersoft: {{ factura.identificador }})</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover border">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Código</th>
+                                            <th>Línea</th>
+                                            <th>Precio esperado</th>
+                                            <th>Precio real</th>
+                                            <th>Total esperado</th>
+                                            <th>Total real</th>
+                                            <th>IVA esperado</th>
+                                            <th>ILA esperado</th>
+                                            <th>Descuento esperado</th>
+                                            <th>Numerados</th>
+                                            <th>Error</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of factura.items">
+                                            <td>{{ item.codigoProducto }}</td>
+                                            <td>{{ item.nroLinea }}</td>
+                                            <td>{{ item.precioVentaNetoEsperado | currency }}</td>
+                                            <td [class.text-danger]="diferenciaSignificativa(item.precioVentaNetoEsperado, item.precioVentaReal)">
+                                                {{ item.precioVentaReal !== null ? (item.precioVentaReal | currency) : 'sin dato real' }}
+                                            </td>
+                                            <td>{{ item.valorTotalVentaNetaEsperado | currency }}</td>
+                                            <td [class.text-danger]="diferenciaSignificativa(item.valorTotalVentaNetaEsperado, item.totalLineaReal)">
+                                                {{ item.totalLineaReal !== null ? (item.totalLineaReal | currency) : 'sin dato real' }}
+                                            </td>
+                                            <td>{{ item.valorTotalIvaEsperado | currency }}</td>
+                                            <td>{{ item.valorTotalIlaEsperado | currency }}</td>
+                                            <td>{{ item.valorTotalDescuentoEsperado | currency }}</td>
+                                            <td>
+                                                <small class="badge bg-info text-dark" *ngFor="let nro of item.numerosAsignados">
+                                                    {{ nro }}
+                                                </small>
+                                            </td>
+                                            <td class="text-danger">{{ item.error }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5>Stock (antes / después)</h5>
+                <table class="table table-sm table-hover border">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Artículo</th>
+                            <th>Stock antes</th>
+                            <th>Stock después</th>
+                            <th>Total facturado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let s of detalle.stock">
+                            <td>{{ s.articulo }}</td>
+                            <td>{{ s.stockAntes }}</td>
+                            <td>{{ s.stockDespues !== null ? s.stockDespues : 'sin dato' }}</td>
+                            <td>{{ s.totalFacturado | currency }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="section-body" *ngIf="cargando">
+        <div class="text-center"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+    </div>
+    <div class="section-body" *ngIf="error">
+        <div class="alert alert-danger">No se pudo cargar el detalle de este lote (¿existe?).</div>
+    </div>
+</section>

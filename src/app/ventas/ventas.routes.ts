@@ -33,5 +33,9 @@ export const VENTAS_ROUTES: Route[] = [
     {
         path: 'lotes-facturacion',
         loadComponent: () => import('./listado-lotes-facturacion/listado-lotes-facturacion.component').then((m) => m.ListadoLotesFacturacionComponent)
+    },
+    {
+        path: 'lotes-facturacion/:id',
+        loadComponent: () => import('./detalle-lote-facturacion/detalle-lote-facturacion.component').then((m) => m.DetalleLoteFacturacionComponent)
     }
 ];

@@ -56,6 +56,17 @@
       "submenu": []
     },
     {
+      "path": "ventas/lotes-facturacion",
+      "title": "Corridas de Facturación",
+      "iconType": "feather",
+      "icon": "list",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
       "path": "numerados",
       "title": "Productos Numerados",
       "iconType": "feather",

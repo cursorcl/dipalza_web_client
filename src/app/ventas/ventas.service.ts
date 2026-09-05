@@ -55,8 +55,8 @@ export class VentasService {
   }
 
 
-  facture(): Observable<FacturacionResponse> {
-    return this.httpClient.post<FacturacionResponse>(this.urlFacturar, {});
+  facture(ventaIds: number[]): Observable<FacturacionResponse> {
+    return this.httpClient.post<FacturacionResponse>(this.urlFacturar, { ventaIds });
   }
 
   obtenerLotesFacturacion(page: number = 0, size: number = 20): Observable<PageResponse<LoteFacturacionResumen>> {

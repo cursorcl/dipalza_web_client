@@ -1,5 +1,5 @@
 import { Component, DestroyRef, HostListener, inject, OnInit, ViewChild } from '@angular/core';
-import { DatatableComponent, NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { DatatableComponent, NgxDatatableModule, SelectionType } from '@swimlane/ngx-datatable';
 import { CommonModule } from '@angular/common';
 import { VentasService } from '../ventas.service';
 import { Venta, FacturacionResponse } from '../models/model';
@@ -26,6 +26,8 @@ export class ListadoVentasDiaComponent implements OnInit {
   scrollBarHorizontal = window.innerWidth < 1200;
 
   canFacture: boolean = false;
+  selected: Venta[] = [];
+  SelectionType = SelectionType;
 
   @ViewChild('table') table!: DatatableComponent;
 
@@ -45,7 +47,8 @@ export class ListadoVentasDiaComponent implements OnInit {
       next: (ventas: Venta[]) => {
         this.rows = ventas;
         this.temp = ventas;
-        this.canFacture = ventas.length > 0;
+        this.selected = [];
+        this.canFacture = false;
         this.loadingIndicator = false;
       },
       error: (error: HttpErrorResponse) => {
@@ -78,8 +81,14 @@ export class ListadoVentasDiaComponent implements OnInit {
     });
   }
 
+  onSelect({ selected }: { selected: Venta[] }) {
+    this.selected = selected;
+    this.canFacture = this.selected.length > 0;
+  }
+
   facture() {
-    this.ventaService.facture()
+    const ventaIds = this.selected.map(venta => venta.id);
+    this.ventaService.facture(ventaIds)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response: FacturacionResponse | null) => {

@@ -1,3 +1,10 @@
+# [1.13.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.12.0...v1.13.0) (2026-09-06)
+
+
+### Features
+
+* oculta el menú de auditoría de facturación cuando está deshabilitada ([#33](https://github.com/cursorcl/dipalza_web_client/issues/33)) ([3bb0e6f](https://github.com/cursorcl/dipalza_web_client/commit/3bb0e6f0308cba0e3a9973c673be6332a093e152))
+
 # [1.12.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.11.0...v1.12.0) (2026-09-06)
 
 

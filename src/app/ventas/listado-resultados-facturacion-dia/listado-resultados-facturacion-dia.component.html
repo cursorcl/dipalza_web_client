@@ -33,7 +33,7 @@
                     </div>
                 </div>
                 <ngx-datatable class="material" [rows]="rows" [columnMode]="'force'" [headerHeight]="50"
-                    [footerHeight]="50" [rowHeight]="'auto'">
+                    [footerHeight]="50" [rowHeight]="'auto'" [sorts]="[{prop: 'fecha', dir: 'asc'}]">
 
                     <ngx-datatable-row-detail [rowHeight]="getRowDetailHeight" #myDetailRow>
                         <ng-template let-row="row" ngx-datatable-row-detail-template>

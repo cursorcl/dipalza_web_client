@@ -21,15 +21,16 @@ describe('VentasService -- lotes de facturación', () => {
     httpMock.verify();
   });
 
-  it('facture() retorna FacturacionResponse con loteId', () => {
+  it('facture() envía los ventaIds seleccionados y retorna FacturacionResponse con loteId', () => {
     const respuestaEsperada: FacturacionResponse = { resultados: [], loteId: 7 };
 
-    service.facture().subscribe(respuesta => {
+    service.facture([1, 2]).subscribe(respuesta => {
       expect(respuesta.loteId).toBe(7);
     });
 
     const req = httpMock.expectOne(`${environment.apiUrl}/facturacion`);
     expect(req.request.method).toBe('POST');
+    expect(req.request.body).toEqual({ ventaIds: [1, 2] });
     req.flush(respuestaEsperada);
   });
 

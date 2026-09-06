@@ -42,10 +42,35 @@ describe('ListadoVentasDiaComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('onSelect()', () => {
+    it('habilita canFacture solo cuando hay filas seleccionadas', () => {
+      const venta = { id: 1 } as any;
+
+      component.onSelect({ selected: [venta] });
+      expect(component.canFacture).toBeTrue();
+
+      component.onSelect({ selected: [] });
+      expect(component.canFacture).toBeFalse();
+    });
+  });
+
   describe('facture()', () => {
     const resultadosEjemplo: VentaFacturaResultado[] = [
       { factura: '1', fecha: new Date(), total: 1000, items: [], mensaje: 'ok' }
     ];
+
+    beforeEach(() => {
+      component.selected = [{ id: 5 } as any];
+    });
+
+    it('envía los ids de las ventas seleccionadas', () => {
+      const respuesta: FacturacionResponse = { resultados: resultadosEjemplo, loteId: null };
+      ventasServiceMock.facture.and.returnValue(of(respuesta));
+
+      component.facture();
+
+      expect(ventasServiceMock.facture).toHaveBeenCalledWith([5]);
+    });
 
     it('cuando loteId es null, guarda los resultados y navega a resultados-facturacion', () => {
       const respuesta: FacturacionResponse = { resultados: resultadosEjemplo, loteId: null };

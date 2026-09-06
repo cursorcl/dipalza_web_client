@@ -168,6 +168,10 @@ export interface ItemComparado {
     totalLineaReal: number | null;
     precioCostoReal: number | null;
     numerosAsignados: string[];
+    cantidadReal: number | null;
+    esNumerado: boolean;
+    stockAntes: number | null;
+    stockDespues: number | null;
 }
 
 export interface FacturaAuditoria {
@@ -181,6 +185,10 @@ export interface VentaAuditoria {
     exitosa: boolean;
     mensaje: string;
     facturas: FacturaAuditoria[];
+    rutCliente: string;
+    nombreCliente: string;
+    codigoVendedor: string;
+    nombreVendedor: string;
 }
 
 export interface StockProducto {

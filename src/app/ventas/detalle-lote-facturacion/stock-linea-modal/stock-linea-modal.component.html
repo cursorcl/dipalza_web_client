@@ -1,0 +1,30 @@
+<div class="modal-header">
+    <h5 class="modal-title">Stock — línea {{ item.nroLinea }} ({{ item.codigoProducto }})</h5>
+    <button type="button" class="btn-close" (click)="activeModal.dismiss()"></button>
+</div>
+<div class="modal-body">
+    <table class="table table-sm">
+        <tbody>
+            <tr>
+                <th>Stock antes</th>
+                <td>{{ item.stockAntes !== null ? item.stockAntes : 'sin dato de stock para esta línea' }}</td>
+            </tr>
+            <tr>
+                <th>Stock después</th>
+                <td>{{ item.stockDespues !== null ? item.stockDespues : 'sin dato de stock para esta línea' }}</td>
+            </tr>
+            <tr *ngIf="item.esNumerado">
+                <th>Piezas asignadas</th>
+                <td>
+                    <small class="badge bg-info text-dark me-1" *ngFor="let nro of item.numerosAsignados">
+                        {{ nro }}
+                    </small>
+                    <span *ngIf="!item.numerosAsignados.length">—</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cerrar</button>
+</div>

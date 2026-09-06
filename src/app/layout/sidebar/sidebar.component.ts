@@ -19,7 +19,9 @@ import { RouteInfo } from './sidebar.metadata';
 import { TranslateModule } from '@ngx-translate/core';
 import { FeatherModule } from 'angular-feather';
 import { NgScrollbar } from 'ngx-scrollbar';
-import { AuthService } from '@core';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { AuthService, ConfiguracionService } from '@core';
 import { SidebarService } from './sidebar.service';
 @Component({
   selector: 'app-sidebar',
@@ -52,7 +54,8 @@ export class SidebarComponent implements OnInit, OnDestroy {
     public elementRef: ElementRef,
     private authService: AuthService,
     private router: Router,
-    private sidebarService: SidebarService
+    private sidebarService: SidebarService,
+    private configuracionService: ConfiguracionService
   ) {
     this.routerObj = this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
@@ -91,9 +94,16 @@ export class SidebarComponent implements OnInit, OnDestroy {
   }
   ngOnInit() {
     if (this.authService.currentUserValue) {
-      this.sidebarService.getRouteInfo().subscribe((routes: RouteInfo[]) => {
+      forkJoin({
+        routes: this.sidebarService.getRouteInfo(),
+        auditoriaFacturacionHabilitada: this.configuracionService
+          .obtenerAuditoriaFacturacionHabilitada()
+          .pipe(catchError(() => of(false)))
+      }).subscribe(({ routes, auditoriaFacturacionHabilitada }) => {
         this.sidebarItems = routes.filter((sidebarItem) =>
-          sidebarItem && (sidebarItem.path !== 'usuarios' || this.authService.isAdmin()));
+          sidebarItem
+          && (sidebarItem.path !== 'usuarios' || this.authService.isAdmin())
+          && (sidebarItem.path !== 'ventas/lotes-facturacion' || auditoriaFacturacionHabilitada));
         this.userFullName =
           this.authService.currentUserValue.firstName +
           ' ' +

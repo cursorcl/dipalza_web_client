@@ -4,6 +4,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { AuthService } from '@core';
+import { environment } from 'environments/environment';
 import { FeatherModule } from 'angular-feather';
 import { allIcons } from 'angular-feather/icons';
 import { SidebarComponent } from './sidebar.component';
@@ -17,10 +18,13 @@ describe('SidebarComponent', () => {
 
   const routes: RouteInfo[] = [
     { path: 'ventas', title: 'Ventas', iconType: 'feather', icon: 'home', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] },
-    { path: 'usuarios', title: 'Gestionar Usuarios', iconType: 'feather', icon: 'users', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] }
+    { path: 'usuarios', title: 'Gestionar Usuarios', iconType: 'feather', icon: 'users', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] },
+    { path: 'ventas/lotes-facturacion', title: 'Corridas de Facturación', iconType: 'feather', icon: 'list', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] }
   ];
 
-  function setup(isAdmin: boolean) {
+  const urlAuditoriaHabilitada = `${environment.apiUrl}/configuracion/auditoria-facturacion-habilitada`;
+
+  function setup(isAdmin: boolean, auditoriaHabilitada: boolean | 'error' = true) {
     authServiceSpy = {
       isAdmin: jasmine.createSpy('isAdmin').and.returnValue(isAdmin),
       currentUserValue: { username: 'jperez' } as any
@@ -42,6 +46,12 @@ describe('SidebarComponent', () => {
     fixture.detectChanges();
     httpMock = TestBed.inject(HttpTestingController);
     httpMock.expectOne('assets/data/routes.json').flush({ routes });
+    const req = httpMock.expectOne(urlAuditoriaHabilitada);
+    if (auditoriaHabilitada === 'error') {
+      req.flush('error', { status: 500, statusText: 'Server Error' });
+    } else {
+      req.flush({ habilitada: auditoriaHabilitada });
+    }
   }
 
   afterEach(() => {
@@ -57,5 +67,20 @@ describe('SidebarComponent', () => {
     setup(false);
     expect(component.sidebarItems.some(r => r.path === 'usuarios')).toBeFalse();
     expect(component.sidebarItems.some(r => r.path === 'ventas')).toBeTrue();
+  });
+
+  it('incluye "Corridas de Facturación" cuando la auditoría está habilitada', () => {
+    setup(true, true);
+    expect(component.sidebarItems.some(r => r.path === 'ventas/lotes-facturacion')).toBeTrue();
+  });
+
+  it('excluye "Corridas de Facturación" cuando la auditoría está deshabilitada', () => {
+    setup(true, false);
+    expect(component.sidebarItems.some(r => r.path === 'ventas/lotes-facturacion')).toBeFalse();
+  });
+
+  it('excluye "Corridas de Facturación" si la consulta de configuración falla', () => {
+    setup(true, 'error');
+    expect(component.sidebarItems.some(r => r.path === 'ventas/lotes-facturacion')).toBeFalse();
   });
 });

@@ -22,8 +22,9 @@
                     <div class="col-sm-auto ms-auto">
                         <div class="d-flex justify-content-end gap-2">
                             <button class="btn btn-primary" (click)="updateSalesByDate()">Actualizar</button>
-                            <button class="btn btn-primary" (click)="facture()" [disabled]="!canFacture">
-                                Facturar
+                            <button class="btn btn-primary" (click)="facture()" [disabled]="!canFacture || procesando">
+                                <i class="fas fa-spinner fa-spin" *ngIf="procesando"></i>
+                                {{ procesando ? 'Procesando...' : 'Facturar' }}
                             </button>
                         </div>
                     </div>

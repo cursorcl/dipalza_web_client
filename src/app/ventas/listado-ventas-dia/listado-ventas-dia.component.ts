@@ -26,6 +26,7 @@ export class ListadoVentasDiaComponent implements OnInit {
   scrollBarHorizontal = window.innerWidth < 1200;
 
   canFacture: boolean = false;
+  procesando: boolean = false;
   selected: Venta[] = [];
   SelectionType = SelectionType;
 
@@ -87,12 +88,14 @@ export class ListadoVentasDiaComponent implements OnInit {
   }
 
   facture() {
+    this.procesando = true;
     const ventaIds = this.selected.map(venta => venta.id);
     this.ventaService.facture(ventaIds)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response: FacturacionResponse | null) => {
           console.log('Facturación exitosa:', response);
+          this.procesando = false;
           this.updateSalesByDate();
           const loteId = response?.loteId ?? null;
           if (loteId !== null) {
@@ -106,6 +109,7 @@ export class ListadoVentasDiaComponent implements OnInit {
         },
         error: (error: HttpErrorResponse) => {
           console.error('Error al facturar:', error);
+          this.procesando = false;
           alert('Error al facturar');
           this.updateSalesByDate();
         }

@@ -1,3 +1,10 @@
+# [1.12.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.11.0...v1.12.0) (2026-09-06)
+
+
+### Features
+
+* ordena listados de ventas por fecha ascendente y selección de filas a facturar ([#32](https://github.com/cursorcl/dipalza_web_client/issues/32)) ([f35b82b](https://github.com/cursorcl/dipalza_web_client/commit/f35b82b18095309fc478ea739c1481832e031c5a))
+
 # [1.11.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.10.0...v1.11.0) (2026-09-01)
 
 

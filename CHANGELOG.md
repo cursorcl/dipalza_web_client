@@ -1,3 +1,10 @@
+## [1.14.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.14.0...v1.14.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* el ojo de ventas facturadas va a su propio detalle ([#35](https://github.com/cursorcl/dipalza_web_client/issues/35)) ([90679cf](https://github.com/cursorcl/dipalza_web_client/commit/90679cfee6e01d4c66df44ab930801d2b7d216f4))
+
 # [1.14.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.13.0...v1.14.0) (2026-09-08)
 
 

@@ -1,3 +1,10 @@
+# [1.14.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.13.0...v1.14.0) (2026-09-08)
+
+
+### Features
+
+* drill-down y stock por linea en auditoria de facturacion ([#34](https://github.com/cursorcl/dipalza_web_client/issues/34)) ([3887c25](https://github.com/cursorcl/dipalza_web_client/commit/3887c259fada7efc80161468ef96fc06eaaa7e5b))
+
 # [1.13.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.12.0...v1.13.0) (2026-09-06)
 
 

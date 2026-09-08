@@ -1,7 +1,7 @@
 <section class="main-content">
     <ul class="breadcrumb breadcrumb-style">
         <li class="breadcrumb-item">
-            <h5 class="page-title m-b-0">Detalle de Venta</h5>
+            <h5 class="page-title m-b-0">Detalle de Factura</h5>
         </li>
 
         <li class="breadcrumb-item bcrumb-1">
@@ -11,8 +11,8 @@
         </li>
 
         <li class="breadcrumb-item bcrumb-2">
-            <a routerLink="/ventas" class="d-flex align-items-center">
-                Ventas por Facturar
+            <a routerLink="/ventas/ventas-facturadas" class="d-flex align-items-center">
+                Ventas Facturadas
             </a>
         </li>
     </ul>
@@ -100,5 +100,29 @@
             </div>
         </div>
     </div>
-    
+    <div class="floating-totals-container">
+        <div class="totals-card">
+            <div class="total-row">
+                <span>Neto:</span>
+                <strong>{{ venta?.totalNeto | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="total-row">
+                <span>Descuento:</span>
+                <strong class="text-danger"> {{ venta?.totalDescuento | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="total-row">
+                <span>IVA:</span>
+                <strong>{{ venta?.totalIva | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <div class="total-row">
+                <span>ILA:</span>
+                <strong>{{ venta?.totalIla | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+            <hr class="totals-divider">
+            <div class="total-row total-highlight">
+                <span>TOTAL:</span>
+                <strong>{{ venta?.total| currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            </div>
+        </div>
+    </div>
 </section>

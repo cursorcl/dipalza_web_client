@@ -82,7 +82,7 @@ export class ListadoVentasFacturadosMesActualComponent implements OnInit {
   }
 
   gotoToDetail(row: Venta) {
-    this.router.navigate(['/ventas/detalle-venta'], {
+    this.router.navigate(['/ventas/detalle-venta-facturada'], {
       state: { ventaSeleccionada: row }
     });
   }

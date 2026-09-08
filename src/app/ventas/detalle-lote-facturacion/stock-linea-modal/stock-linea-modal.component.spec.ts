@@ -35,6 +35,14 @@ describe('StockLineaModalComponent', () => {
     expect(texto).toContain('45');
   });
 
+  it('muestra el iva, ila y descuento esperados de la linea', () => {
+    const texto = (fixture.nativeElement as HTMLElement).textContent ?? '';
+    expect(texto).toContain('IVA esperado');
+    expect(texto).toContain('ILA esperado');
+    expect(texto).toContain('Descuento esperado');
+    expect(texto).toContain('$ 95');
+  });
+
   it('muestra "sin dato" cuando la linea no tiene stock (p.ej. conduccion o lote antiguo)', () => {
     component.item = { ...itemConStock, stockAntes: null, stockDespues: null };
     fixture.detectChanges();

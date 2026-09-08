@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -110,6 +110,21 @@ describe('ListadoVentasDiaComponent', () => {
       component.facture();
       // Angular corre el observable síncronamente con `of(...)`, así que en este punto
       // ya se resolvió -- se verifica que quedó en false DESPUÉS de la respuesta.
+      expect(component.procesando).toBeFalse();
+    });
+
+    it('activa procesando mientras la llamada esta en vuelo (observable asincrono)', () => {
+      const sujeto = new Subject<FacturacionResponse>();
+      ventasServiceMock.facture.and.returnValue(sujeto.asObservable());
+      component.selected = [{ id: 1 } as any];
+
+      expect(component.procesando).toBeFalse();
+
+      component.facture();
+      expect(component.procesando).toBeTrue();
+
+      sujeto.next({ resultados: [], loteId: null });
+      sujeto.complete();
       expect(component.procesando).toBeFalse();
     });
 

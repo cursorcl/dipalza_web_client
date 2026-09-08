@@ -22,6 +22,18 @@
                     <span *ngIf="!item.numerosAsignados.length">—</span>
                 </td>
             </tr>
+            <tr>
+                <th>IVA esperado</th>
+                <td>{{ item.valorTotalIvaEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
+            </tr>
+            <tr>
+                <th>ILA esperado</th>
+                <td>{{ item.valorTotalIlaEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
+            </tr>
+            <tr>
+                <th>Descuento esperado</th>
+                <td>{{ item.valorTotalDescuentoEsperado | currency:'$ ': 'symbol':'1.0-0' }}</td>
+            </tr>
         </tbody>
     </table>
 </div>

@@ -1,3 +1,10 @@
+## [1.14.2](https://github.com/cursorcl/dipalza_web_client/compare/v1.14.1...v1.14.2) (2026-10-08)
+
+
+### Bug Fixes
+
+* resalta en rojo las líneas con cantidad faltante al facturar ([#36](https://github.com/cursorcl/dipalza_web_client/issues/36)) ([70e141e](https://github.com/cursorcl/dipalza_web_client/commit/70e141ebc0b14c44716406432e97e977c95750b8))
+
 ## [1.14.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.14.0...v1.14.1) (2026-09-08)
 
 

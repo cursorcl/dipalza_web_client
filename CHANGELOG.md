@@ -1,3 +1,10 @@
+# [1.15.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.14.2...v1.15.0) (2026-10-14)
+
+
+### Features
+
+* facturas por página, resultado de facturación agrupado y pantalla de Faltantes ([#37](https://github.com/cursorcl/dipalza_web_client/issues/37)) ([cf36f91](https://github.com/cursorcl/dipalza_web_client/commit/cf36f91a0c991be556eed892a8c17757adce7d0c))
+
 ## [1.14.2](https://github.com/cursorcl/dipalza_web_client/compare/v1.14.1...v1.14.2) (2026-10-08)
 
 

@@ -19,80 +19,23 @@
     <div class="section-body">
         <div class="row">
             <div class="col-sm-12">
-                <div class="form-group row">
-                    <div class="col-sm-4">
-                        <div class="d-flex">
-                            <label class="col-form-label msr-3">Buscar:</label>
-                            <input type="text" class="form-control" (keyup)='updateFilter($event)'>
-                        </div>
-                    </div>
-                    <div class="col-sm-4">
-                        <div class="d-flex">
-                            <label class="col-form-label msr-3">{{venta?.nombreCliente ?? ''}}</label>
-                        </div>
-                    </div>
-                </div>
-                <ngx-datatable class="material" [rows]="rows" [columnMode]="'force'" [headerHeight]="50"
-                    [footerHeight]="50" [rowHeight]="'auto'" [sorts]="[{prop: 'fecha', dir: 'asc'}]">
+                <ngx-datatable class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
+                    [columnMode]="'force'" [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'">
 
-                    <ngx-datatable-row-detail [rowHeight]="getRowDetailHeight" #myDetailRow>
-                        <ng-template let-row="row" ngx-datatable-row-detail-template>
-                            <div style="padding-left:50px; margin-bottom: 20px;">
-                                <h5 class="text-muted">Detalle de Ítems - Factura: {{row.factura}}</h5>
-
-                                <table class="table table-sm table-hover border">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>Código</th>
-                                            <th>Cant. Asignada</th>
-                                            <th>Cant. Faltante</th>
-                                            <th>Venta</th>
-                                            <th>Numeración (Asignados)</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr *ngFor="let item of row.items"
-                                            [class.table-danger]="item.cantidadFaltante > 0">
-                                            <td>{{ item.codigoProducto }}</td>
-                                            <td>{{ item.cantidadAsignada }}</td>
-                                            <td>{{ item.cantidadFaltante }}</td>
-                                            <td>{{ item.valorTotalVentaNeta | currency }}</td>
-                                            <td>
-                                                <small class="badge bg-info text-dark"
-                                                    *ngFor="let nro of item.numeracion?.numerosPiezasAsignadas">
-                                                    {{ nro }}
-                                                </small>
-                                                <div *ngIf="item.numeracion?.cantidadFaltantes > 0"
-                                                    class="text-danger small">
-                                                    Faltantes: {{ item.numeracion.cantidadFaltantes }}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                    <ngx-datatable-column name="Código" prop="codigoVendedor" [width]="120"></ngx-datatable-column>
+                    <ngx-datatable-column name="Vendedor" prop="nombreVendedor"></ngx-datatable-column>
+                    <ngx-datatable-column name="Clientes" [width]="100" headerClass="align-center-header"
+                        cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{ row.clientes.length }}
                         </ng-template>
-                    </ngx-datatable-row-detail>
-
-                    <ngx-datatable-column [width]="50" [resizeable]="false" [sortable]="false" [draggable]="false"
-                        [canAutoResize]="false">
-                        <ng-template let-row="row" let-expanded="expanded" ngx-datatable-cell-template>
-                            <a href="javascript:void(0)" [class.datatable-icon-right]="!expanded"
-                                [class.datatable-icon-down]="expanded" title="Expandir/Colapsar"
-                                (click)="toggleExpandRow(row)">
+                    </ngx-datatable-column>
+                    <ngx-datatable-column [width]="60" [resizeable]="false" [sortable]="false" [draggable]="false"
+                        [canAutoResize]="false" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <a class="msr-2 h-auto tblViewBtn" (click)="gotoDetalle(row)" style="cursor: pointer;">
+                                <i class="fas fa-eye"></i>
                             </a>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                    <ngx-datatable-column name="Factura" prop="factura"></ngx-datatable-column>
-                    <ngx-datatable-column name="Fecha" prop="fecha">
-                        <ng-template let-value="value" ngx-datatable-cell-template>
-                            {{ value | date: 'dd/MM/yyyy' }}
-                        </ng-template>
-                    </ngx-datatable-column>
-                    <ngx-datatable-column name="Total" prop="total">
-                        <ng-template let-value="value" ngx-datatable-cell-template>
-                            <strong>{{ value | currency }}</strong>
                         </ng-template>
                     </ngx-datatable-column>
 
@@ -100,5 +43,4 @@
             </div>
         </div>
     </div>
-
 </section>

@@ -35,14 +35,14 @@
                 <ngx-datatable #table class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
                     columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
                     [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
-                    <ngx-datatable-column [width]="200" name="Producto" headerClass="align-center-header"
+                    <ngx-datatable-column [width]="260" name="Producto" headerClass="align-center-header"
                         prop="nombreProducto">
                         <ng-template let-row="row" let-value="value" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>
                             <div>{{row.nombreProducto}}</div>
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Cantidad" headerClass="align-center-header"
+                    <ngx-datatable-column [width]="70" name="Cantidad" headerClass="align-center-header"
                         cellClass="align-center-cell" prop="cantidad">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             {{row.cantidad}}
@@ -84,13 +84,13 @@
                             {{row.totalLinea| currency:'$ ': 'symbol':'1.0-0'}}
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Piezas" headerClass="align-center-header" cellClass="align-right-cell"
+                    <ngx-datatable-column [width]="70" name="Piezas" headerClass="align-center-header" cellClass="align-right-cell"
                         prop="piezas">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             {{row.piezas}}
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Unidad" headerClass="align-center-header" cellClass="align-right-cell"
+                    <ngx-datatable-column [width]="70" name="Unidad" headerClass="align-center-header" cellClass="align-right-cell"
                         prop="unidad">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             {{row.unidad}}

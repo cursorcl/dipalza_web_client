@@ -18,7 +18,7 @@
           "builder": "@angular/build:application",
           "options": {
             "outputPath": {
-              "base": "../dipalza.springboot/dipalza/src/main/resources/static",
+              "base": "../dipalza_server/dipalza/src/main/resources/static",
               "browser": ""
             },
             "index": "src/index.html",

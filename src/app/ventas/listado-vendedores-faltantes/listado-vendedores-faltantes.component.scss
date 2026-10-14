@@ -1,0 +1,9 @@
+::ng-deep .ngx-datatable.material .datatable-row-detail {
+    height: auto !important;
+    overflow: visible !important;
+}
+
+::ng-deep .datatable-row-detail {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}

@@ -1,6 +1,6 @@
 import { Component, DestroyRef, inject, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { Venta, VentaDetalle } from '../models/model';
+import { VentaDetalle, VentaFacturaResumen } from '../models/model';
 import { Router, RouterLink } from '@angular/router';
 import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { VentasService } from '../ventas.service';
@@ -15,7 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class ListadoDetalleVentasFacturadosMesActualComponent implements OnInit {
 
-  venta: Venta | undefined;
+  factura: VentaFacturaResumen | undefined;
   rows: VentaDetalle[] = [];
   temp: VentaDetalle[] = [];
   loadingIndicator = true;
@@ -31,7 +31,7 @@ export class ListadoDetalleVentasFacturadosMesActualComponent implements OnInit 
     const navigation = this.router.getCurrentNavigation();
 
     if (navigation?.extras?.state) {
-      this.venta = navigation.extras.state['ventaSeleccionada'] as Venta;
+      this.factura = navigation.extras.state['facturaSeleccionada'] as VentaFacturaResumen;
     } else {
       console.warn('No hay datos en el state, posiblemente recarga de página');
     }
@@ -53,16 +53,19 @@ export class ListadoDetalleVentasFacturadosMesActualComponent implements OnInit 
 
   updateSalesByDate() {
     this.loadingIndicator = true;
-    this.ventaService.obtainDetailBySaleId(this.venta?.id || 0)
+    this.ventaService.obtainDetailBySaleId(this.factura?.ventaId || 0)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (ventas: VentaDetalle[]) => {
-          this.rows = ventas;
-          this.temp = ventas;
+        next: (detalles: VentaDetalle[]) => {
+          // La venta puede tener líneas de más de una factura (más de una
+          // página en Mastersoft); aquí solo mostramos las de esta factura.
+          const lineasFactura = detalles.filter(d => d.identificador === this.factura?.identificador);
+          this.rows = lineasFactura;
+          this.temp = lineasFactura;
           this.loadingIndicator = false;
         },
         error: (error: HttpErrorResponse) => {
-          console.error('Error al obtener las ventas:', error);
+          console.error('Error al obtener el detalle de la factura:', error);
           this.loadingIndicator = false;
         }
       });

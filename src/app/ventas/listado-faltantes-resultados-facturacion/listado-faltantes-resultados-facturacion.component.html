@@ -1,0 +1,39 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Faltantes de {{ nombreCliente }}</h5>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-2">
+            <a routerLink="/ventas/resultados-facturacion" class="d-flex align-items-center">
+                Vendedores
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <ngx-datatable class="material" [rows]="rows" [columnMode]="'force'" [headerHeight]="50"
+                    [footerHeight]="50" [rowHeight]="'auto'">
+
+                    <ngx-datatable-column name="Código" prop="codigoProducto" [width]="100"></ngx-datatable-column>
+                    <ngx-datatable-column name="Producto" prop="nombreProducto"></ngx-datatable-column>
+                    <ngx-datatable-column name="Cantidad Solicitada" prop="cantidadSolicitada" [width]="160"
+                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
+                    <ngx-datatable-column name="Motivo" prop="motivo">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            <span class="text-danger">{{ value }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

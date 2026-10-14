@@ -103,7 +103,7 @@ export class ListadoVentasDiaComponent implements OnInit {
             this.router.navigate(['/ventas/lotes-facturacion', loteId]);
           } else {
             // Modo producción (sin auditoría): mismo comportamiento que hoy.
-            this.dataResultService.setResults(response?.resultados ?? []);
+            this.dataResultService.setPorVendedor(response?.porVendedor ?? []);
             this.router.navigate(['/ventas/resultados-facturacion']);
           }
         },

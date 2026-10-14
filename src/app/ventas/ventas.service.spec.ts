@@ -22,7 +22,7 @@ describe('VentasService -- lotes de facturación', () => {
   });
 
   it('facture() envía los ventaIds seleccionados y retorna FacturacionResponse con loteId', () => {
-    const respuestaEsperada: FacturacionResponse = { resultados: [], loteId: 7 };
+    const respuestaEsperada: FacturacionResponse = { resultados: [], loteId: 7, porVendedor: [] };
 
     service.facture([1, 2]).subscribe(respuesta => {
       expect(respuesta.loteId).toBe(7);

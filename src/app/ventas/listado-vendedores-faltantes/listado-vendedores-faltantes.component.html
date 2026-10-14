@@ -1,0 +1,114 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Faltantes</h5>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group row align-items-center">
+                    <div class="col-sm-5">
+                        <div class="d-flex align-items-center">
+                            <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <input type="date" class="form-control mx-2" style="max-width: 180px;"
+                                [(ngModel)]="fecha" (change)="onFechaChange()">
+                            <button class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-sm-7 text-sm-end">
+                        <div class="btn-group" role="group">
+                            <button class="btn btn-sm" [class.btn-primary]="vista === 'vendedor'"
+                                [class.btn-outline-primary]="vista !== 'vendedor'" (click)="vista = 'vendedor'">
+                                Por Vendedor
+                            </button>
+                            <button class="btn btn-sm" [class.btn-primary]="vista === 'producto'"
+                                [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
+                                Por Producto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vista: Vendedor -> Cliente (fila expandible) -->
+                <ngx-datatable *ngIf="vista === 'vendedor'" class="material" [rows]="rows"
+                    [loadingIndicator]="loadingIndicator" [columnMode]="'force'" [headerHeight]="50"
+                    [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
+
+                    <ngx-datatable-row-detail [rowHeight]="getRowDetailHeight" #myDetailRow>
+                        <ng-template let-row="row" ngx-datatable-row-detail-template>
+                            <div style="padding-left:50px; margin-bottom: 20px;">
+                                <table class="table table-sm table-hover border">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Rut</th>
+                                            <th>Cliente</th>
+                                            <th class="text-center">Productos Faltantes</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let cliente of row.clientes">
+                                            <td>{{ cliente.rutCliente }}</td>
+                                            <td>{{ cliente.nombreCliente }}</td>
+                                            <td class="text-center"><span class="badge bg-danger">{{ cliente.items.length }}</span></td>
+                                            <td>
+                                                <a class="tblViewBtn" (click)="gotoDetalle(cliente)" style="cursor: pointer;">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </ng-template>
+                    </ngx-datatable-row-detail>
+
+                    <ngx-datatable-column [width]="50" [resizeable]="false" [sortable]="false" [draggable]="false"
+                        [canAutoResize]="false">
+                        <ng-template let-row="row" let-expanded="expanded" ngx-datatable-cell-template>
+                            <a href="javascript:void(0)" [class.datatable-icon-right]="!expanded"
+                                [class.datatable-icon-down]="expanded" title="Expandir/Colapsar"
+                                (click)="toggleExpandRow(row)">
+                            </a>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                    <ngx-datatable-column name="Código" prop="codigoVendedor" [width]="120"></ngx-datatable-column>
+                    <ngx-datatable-column name="Vendedor" prop="nombreVendedor"></ngx-datatable-column>
+                    <ngx-datatable-column name="Clientes" [width]="100" headerClass="align-center-header"
+                        cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{ row.clientes.length }}
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+
+                <!-- Vista: total de productos faltantes (agregado, sin vendedor/cliente) -->
+                <ngx-datatable *ngIf="vista === 'producto'" class="material" [rows]="productosAgregados"
+                    [loadingIndicator]="loadingIndicator" [columnMode]="'force'" [headerHeight]="50"
+                    [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
+
+                    <ngx-datatable-column name="Código" prop="codigoProducto" [width]="100"></ngx-datatable-column>
+                    <ngx-datatable-column name="Producto" prop="nombreProducto"></ngx-datatable-column>
+                    <ngx-datatable-column name="Cantidad Faltante" prop="cantidadFaltanteTotal" [width]="180"
+                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
+                    <ngx-datatable-column name="Piezas Faltante" prop="piezasFaltanteTotal" [width]="180"
+                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
+
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,8 +1,8 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
-import { Venta, VentaFacturaResultado } from '../models/model';
-import { RouterLink } from '@angular/router';
-import { DatatableComponent, NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { VendedorResultadoDTO } from '../models/model';
+import { Router, RouterLink } from '@angular/router';
+import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { DataResultService } from '../models/data-results.service';
 
 @Component({
@@ -13,47 +13,28 @@ import { DataResultService } from '../models/data-results.service';
 })
 export class ListadoResultadosFacturacionDiaComponent implements OnInit {
 
-  venta: Venta | undefined;
-  rows: VentaFacturaResultado[] = [];
-  temp: VentaFacturaResultado[] = [];
+  rows: VendedorResultadoDTO[] = [];
   loadingIndicator = true;
-  reorderable = true;
-  scrollBarHorizontal = window.innerWidth < 1200;
 
-
-  @ViewChild(DatatableComponent) table!: DatatableComponent;
-
-  private location = inject(Location);
-  private dataResultService = inject(DataResultService);
-
-
-  toggleExpandRow(row: VentaFacturaResultado) {
-    this.table.rowDetail.toggleExpandRow(row);
-  }
-
-  updateFilter(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const val = input.value.toLowerCase();
-
-    // filter our data
-    this.rows = this.temp.filter(function (d: VentaFacturaResultado) {
-      return d.factura.toLowerCase().indexOf(val) !== -1 || !val;
-    }) || [];
+  constructor(
+    private router: Router,
+    private location: Location,
+    private dataResultService: DataResultService
+  ) {
   }
 
   ngOnInit(): void {
-    this.rows = this.dataResultService.getResults();
-    this.temp = this.rows;
+    this.rows = this.dataResultService.getPorVendedor();
     this.loadingIndicator = false;
   }
 
-
-  getRowDetailHeight(row?: any, index?: number): number {
-    if (!row || !row.items) return 50;
-    // Ejemplo: 40px por cada ítem + 50px de encabezado de la sub-tabla
-    return (row.items.length * 40) + 50;
+  gotoDetalle(row: VendedorResultadoDTO) {
+    this.router.navigate(['/ventas/resultados-facturacion/facturas'], {
+      state: { vendedorSeleccionado: row }
+    });
   }
+
   goBack() {
-    this.location.back(); // Regresa a la página anterior en el historial
+    this.location.back();
   }
 }

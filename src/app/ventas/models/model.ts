@@ -18,6 +18,27 @@ export interface Venta {
     estadoVenta: string;
     detalles: VentaDetalle[];
 }
+
+// Una fila por factura: una venta facturada en más de una página de
+// Mastersoft aparece como varias filas, cada una con los totales de solo
+// esa página (no los de toda la venta).
+export interface VentaFacturaResumen {
+    ventaId: number;
+    identificador: string;
+    nroFactura: string;
+    fecha: string;
+    rutCliente: string;
+    nombreCliente: string;
+    codigoVendedor: string;
+    nombreVendedor: string;
+    nombreRuta: string;
+    nombreCondicionVenta: string;
+    totalDescuento: number;
+    totalIla: number;
+    totalIva: number;
+    totalNeto: number;
+    total: number;
+}
 export interface VentaDetalle {
     id: number;
     ventaId: number;
@@ -35,6 +56,8 @@ export interface VentaDetalle {
     unidad: string;
     piezas: number;
     piezasDetalle: VentaDetallePieza[];
+    nroFactura: string | null;
+    identificador: string | null;
 }
 
 
@@ -64,16 +87,72 @@ export interface VentaItemResultado {
     valorTotalIva: number,
     valorTotalIla: number,
     valorTotalDescuento: number,
-    numeracion: NumeracionResultado,
-    error: string
+    numeracion: NumeracionResultado | null,
+    error: string | null,
+    identificador: string | null,
+    ventaDetalleId: number | null,
+    stockAntes: number | null,
+    stockDespues: number | null
+}
+
+export interface FacturaGenerada {
+    identificador: string;
+    nroFactura: string;
+}
+
+// Línea que no se pudo facturar por falta de stock (o de piezas numeradas disponibles).
+export interface VentaItemFaltante {
+    codigoProducto: string;
+    nombreProducto: string;
+    cantidadSolicitada: number;
+    motivo: string;
 }
 
 export interface VentaFacturaResultado {
     factura: string,
-    fecha: Date,
+    fecha: string,
     total: number,
-    items: VentaItemResultado[],
-    mensaje: string
+    items: VentaItemResultado[] | null,
+    mensaje: string,
+    facturas: FacturaGenerada[],
+    ventaId: number | null,
+    codigoVendedor: string | null,
+    tipoVendedor: string | null,
+    nombreVendedor: string | null,
+    rutCliente: string | null,
+    codigoCliente: string | null,
+    nombreCliente: string | null,
+    faltantes: VentaItemFaltante[]
+}
+
+// Una factura real (página) generada en una corrida de facturación, con sus items.
+export interface FacturaResultadoDTO {
+    identificador: string;
+    nroFactura: string;
+    fecha: string;
+    totalNeto: number;
+    totalIva: number;
+    totalIla: number;
+    total: number;
+    items: VentaItemResultado[];
+}
+
+// Facturas y faltantes de un cliente dentro de una corrida de facturación, fusionando
+// todas las ventas de ese cliente procesadas en el mismo lote.
+export interface ClienteResultadoDTO {
+    rutCliente: string | null;
+    codigoCliente: string | null;
+    nombreCliente: string | null;
+    facturas: FacturaResultadoDTO[];
+    faltantes: VentaItemFaltante[];
+}
+
+// Clientes de un vendedor dentro de una corrida de facturación.
+export interface VendedorResultadoDTO {
+    codigoVendedor: string | null;
+    tipoVendedor: string | null;
+    nombreVendedor: string | null;
+    clientes: ClienteResultadoDTO[];
 }
 
 
@@ -133,6 +212,44 @@ export interface ProductoElegibleNumerado {
 export interface FacturacionResponse {
     resultados: VentaFacturaResultado[];
     loteId: number | null;
+    porVendedor: VendedorResultadoDTO[];
+}
+
+// Pantalla "Faltantes" (menú permanente, no efímera): productos sin facturar por falta de
+// stock en una fecha puntual, agrupados por vendedor y cliente.
+// Cada línea solo llena su propia dimensión (cantidad o piezas), nunca las dos a la vez --
+// la que no aplica llega en null.
+export interface ItemFaltanteDTO {
+    ventaDetalleId: number;
+    ventaId: number;
+    codigoProducto: string;
+    nombreProducto: string;
+    cantidadSolicitada: number;
+    cantidadAsignada: number | null;
+    cantidadFaltante: number | null;
+    piezasSolicitadas: number | null;
+    piezasAsignadas: number | null;
+    piezasFaltantes: number | null;
+    motivo: string | null;
+}
+
+export interface ClienteFaltantesDTO {
+    rutCliente: string | null;
+    codigoCliente: string | null;
+    nombreCliente: string | null;
+    items: ItemFaltanteDTO[];
+}
+
+export interface VendedorFaltantesDTO {
+    codigoVendedor: string | null;
+    tipoVendedor: string | null;
+    nombreVendedor: string | null;
+    clientes: ClienteFaltantesDTO[];
+}
+
+export interface FaltantesPorFechaDTO {
+    fecha: string | null;
+    vendedores: VendedorFaltantesDTO[];
 }
 
 export interface PageResponse<T> {

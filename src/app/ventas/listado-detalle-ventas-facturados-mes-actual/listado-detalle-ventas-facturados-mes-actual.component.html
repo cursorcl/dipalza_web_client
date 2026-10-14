@@ -1,7 +1,7 @@
 <section class="main-content">
     <ul class="breadcrumb breadcrumb-style">
         <li class="breadcrumb-item">
-            <h5 class="page-title m-b-0">Detalle de Factura</h5>
+            <h5 class="page-title m-b-0">Detalle de Factura {{factura?.nroFactura ?? ''}}</h5>
         </li>
 
         <li class="breadcrumb-item bcrumb-1">
@@ -26,23 +26,18 @@
                             <input type="text" class="form-control" (keyup)='updateFilter($event)'>
                         </div>
                     </div>
-                    <div class="col-sm-4">
-                        <div class="d-flex">
-                            <label class="col-form-label msr-3">{{venta?.nombreCliente ?? ''}}</label>
-                        </div>
-                    </div>
                 </div>
                 <ngx-datatable #table class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
                     columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
                     [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
-                    <ngx-datatable-column [width]="200" name="Producto" headerClass="align-center-header"
+                    <ngx-datatable-column [width]="260" name="Producto" headerClass="align-center-header"
                         prop="nombreProducto">
                         <ng-template let-row="row" let-value="value" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>
                             <div>{{row.nombreProducto}}</div>
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Cantidad" headerClass="align-center-header"
+                    <ngx-datatable-column [width]="70" name="Cantidad" headerClass="align-center-header"
                         cellClass="align-center-cell" prop="cantidad">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             {{row.cantidad}}
@@ -84,13 +79,13 @@
                             {{row.totalLinea| currency:'$ ': 'symbol':'1.0-0'}}
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Piezas" headerClass="align-center-header" cellClass="align-right-cell"
+                    <ngx-datatable-column [width]="70" name="Piezas" headerClass="align-center-header" cellClass="align-right-cell"
                         prop="piezas">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             {{row.piezas}}
                         </ng-template>
                     </ngx-datatable-column>
-                    <ngx-datatable-column name="Unidad" headerClass="align-center-header" cellClass="align-right-cell"
+                    <ngx-datatable-column [width]="70" name="Unidad" headerClass="align-center-header" cellClass="align-right-cell"
                         prop="unidad">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             {{row.unidad}}
@@ -101,27 +96,48 @@
         </div>
     </div>
     <div class="floating-totals-container">
-        <div class="totals-card">
-            <div class="total-row">
-                <span>Neto:</span>
-                <strong>{{ venta?.totalNeto | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+        <div class="totals-card totals-card-split">
+            <div class="totals-column">
+                <div class="total-row">
+                    <span>N° Factura:</span>
+                    <strong>{{ factura?.nroFactura }}</strong>
+                </div>
+                <div class="total-row">
+                    <span>Fecha:</span>
+                    <strong>{{ factura?.fecha | date:'dd/MM/yyyy' }}</strong>
+                </div>
+                <div class="total-row">
+                    <span>Rut:</span>
+                    <strong>{{ factura?.rutCliente }}</strong>
+                </div>
+                <hr class="totals-divider">
+                <div class="total-row total-highlight">
+                    <strong>{{ factura?.nombreCliente }}</strong>
+                </div>
             </div>
-            <div class="total-row">
-                <span>Descuento:</span>
-                <strong class="text-danger"> {{ venta?.totalDescuento | currency:'$ ': 'symbol':'1.0-0' }}</strong>
-            </div>
-            <div class="total-row">
-                <span>IVA:</span>
-                <strong>{{ venta?.totalIva | currency:'$ ': 'symbol':'1.0-0' }}</strong>
-            </div>
-            <div class="total-row">
-                <span>ILA:</span>
-                <strong>{{ venta?.totalIla | currency:'$ ': 'symbol':'1.0-0' }}</strong>
-            </div>
-            <hr class="totals-divider">
-            <div class="total-row total-highlight">
-                <span>TOTAL:</span>
-                <strong>{{ venta?.total| currency:'$ ': 'symbol':'1.0-0' }}</strong>
+            <div class="totals-column-divider"></div>
+            <div class="totals-column">
+                <div class="total-row">
+                    <span>Neto:</span>
+                    <strong>{{ factura?.totalNeto | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+                </div>
+                <div class="total-row">
+                    <span>Descuento:</span>
+                    <strong class="text-danger"> {{ factura?.totalDescuento | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+                </div>
+                <div class="total-row">
+                    <span>IVA:</span>
+                    <strong>{{ factura?.totalIva | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+                </div>
+                <div class="total-row">
+                    <span>ILA:</span>
+                    <strong>{{ factura?.totalIla | currency:'$ ': 'symbol':'1.0-0' }}</strong>
+                </div>
+                <hr class="totals-divider">
+                <div class="total-row total-highlight">
+                    <span>TOTAL:</span>
+                    <strong>{{ factura?.total| currency:'$ ': 'symbol':'1.0-0' }}</strong>
+                </div>
             </div>
         </div>
     </div>

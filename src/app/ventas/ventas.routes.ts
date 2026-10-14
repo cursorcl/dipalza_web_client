@@ -31,6 +31,26 @@ export const VENTAS_ROUTES: Route[] = [
         loadComponent: () => import('./listado-resultados-facturacion-dia/listado-resultados-facturacion-dia.component').then((m) => m.ListadoResultadosFacturacionDiaComponent)
     },
     {
+        path: 'resultados-facturacion/facturas',
+        loadComponent: () => import('./listado-facturas-resultados-facturacion/listado-facturas-resultados-facturacion.component').then((m) => m.ListadoFacturasResultadosFacturacionComponent)
+    },
+    {
+        path: 'resultados-facturacion/items',
+        loadComponent: () => import('./listado-items-resultados-facturacion/listado-items-resultados-facturacion.component').then((m) => m.ListadoItemsResultadosFacturacionComponent)
+    },
+    {
+        path: 'resultados-facturacion/faltantes',
+        loadComponent: () => import('./listado-faltantes-resultados-facturacion/listado-faltantes-resultados-facturacion.component').then((m) => m.ListadoFaltantesResultadosFacturacionComponent)
+    },
+    {
+        path: 'faltantes',
+        loadComponent: () => import('./listado-vendedores-faltantes/listado-vendedores-faltantes.component').then((m) => m.ListadoVendedoresFaltantesComponent)
+    },
+    {
+        path: 'faltantes/detalle',
+        loadComponent: () => import('./listado-detalle-faltantes/listado-detalle-faltantes.component').then((m) => m.ListadoDetalleFaltantesComponent)
+    },
+    {
         path: 'lotes-facturacion',
         loadComponent: () => import('./listado-lotes-facturacion/listado-lotes-facturacion.component').then((m) => m.ListadoLotesFacturacionComponent)
     },

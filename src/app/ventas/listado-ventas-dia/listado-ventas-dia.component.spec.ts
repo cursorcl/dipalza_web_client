@@ -7,7 +7,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ListadoVentasDiaComponent } from './listado-ventas-dia.component';
 import { VentasService } from '../ventas.service';
 import { DataResultService } from '../models/data-results.service';
-import { FacturacionResponse, VentaFacturaResultado } from '../models/model';
+import { FacturacionResponse, VendedorResultadoDTO } from '../models/model';
 
 describe('ListadoVentasDiaComponent', () => {
   let component: ListadoVentasDiaComponent;
@@ -20,7 +20,7 @@ describe('ListadoVentasDiaComponent', () => {
     ventasServiceMock = jasmine.createSpyObj('VentasService', ['obtainSales', 'facture']);
     ventasServiceMock.obtainSales.and.returnValue(of([]));
 
-    dataResultServiceMock = jasmine.createSpyObj('DataResultService', ['setResults', 'getResults']);
+    dataResultServiceMock = jasmine.createSpyObj('DataResultService', ['setPorVendedor', 'getPorVendedor']);
 
     await TestBed.configureTestingModule({
       imports: [ListadoVentasDiaComponent, RouterTestingModule],
@@ -56,8 +56,8 @@ describe('ListadoVentasDiaComponent', () => {
   });
 
   describe('facture()', () => {
-    const resultadosEjemplo: VentaFacturaResultado[] = [
-      { factura: '1', fecha: new Date(), total: 1000, items: [], mensaje: 'ok' }
+    const porVendedorEjemplo: VendedorResultadoDTO[] = [
+      { codigoVendedor: 'V01', tipoVendedor: '0', nombreVendedor: 'Juan Pérez', clientes: [] }
     ];
 
     beforeEach(() => {
@@ -65,7 +65,7 @@ describe('ListadoVentasDiaComponent', () => {
     });
 
     it('envía los ids de las ventas seleccionadas', () => {
-      const respuesta: FacturacionResponse = { resultados: resultadosEjemplo, loteId: null };
+      const respuesta: FacturacionResponse = { resultados: [], loteId: null, porVendedor: porVendedorEjemplo };
       ventasServiceMock.facture.and.returnValue(of(respuesta));
 
       component.facture();
@@ -73,13 +73,13 @@ describe('ListadoVentasDiaComponent', () => {
       expect(ventasServiceMock.facture).toHaveBeenCalledWith([5]);
     });
 
-    it('cuando loteId es null, guarda los resultados y navega a resultados-facturacion', () => {
-      const respuesta: FacturacionResponse = { resultados: resultadosEjemplo, loteId: null };
+    it('cuando loteId es null, guarda los resultados agrupados y navega a resultados-facturacion', () => {
+      const respuesta: FacturacionResponse = { resultados: [], loteId: null, porVendedor: porVendedorEjemplo };
       ventasServiceMock.facture.and.returnValue(of(respuesta));
 
       component.facture();
 
-      expect(dataResultServiceMock.setResults).toHaveBeenCalledWith(resultadosEjemplo);
+      expect(dataResultServiceMock.setPorVendedor).toHaveBeenCalledWith(porVendedorEjemplo);
       expect(router.navigate).toHaveBeenCalledWith(['/ventas/resultados-facturacion']);
     });
 
@@ -88,22 +88,22 @@ describe('ListadoVentasDiaComponent', () => {
 
       expect(() => component.facture()).not.toThrow();
 
-      expect(dataResultServiceMock.setResults).toHaveBeenCalledWith([]);
+      expect(dataResultServiceMock.setPorVendedor).toHaveBeenCalledWith([]);
       expect(router.navigate).toHaveBeenCalledWith(['/ventas/resultados-facturacion']);
     });
 
     it('cuando loteId viene con valor, navega al detalle del lote y no guarda resultados', () => {
-      const respuesta: FacturacionResponse = { resultados: resultadosEjemplo, loteId: 7 };
+      const respuesta: FacturacionResponse = { resultados: [], loteId: 7, porVendedor: porVendedorEjemplo };
       ventasServiceMock.facture.and.returnValue(of(respuesta));
 
       component.facture();
 
       expect(router.navigate).toHaveBeenCalledWith(['/ventas/lotes-facturacion', 7]);
-      expect(dataResultServiceMock.setResults).not.toHaveBeenCalled();
+      expect(dataResultServiceMock.setPorVendedor).not.toHaveBeenCalled();
     });
 
     it('activa "procesando" al presionar facturar y lo desactiva al recibir la respuesta', () => {
-      ventasServiceMock.facture.and.returnValue(of({ resultados: [], loteId: null }));
+      ventasServiceMock.facture.and.returnValue(of({ resultados: [], loteId: null, porVendedor: [] }));
       component.selected = [{ id: 1 } as any];
 
       expect(component.procesando).toBeFalse();
@@ -123,7 +123,7 @@ describe('ListadoVentasDiaComponent', () => {
       component.facture();
       expect(component.procesando).toBeTrue();
 
-      sujeto.next({ resultados: [], loteId: null });
+      sujeto.next({ resultados: [], loteId: null, porVendedor: [] });
       sujeto.complete();
       expect(component.procesando).toBeFalse();
     });

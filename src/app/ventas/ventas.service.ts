@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, FacturacionResponse, LoteFacturacionDetalle, LoteFacturacionResumen, PageResponse } from './models/model';
+import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, VentaFacturaResumen, FacturacionResponse, LoteFacturacionDetalle, LoteFacturacionResumen, PageResponse, FaltantesPorFechaDTO } from './models/model';
 import { Observable } from 'rxjs';
 import { FiltroVentas } from './models/other-models';
 
@@ -49,9 +49,35 @@ export class VentasService {
     return this.httpClient.get<Venta[]>(this.urlVenta, { params });
   }
 
+  // Igual que obtainSales, pero una fila por factura en vez de una por venta
+  obtainSalesFacturas(filtros: FiltroVentas): Observable<VentaFacturaResumen[]> {
+    let params = new HttpParams();
+    Object.entries(filtros).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        if (Array.isArray(value) && value.length > 0) {
+          value.forEach(item => {
+            params = params.append(key, item.toString());
+          });
+        } else {
+          params = params.set(key, value.toString());
+        }
+      }
+    });
+    return this.httpClient.get<VentaFacturaResumen[]>(`${this.urlVenta}/facturas`, { params });
+  }
+
   obtainDetailBySaleId(saleId: number): Observable<VentaDetalle[]> {
     const url = `${this.urlVentaDetalle}/${saleId}`;
     return this.httpClient.get<VentaDetalle[]>(url);
+  }
+
+  // Pantalla "Faltantes": sin fecha, el backend resuelve la última fecha real con faltantes.
+  obtenerFaltantes(fecha?: string): Observable<FaltantesPorFechaDTO> {
+    let params = new HttpParams();
+    if (fecha) {
+      params = params.set('fecha', fecha);
+    }
+    return this.httpClient.get<FaltantesPorFechaDTO>(`${this.urlVenta}/faltantes`, { params });
   }
 
 

@@ -1,18 +1,18 @@
 import { Injectable } from "@angular/core";
-import { VentaFacturaResultado } from "./model";
+import { VendedorResultadoDTO } from "./model";
 
 /**
  * Servicio para compartir datos entre listado de ventas y resultados de facturación.
  */
 @Injectable({ providedIn: 'root' })
 export class DataResultService {
-    private results: VentaFacturaResultado[] = [];
+    private porVendedor: VendedorResultadoDTO[] = [];
 
-    setResults(results: VentaFacturaResultado[]) {
-        this.results = results;
+    setPorVendedor(porVendedor: VendedorResultadoDTO[]) {
+        this.porVendedor = porVendedor;
     }
 
-    getResults(): VentaFacturaResultado[] {
-        return this.results;
+    getPorVendedor(): VendedorResultadoDTO[] {
+        return this.porVendedor;
     }
 }

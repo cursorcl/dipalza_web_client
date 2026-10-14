@@ -23,21 +23,25 @@ export class JwtInterceptor implements HttpInterceptor {
     return next.handle(authReq).pipe(
       catchError(error => {
         if (error instanceof HttpErrorResponse) {
-            
-            // CASO 1: 401 Unauthorized -> Intentamos refrescar token
-            if (error.status === 401 && !request.url.includes('authentication/signin')) {
-                return this.handle401Error(authReq, next);
-            }
 
-            // CASO 2: 403 Forbidden -> EL SERVIDOR RECHAZA (Tu caso actual)
-            // Aquí asumimos que si da 403, el token es inválido o el servidor se reinició
-            // y perdió la sesión. No intentamos refrescar.
-            if (error.status === 403) {
-                this.forceLogout();
-                return throwError(() => error);
+            // 401 (token vencido/inválido) y 403 (ej. el propio access token vencido,
+            // que este backend también puede responder como 403 según el endpoint) se
+            // tratan igual: se intenta renovar el token antes de forzar logout. Una
+            // operación larga (como facturar muchas líneas) puede cruzar la expiración
+            // del access token sin que el usuario haya hecho nada mal -- no corresponde
+            // expulsarlo sin intentar primero una renovación silenciosa.
+            // Nunca reintentar sobre el propio endpoint de refresh ni el de login: si el
+            // refresh token también venció, esto forzaría logout igual más abajo en
+            // handleTokenRefresh, pero sin esta exclusión la misma request de refresh
+            // volvería a pasar por este interceptor y se quedaría esperando un token que
+            // nunca llega (isRefreshing ya está en true).
+            if ((error.status === 401 || error.status === 403)
+                    && !request.url.includes('authentication/signin')
+                    && !request.url.includes('webrefresh')) {
+                return this.handleTokenRefresh(authReq, next);
             }
         }
-        
+
         return throwError(() => error);
       })
     );
@@ -54,7 +58,7 @@ export class JwtInterceptor implements HttpInterceptor {
     }
   }
 
-  private handle401Error(request: HttpRequest<any>, next: HttpHandler) {
+  private handleTokenRefresh(request: HttpRequest<any>, next: HttpHandler) {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
       this.refreshTokenSubject.next(null);

@@ -67,6 +67,17 @@
       "submenu": []
     },
     {
+      "path": "ventas/faltantes",
+      "title": "Faltantes",
+      "iconType": "feather",
+      "icon": "alert-triangle",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
       "path": "numerados",
       "title": "Productos Numerados",
       "iconType": "feather",

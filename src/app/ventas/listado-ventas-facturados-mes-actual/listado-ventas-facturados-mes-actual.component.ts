@@ -2,7 +2,7 @@ import { Component, DestroyRef, HostListener, inject, OnInit, ViewChild } from '
 import { DatatableComponent, NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { CommonModule } from '@angular/common';
 import { VentasService } from '../ventas.service';
-import { Venta } from '../models/model';
+import { VentaFacturaResumen } from '../models/model';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -16,8 +16,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 export class ListadoVentasFacturadosMesActualComponent implements OnInit {
 
   facturationDate: string = new Date().toISOString().split('T')[0]; // Formato 'YYYY-MM-DD'
-  rows: Venta[] = [];
-  temp: Venta[] = [];
+  rows: VentaFacturaResumen[] = [];
+  temp: VentaFacturaResumen[] = [];
   loadingIndicator = true;
   reorderable = true;
   scrollBarHorizontal = window.innerWidth < 1200;
@@ -37,16 +37,16 @@ export class ListadoVentasFacturadosMesActualComponent implements OnInit {
   updateSalesByDate() {
     this.loadingIndicator = true;
     const filtros = { estados: ['CLOSED'] };
-    this.ventaService.obtainSales(filtros)
+    this.ventaService.obtainSalesFacturas(filtros)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (ventas: Venta[]) => {
-          this.rows = ventas;
-          this.temp = ventas;
+        next: (facturas: VentaFacturaResumen[]) => {
+          this.rows = facturas;
+          this.temp = facturas;
           this.loadingIndicator = false;
         },
         error: (error: any) => {
-          console.error('Error al obtener las ventas:', error);
+          console.error('Error al obtener las ventas facturadas:', error);
           this.loadingIndicator = false;
         }
       });
@@ -64,11 +64,12 @@ export class ListadoVentasFacturadosMesActualComponent implements OnInit {
     const val = input.value.toLowerCase();
 
     // filter our data
-    this.rows = this.temp.filter(function (d: Venta) {
+    this.rows = this.temp.filter(function (d: VentaFacturaResumen) {
       return d.rutCliente.toLowerCase().indexOf(val) !== -1
         || d.nombreCliente.toLowerCase().indexOf(val) !== -1
         || d.nombreCondicionVenta.toLowerCase().indexOf(val) !== -1
         || d.nombreVendedor.toLowerCase().indexOf(val) !== -1
+        || d.nroFactura.toLowerCase().indexOf(val) !== -1
         || d.totalNeto.toFixed(0).indexOf(val) !== -1
         || d.totalDescuento.toFixed(0).indexOf(val) !== -1
         || d.totalIla.toFixed(0).indexOf(val) !== -1
@@ -81,9 +82,9 @@ export class ListadoVentasFacturadosMesActualComponent implements OnInit {
     this.table.offset = 0;
   }
 
-  gotoToDetail(row: Venta) {
+  gotoToDetail(row: VentaFacturaResumen) {
     this.router.navigate(['/ventas/detalle-venta-facturada'], {
-      state: { ventaSeleccionada: row }
+      state: { facturaSeleccionada: row }
     });
   }
 

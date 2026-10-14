@@ -1,0 +1,55 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Items de la Factura {{ factura?.nroFactura }}</h5>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-2">
+            <a routerLink="/ventas/resultados-facturacion" class="d-flex align-items-center">
+                Vendedores
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <ngx-datatable class="material" [rows]="rows" [columnMode]="'force'" [headerHeight]="50"
+                    [footerHeight]="50" [rowHeight]="'auto'">
+
+                    <ngx-datatable-column name="Código" prop="codigoProducto" [width]="100"></ngx-datatable-column>
+                    <ngx-datatable-column name="Cant. Asignada" prop="cantidadAsignada" [width]="130"
+                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
+                    <ngx-datatable-column name="Cant. Faltante" prop="cantidadFaltante" [width]="130"
+                        headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" let-value="value" ngx-datatable-cell-template>
+                            <span [class.text-danger]="value > 0">{{ value }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Venta" prop="valorTotalVentaNeta" headerClass="align-center-header"
+                        cellClass="align-right-cell">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            {{ value | currency }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Numeración (Asignados)" [width]="220">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <small class="badge bg-info text-dark" *ngFor="let nro of row.numeracion?.numerosPiezasAsignadas">
+                                {{ nro }}
+                            </small>
+                            <div *ngIf="(row.numeracion?.cantidadPiezasFaltantes ?? 0) > 0" class="text-danger small">
+                                Faltantes: {{ row.numeracion.cantidadPiezasFaltantes }}
+                            </div>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

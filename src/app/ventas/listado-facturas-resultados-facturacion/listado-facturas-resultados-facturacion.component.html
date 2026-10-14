@@ -1,0 +1,79 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Facturas y Faltantes de {{ vendedor?.nombreVendedor }}</h5>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-2">
+            <a routerLink="/ventas/resultados-facturacion" class="d-flex align-items-center">
+                Vendedores
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <h6 class="text-muted">Facturas</h6>
+                <ngx-datatable class="material" [rows]="filasFacturas" [columnMode]="'force'" [headerHeight]="50"
+                    [footerHeight]="50" [rowHeight]="'auto'">
+
+                    <ngx-datatable-column name="Cliente" prop="nombreCliente"></ngx-datatable-column>
+                    <ngx-datatable-column name="N° Factura" [width]="140">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{ row.factura.nroFactura }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Fecha" [width]="130">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{ row.factura.fecha | date:'dd/MM/yyyy' }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="Total" [width]="140" headerClass="align-center-header"
+                        cellClass="align-right-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            {{ row.factura.total | currency:'$ ': 'symbol':'1.0-0' }}
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column [width]="60" [resizeable]="false" [sortable]="false" [draggable]="false"
+                        [canAutoResize]="false" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <a class="msr-2 h-auto tblViewBtn" (click)="gotoItems(row)" style="cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+
+                <h6 class="text-muted mt-4">Faltantes por Cliente</h6>
+                <ngx-datatable class="material" [rows]="clientesConFaltantes" [columnMode]="'force'"
+                    [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'">
+
+                    <ngx-datatable-column name="Cliente" prop="nombreCliente"></ngx-datatable-column>
+                    <ngx-datatable-column name="Rut" prop="rutCliente" [width]="140"></ngx-datatable-column>
+                    <ngx-datatable-column name="Productos Faltantes" [width]="170" headerClass="align-center-header"
+                        cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span class="badge bg-danger">{{ row.faltantes.length }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column [width]="60" [resizeable]="false" [sortable]="false" [draggable]="false"
+                        [canAutoResize]="false" headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <a class="msr-2 h-auto tblViewBtn" (click)="gotoFaltantes(row)" style="cursor: pointer;">
+                                <i class="fas fa-eye text-danger"></i>
+                            </a>
+                        </ng-template>
+                    </ngx-datatable-column>
+
+                </ngx-datatable>
+            </div>
+        </div>
+    </div>
+</section>

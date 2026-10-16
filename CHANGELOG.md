@@ -1,3 +1,10 @@
+# [1.16.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.15.0...v1.16.0) (2026-10-16)
+
+
+### Features
+
+* deshabilita el botón Facturar cuando no hay conexión con Mastersoft ([#38](https://github.com/cursorcl/dipalza_web_client/issues/38)) ([36254e8](https://github.com/cursorcl/dipalza_web_client/commit/36254e808bcbb257677f26a634ba6eda5920e062))
+
 # [1.15.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.14.2...v1.15.0) (2026-10-14)
 
 

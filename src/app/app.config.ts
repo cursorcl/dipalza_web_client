@@ -8,7 +8,6 @@ import { firstValueFrom } from 'rxjs';
 // Rutas y Servicios
 import { APP_ROUTE } from './app.routes';
 import { JwtInterceptor } from '@core/interceptor/jwt.interceptor';
-import { ErrorInterceptor } from '@core/interceptor/error.interceptor';
 import { DirectionService, LanguageService } from '@core';
 import { ProductoService } from './services/producto.service';
 
@@ -29,7 +28,6 @@ export const appConfig: ApplicationConfig = {
 
         { provide: LocationStrategy, useClass: HashLocationStrategy },
         { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
 
 
 

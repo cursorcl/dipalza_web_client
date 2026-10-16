@@ -1,3 +1,10 @@
+## [1.16.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.16.0...v1.16.1) (2026-10-16)
+
+
+### Bug Fixes
+
+* persiste el refreshToken al loguear para que la renovación silenciosa funcione ([#39](https://github.com/cursorcl/dipalza_web_client/issues/39)) ([0b8c3ac](https://github.com/cursorcl/dipalza_web_client/commit/0b8c3ac7a66dfa9b250f36d8d43ba2d4b4f17376))
+
 # [1.16.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.15.0...v1.16.0) (2026-10-16)
 
 

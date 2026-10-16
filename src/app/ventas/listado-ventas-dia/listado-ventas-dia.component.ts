@@ -8,6 +8,9 @@ import { Router, RouterLink } from '@angular/router';
 import { DataResultService } from '../models/data-results.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { interval } from 'rxjs';
+
+const INTERVALO_VERIFICACION_MASTERSOFT_MS = 30000;
 
 @Component({
   selector: 'app-listado-ventas-dia',
@@ -27,6 +30,7 @@ export class ListadoVentasDiaComponent implements OnInit {
 
   canFacture: boolean = false;
   procesando: boolean = false;
+  mastersoftDisponible: boolean = true;
   selected: Venta[] = [];
   SelectionType = SelectionType;
 
@@ -39,6 +43,24 @@ export class ListadoVentasDiaComponent implements OnInit {
 
   ngOnInit(): void {
     this.updateSalesByDate();
+    this.verificarConexionMastersoft();
+    interval(INTERVALO_VERIFICACION_MASTERSOFT_MS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.verificarConexionMastersoft());
+  }
+
+  // El botón "Facturar" depende de que el servidor pueda llegar a Mastersoft
+  // (ver MastersoftConexionService en el backend); si la conexión está
+  // caída, facturar fallaría para todas las ventas seleccionadas, así que
+  // se deshabilita preventivamente en vez de dejar que el usuario lo
+  // intente y reciba el error recién al enviar.
+  verificarConexionMastersoft() {
+    this.ventaService.obtenerEstadoConexionMastersoft()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ disponible }) => this.mastersoftDisponible = disponible,
+        error: () => this.mastersoftDisponible = false
+      });
   }
 
   updateSalesByDate() {

@@ -85,6 +85,10 @@ export class VentasService {
     return this.httpClient.post<FacturacionResponse>(this.urlFacturar, { ventaIds });
   }
 
+  obtenerEstadoConexionMastersoft(): Observable<{ disponible: boolean }> {
+    return this.httpClient.get<{ disponible: boolean }>(`${this.urlFacturar}/estado-conexion-mastersoft`);
+  }
+
   obtenerLotesFacturacion(page: number = 0, size: number = 20): Observable<PageResponse<LoteFacturacionResumen>> {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.httpClient.get<PageResponse<LoteFacturacionResumen>>(this.urlLotesFacturacion, { params });

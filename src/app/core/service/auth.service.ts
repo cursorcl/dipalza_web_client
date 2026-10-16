@@ -40,6 +40,11 @@ export class AuthService {
       return this.error('Usuario o clave incorrectos');
     } else {
       localStorage.setItem('currentUser', JSON.stringify(user));
+      // refreshToken() lee esta clave separada, no currentUser -- sin esto,
+      // el primer refresh tras cualquier login fresco manda refreshToken
+      // null al backend (que responde 500 en vez de 401, ver AuthController
+      // .webRefresh) y el usuario queda con 403 en todo hasta deslogearse.
+      localStorage.setItem('refreshToken', user.refreshToken);
       this.currentUserSubject.next(user);
       return user;
     }

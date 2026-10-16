@@ -1,3 +1,10 @@
+## [1.16.2](https://github.com/cursorcl/dipalza_web_client/compare/v1.16.1...v1.16.2) (2026-10-16)
+
+
+### Bug Fixes
+
+* quita el interceptor que recargaba la página en bucle infinito ante 401 ([#40](https://github.com/cursorcl/dipalza_web_client/issues/40)) ([00b6138](https://github.com/cursorcl/dipalza_web_client/commit/00b6138602487c2930e41e277f4a7c7606b9c2d5))
+
 ## [1.16.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.16.0...v1.16.1) (2026-10-16)
 
 

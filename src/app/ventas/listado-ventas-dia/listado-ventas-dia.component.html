@@ -22,7 +22,12 @@
                     <div class="col-sm-auto ms-auto">
                         <div class="d-flex justify-content-end gap-2">
                             <button class="btn btn-primary" (click)="updateSalesByDate()">Actualizar</button>
-                            <button class="btn btn-primary" (click)="facture()" [disabled]="!canFacture || procesando">
+                            <span class="text-danger align-self-center" *ngIf="!mastersoftDisponible">
+                                <i class="fas fa-exclamation-triangle"></i> Sin conexión con Mastersoft
+                            </span>
+                            <button class="btn btn-primary" (click)="facture()"
+                                [disabled]="!canFacture || procesando || !mastersoftDisponible"
+                                [title]="!mastersoftDisponible ? 'No se puede facturar: sin conexión con Mastersoft' : ''">
                                 <i class="fas fa-spinner fa-spin" *ngIf="procesando"></i>
                                 {{ procesando ? 'Procesando...' : 'Facturar' }}
                             </button>

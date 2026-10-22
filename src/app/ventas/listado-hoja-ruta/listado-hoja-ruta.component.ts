@@ -2,31 +2,20 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VentasService } from '../ventas.service';
 import { RutaHojaRutaDTO } from '../models/model';
 
-interface FilaHojaRuta {
-  codigoRuta: string;
-  nombreRuta: string;
-  codigoProducto: string;
-  nombreProducto: string;
-  numerosPiezas: string;
-  cantidad: number;
-  totalLinea: number;
-}
-
 @Component({
   selector: 'app-listado-hoja-ruta',
-  imports: [CommonModule, FormsModule, NgxDatatableModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './listado-hoja-ruta.component.html',
   styleUrl: './listado-hoja-ruta.component.scss'
 })
 export class ListadoHojaRutaComponent implements OnInit {
 
   fecha: string = '';
-  rows: FilaHojaRuta[] = [];
+  rutas: RutaHojaRutaDTO[] = [];
   loadingIndicator = true;
   descargando: 'xlsx' | 'pdf' | null = null;
   error: string | null = null;
@@ -45,34 +34,20 @@ export class ListadoHojaRutaComponent implements OnInit {
     this.error = null;
     this.ventaService.obtenerHojaRuta(this.fecha).subscribe({
       next: (resultado) => {
-        this.rows = this.aplanar(resultado.rutas);
+        this.rutas = resultado.rutas;
         this.loadingIndicator = false;
       },
       error: (err: HttpErrorResponse) => {
         console.error('Error al obtener la Hoja de Ruta:', err);
         this.error = 'No se pudo cargar la información.';
-        this.rows = [];
+        this.rutas = [];
         this.loadingIndicator = false;
       }
     });
   }
 
-  private aplanar(rutas: RutaHojaRutaDTO[]): FilaHojaRuta[] {
-    const filas: FilaHojaRuta[] = [];
-    for (const ruta of rutas) {
-      for (const item of ruta.items) {
-        filas.push({
-          codigoRuta: ruta.codigoRuta,
-          nombreRuta: ruta.nombreRuta,
-          codigoProducto: item.codigoProducto,
-          nombreProducto: item.nombreProducto,
-          numerosPiezas: item.numerosPiezas,
-          cantidad: item.cantidad,
-          totalLinea: item.totalLinea
-        });
-      }
-    }
-    return filas;
+  get hayDatos(): boolean {
+    return this.rutas.some(r => r.items.length > 0);
   }
 
   onFechaChange() {

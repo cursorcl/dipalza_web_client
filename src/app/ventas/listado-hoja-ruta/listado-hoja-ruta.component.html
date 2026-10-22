@@ -34,11 +34,11 @@
                                 </div>
                             </div>
                             <div class="col-sm-7 text-sm-end">
-                                <button class="btn btn-primary" [disabled]="!fecha || descargando || rows.length === 0" (click)="descargar('xlsx')">
+                                <button class="btn btn-primary" [disabled]="!fecha || descargando || !hayDatos" (click)="descargar('xlsx')">
                                     <span *ngIf="descargando === 'xlsx'" class="spinner-border spinner-border-sm me-1"></span>
                                     Descargar Excel
                                 </button>
-                                <button class="btn btn-outline-primary ms-2" [disabled]="!fecha || descargando || rows.length === 0" (click)="descargar('pdf')">
+                                <button class="btn btn-outline-primary ms-2" [disabled]="!fecha || descargando || !hayDatos" (click)="descargar('pdf')">
                                     <span *ngIf="descargando === 'pdf'" class="spinner-border spinner-border-sm me-1"></span>
                                     Descargar PDF
                                 </button>
@@ -47,32 +47,48 @@
 
                         <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
 
-                        <div class="alert alert-info" *ngIf="!loadingIndicator && !error && rows.length === 0">
+                        <div class="text-center py-4" *ngIf="loadingIndicator">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+
+                        <div class="alert alert-info" *ngIf="!loadingIndicator && !error && !hayDatos">
                             No hay productos numerados en ventas facturadas para este día.
                         </div>
 
-                        <ngx-datatable *ngIf="rows.length > 0" class="material" [rows]="rows" [columnMode]="'force'"
-                            [headerHeight]="50" [footerHeight]="50" [rowHeight]="'auto'" [limit]="15"
-                            [loadingIndicator]="loadingIndicator">
-
-                            <ngx-datatable-column name="Ruta" prop="nombreRuta" [width]="150"></ngx-datatable-column>
-                            <ngx-datatable-column name="Código" prop="codigoProducto" [width]="90"></ngx-datatable-column>
-                            <ngx-datatable-column name="Producto" prop="nombreProducto"></ngx-datatable-column>
-                            <ngx-datatable-column name="Números de Pieza" prop="numerosPiezas" [width]="200"></ngx-datatable-column>
-                            <ngx-datatable-column name="Cantidad" prop="cantidad" [width]="110"
-                                headerClass="align-center-header" cellClass="align-center-cell">
-                                <ng-template let-value="value" ngx-datatable-cell-template>
-                                    {{ value | number:'1.2-2' }}
-                                </ng-template>
-                            </ngx-datatable-column>
-                            <ngx-datatable-column name="Total" prop="totalLinea" [width]="130"
-                                headerClass="align-center-header" cellClass="align-center-cell">
-                                <ng-template let-value="value" ngx-datatable-cell-template>
-                                    {{ value | number:'1.0-0' }}
-                                </ng-template>
-                            </ngx-datatable-column>
-
-                        </ngx-datatable>
+                        <ng-container *ngIf="!loadingIndicator">
+                            <div class="mb-4" *ngFor="let ruta of rutas">
+                                <ng-container *ngIf="ruta.items.length > 0">
+                                    <h6 class="bg-secondary text-white p-2 mb-0">{{ ruta.nombreRuta }}</h6>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 90px;">Código</th>
+                                                <th>Producto</th>
+                                                <th style="width: 220px;">Números de Pieza</th>
+                                                <th style="width: 110px;" class="text-end">Cantidad</th>
+                                                <th style="width: 130px;" class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let item of ruta.items">
+                                                <td>{{ item.codigoProducto }}</td>
+                                                <td>{{ item.nombreProducto }}</td>
+                                                <td>{{ item.numerosPiezas }}</td>
+                                                <td class="text-end">{{ item.cantidad | number:'1.2-2' }}</td>
+                                                <td class="text-end">{{ item.totalLinea | number:'1.0-0' }}</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="fw-bold">
+                                                <td colspan="3" class="text-end">TOTAL</td>
+                                                <td class="text-end">{{ ruta.totalCantidad | number:'1.2-2' }}</td>
+                                                <td class="text-end">{{ ruta.totalLinea | number:'1.0-0' }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </ng-container>
+                            </div>
+                        </ng-container>
                     </div>
                 </div>
             </div>

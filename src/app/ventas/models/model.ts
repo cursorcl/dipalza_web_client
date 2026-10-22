@@ -252,6 +252,29 @@ export interface FaltantesPorFechaDTO {
     vendedores: VendedorFaltantesDTO[];
 }
 
+// Reporte "Hoja de Ruta": productos numerados vendidos (ventas ya facturadas) en una fecha,
+// agrupados por ruta de reparto y producto, con los números de pieza de cada uno.
+export interface ItemHojaRutaDTO {
+    codigoProducto: string;
+    nombreProducto: string;
+    numerosPiezas: string;
+    cantidad: number;
+    totalLinea: number;
+}
+
+export interface RutaHojaRutaDTO {
+    codigoRuta: string;
+    nombreRuta: string;
+    items: ItemHojaRutaDTO[];
+    totalCantidad: number;
+    totalLinea: number;
+}
+
+export interface HojaRutaDTO {
+    fecha: string;
+    rutas: RutaHojaRutaDTO[];
+}
+
 export interface PageResponse<T> {
     content: T[];
     totalElements: number;

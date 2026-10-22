@@ -89,6 +89,13 @@ export class VentasService {
     return this.httpClient.get<{ disponible: boolean }>(`${this.urlFacturar}/estado-conexion-mastersoft`);
   }
 
+  // Reporte "Hoja de Ruta": productos numerados vendidos ese día, agrupados por ruta de
+  // reparto. El backend arma el archivo completo (xlsx o pdf) y lo entrega como descarga.
+  descargarHojaRuta(fecha: string, formato: 'xlsx' | 'pdf'): Observable<Blob> {
+    const params = new HttpParams().set('fecha', fecha).set('formato', formato);
+    return this.httpClient.get(`${this.urlVenta}/hoja-ruta`, { params, responseType: 'blob' });
+  }
+
   obtenerLotesFacturacion(page: number = 0, size: number = 20): Observable<PageResponse<LoteFacturacionResumen>> {
     const params = new HttpParams().set('page', page).set('size', size);
     return this.httpClient.get<PageResponse<LoteFacturacionResumen>>(this.urlLotesFacturacion, { params });

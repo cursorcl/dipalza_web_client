@@ -51,6 +51,10 @@ export const VENTAS_ROUTES: Route[] = [
         loadComponent: () => import('./listado-detalle-faltantes/listado-detalle-faltantes.component').then((m) => m.ListadoDetalleFaltantesComponent)
     },
     {
+        path: 'hoja-ruta',
+        loadComponent: () => import('./listado-hoja-ruta/listado-hoja-ruta.component').then((m) => m.ListadoHojaRutaComponent)
+    },
+    {
         path: 'lotes-facturacion',
         loadComponent: () => import('./listado-lotes-facturacion/listado-lotes-facturacion.component').then((m) => m.ListadoLotesFacturacionComponent)
     },

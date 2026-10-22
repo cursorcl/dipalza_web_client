@@ -1,0 +1,13 @@
+// El navbar superior del layout es position:fixed, así que esta barra necesita quedar
+// pegada justo debajo de él (no en top:0, que quedaría tapada) -- la altura real se mide en
+// el componente (ver ngAfterViewInit) y llega acá como variable CSS, con un valor de
+// respaldo por si la medición falla.
+.hoja-ruta-controles {
+    position: sticky;
+    top: var(--hoja-ruta-navbar-h, 70px);
+    z-index: 10;
+    background: #fff;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
+}

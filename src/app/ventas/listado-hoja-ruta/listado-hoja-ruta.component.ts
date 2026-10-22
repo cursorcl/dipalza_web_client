@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -12,7 +12,7 @@ import { RutaHojaRutaDTO } from '../models/model';
   templateUrl: './listado-hoja-ruta.component.html',
   styleUrl: './listado-hoja-ruta.component.scss'
 })
-export class ListadoHojaRutaComponent implements OnInit {
+export class ListadoHojaRutaComponent implements OnInit, AfterViewInit {
 
   fecha: string = '';
   rutas: RutaHojaRutaDTO[] = [];
@@ -20,12 +20,21 @@ export class ListadoHojaRutaComponent implements OnInit {
   descargando: 'xlsx' | 'pdf' | null = null;
   error: string | null = null;
 
-  constructor(private ventaService: VentasService, private location: Location) {
+  constructor(private ventaService: VentasService, private location: Location, private host: ElementRef<HTMLElement>) {
   }
 
   ngOnInit(): void {
     this.fecha = new Date().toISOString().split('T')[0];
     this.cargar();
+  }
+
+  // El navbar superior del layout es position:fixed (ver .sticky en _nav.scss), así que la
+  // barra de fecha/botones necesita un "top" igual a su altura real para quedar pegada justo
+  // debajo -- se mide en vez de asumir un valor fijo, por si el navbar cambia de alto.
+  ngAfterViewInit(): void {
+    const navbar = document.querySelector<HTMLElement>('nav.main-navbar');
+    const alto = navbar?.offsetHeight ?? 70;
+    this.host.nativeElement.style.setProperty('--hoja-ruta-navbar-h', `${alto}px`);
   }
 
   private cargar() {

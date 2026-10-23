@@ -23,6 +23,18 @@
     }
 }
 
+// Cada factura es una <table> independiente -- sin table-layout:fixed, el navegador calcula el
+// ancho de "Producto" según el contenido de esa tabla sola, así que la misma columna queda con
+// un ancho distinto en cada tabla. Con table-layout:fixed, los anchos declarados en <th> (ver
+// el .html) se respetan igual en todas, columna por columna.
+.table {
+    table-layout: fixed;
+
+    td {
+        overflow-wrap: break-word;
+    }
+}
+
 @media print {
     .faltantes-controles {
         position: static;

@@ -11,4 +11,11 @@
     .no-print {
         display: none !important;
     }
+
+    // Las tablas de estos reportes tienen varias columnas (hasta 7 en Faltantes) -- en
+    // orientación vertical quedan demasiado angostas y el contenido se corta/apila letra por
+    // letra. Horizontal da el ancho necesario para que cada columna sea legible.
+    @page {
+        size: landscape;
+    }
 }

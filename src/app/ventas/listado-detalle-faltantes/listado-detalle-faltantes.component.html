@@ -49,6 +49,14 @@
                             <span class="text-danger">{{ value ?? '—' }}</span>
                         </ng-template>
                     </ngx-datatable-column>
+                    <ngx-datatable-column name="Factura" prop="nroFactura" [width]="140">
+                        <ng-template let-value="value" let-row="row" ngx-datatable-cell-template>
+                            <span *ngIf="value" [title]="row.facturaEstimada ? 'Estimada: la línea facturada más cercana de esta venta, esta línea no se facturó' : ''">
+                                {{ value }}<span *ngIf="row.facturaEstimada">&nbsp;(est.)</span>
+                            </span>
+                            <span *ngIf="!value">—</span>
+                        </ng-template>
+                    </ngx-datatable-column>
 
                 </ngx-datatable>
             </div>

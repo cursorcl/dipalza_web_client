@@ -219,6 +219,9 @@ export interface FacturacionResponse {
 // stock en una fecha puntual, agrupados por vendedor y cliente.
 // Cada línea solo llena su propia dimensión (cantidad o piezas), nunca las dos a la vez --
 // la que no aplica llega en null.
+// nroFactura: real si el faltante es parcial (esa misma línea sí se facturó por la parte
+// asignada); si es total, es una estimación (la línea facturada más cercana de la misma venta)
+// marcada con facturaEstimada=true. null solo si ninguna línea de la venta se facturó.
 export interface ItemFaltanteDTO {
     ventaDetalleId: number;
     ventaId: number;
@@ -231,6 +234,8 @@ export interface ItemFaltanteDTO {
     piezasAsignadas: number | null;
     piezasFaltantes: number | null;
     motivo: string | null;
+    nroFactura: string | null;
+    facturaEstimada: boolean;
 }
 
 export interface ClienteFaltantesDTO {

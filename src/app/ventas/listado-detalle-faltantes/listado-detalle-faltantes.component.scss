@@ -1,0 +1,13 @@
+// Color primario del tema ($colors.primary en _variable.scss, #6777ef) al 10% de opacidad.
+.grupo-header {
+    th {
+        background: rgba(103, 119, 239, .1);
+        color: #6777ef;
+    }
+}
+
+@media print {
+    .card {
+        border: none !important;
+    }
+}

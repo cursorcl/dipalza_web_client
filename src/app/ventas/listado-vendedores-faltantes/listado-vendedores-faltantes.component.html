@@ -13,77 +13,104 @@
     <div class="section-body">
         <div class="row">
             <div class="col-sm-12">
-                <div class="form-group row align-items-center">
-                    <div class="col-sm-5">
-                        <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <input type="date" class="form-control mx-2" style="max-width: 180px;"
-                                [(ngModel)]="fecha" (change)="onFechaChange()">
-                            <button class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted no-print">
+                            Productos sin facturar por falta de stock en el día elegido, agrupados por factura.
+                        </p>
+                        <p class="d-none d-print-block"><strong>Fecha:</strong> {{ fecha }}</p>
+
+                        <div class="form-group row align-items-center mb-3 faltantes-controles no-print">
+                            <div class="col-sm-5">
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <input type="date" class="form-control mx-2" style="max-width: 180px;"
+                                        [(ngModel)]="fecha" (change)="onFechaChange()">
+                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-7 text-sm-end">
+                                <div class="btn-group me-2" role="group">
+                                    <button class="btn btn-sm" [class.btn-primary]="vista === 'factura'"
+                                        [class.btn-outline-primary]="vista !== 'factura'" (click)="vista = 'factura'">
+                                        Por Factura
+                                    </button>
+                                    <button class="btn btn-sm" [class.btn-primary]="vista === 'producto'"
+                                        [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
+                                        Por Producto
+                                    </button>
+                                </div>
+                                <button class="btn btn-sm btn-outline-secondary" [disabled]="!rows.length" (click)="imprimir()">
+                                    <i class="fas fa-print"></i>
+                                    Imprimir
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-sm-7 text-sm-end">
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-sm" [class.btn-primary]="vista === 'factura'"
-                                [class.btn-outline-primary]="vista !== 'factura'" (click)="vista = 'factura'">
-                                Por Factura
-                            </button>
-                            <button class="btn btn-sm" [class.btn-primary]="vista === 'producto'"
-                                [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
-                                Por Producto
-                            </button>
+
+                        <div class="text-center py-4" *ngIf="loadingIndicator">
+                            <div class="spinner-border text-primary"></div>
                         </div>
+
+                        <div class="alert alert-info" *ngIf="!loadingIndicator && !rows.length">
+                            No hay faltantes para este día.
+                        </div>
+
+                        <!-- Vista: una fila por factura (o por venta, si no llegó a facturar nada) -->
+                        <table class="table table-bordered table-sm" *ngIf="!loadingIndicator && vista === 'factura' && rows.length">
+                            <thead>
+                                <tr class="grupo-header">
+                                    <th style="width: 170px;">Factura</th>
+                                    <th>Cliente</th>
+                                    <th>Vendedor</th>
+                                    <th style="width: 170px;" class="text-center">Productos Faltantes</th>
+                                    <th style="width: 50px;" class="no-print"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let fila of rows">
+                                    <td>
+                                        <span *ngIf="fila.nroFactura" [title]="fila.facturaEstimada ? 'Estimada: la línea facturada más cercana de esta venta' : ''">
+                                            {{ fila.nroFactura }}<span *ngIf="fila.facturaEstimada">&nbsp;(est.)</span>
+                                        </span>
+                                        <span *ngIf="!fila.nroFactura">Venta #{{ fila.ventaId }} (sin factura)</span>
+                                    </td>
+                                    <td>{{ fila.nombreCliente }}</td>
+                                    <td>{{ fila.nombreVendedor }}</td>
+                                    <td class="text-center"><span class="badge bg-danger">{{ fila.cantidadItems }}</span></td>
+                                    <td class="no-print">
+                                        <a class="tblViewBtn" (click)="gotoDetalle(fila)" style="cursor: pointer;">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Vista: total de productos faltantes (agregado, sin factura/cliente) -->
+                        <table class="table table-bordered table-sm" *ngIf="!loadingIndicator && vista === 'producto' && rows.length">
+                            <thead>
+                                <tr class="grupo-header">
+                                    <th style="width: 100px;">Código</th>
+                                    <th>Producto</th>
+                                    <th style="width: 180px;" class="text-end">Cantidad Faltante</th>
+                                    <th style="width: 180px;" class="text-end">Piezas Faltante</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let p of productosAgregados">
+                                    <td>{{ p.codigoProducto }}</td>
+                                    <td>{{ p.nombreProducto }}</td>
+                                    <td class="text-end">{{ p.cantidadFaltanteTotal | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ p.piezasFaltanteTotal | number:'1.2-2' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <!-- Vista: una fila por factura (o por venta, si no llegó a facturar nada) -->
-                <ngx-datatable *ngIf="vista === 'factura'" class="material" [rows]="rows"
-                    [loadingIndicator]="loadingIndicator" [columnMode]="'force'" [headerHeight]="50"
-                    [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
-
-                    <ngx-datatable-column name="Factura" prop="nroFactura" [width]="150">
-                        <ng-template let-value="value" let-row="row" ngx-datatable-cell-template>
-                            <span *ngIf="value" [title]="row.facturaEstimada ? 'Estimada: la línea facturada más cercana de esta venta' : ''">
-                                {{ value }}<span *ngIf="row.facturaEstimada">&nbsp;(est.)</span>
-                            </span>
-                            <span *ngIf="!value">Venta #{{ row.ventaId }} (sin factura)</span>
-                        </ng-template>
-                    </ngx-datatable-column>
-                    <ngx-datatable-column name="Cliente" prop="nombreCliente"></ngx-datatable-column>
-                    <ngx-datatable-column name="Vendedor" prop="nombreVendedor"></ngx-datatable-column>
-                    <ngx-datatable-column name="Productos Faltantes" prop="cantidadItems" [width]="180"
-                        headerClass="align-center-header" cellClass="align-center-cell">
-                        <ng-template let-value="value" ngx-datatable-cell-template>
-                            <span class="badge bg-danger">{{ value }}</span>
-                        </ng-template>
-                    </ngx-datatable-column>
-                    <ngx-datatable-column name="" [width]="60" [sortable]="false">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            <a class="tblViewBtn" (click)="gotoDetalle(row)" style="cursor: pointer;">
-                                <i class="fas fa-eye"></i>
-                            </a>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                </ngx-datatable>
-
-                <!-- Vista: total de productos faltantes (agregado, sin vendedor/cliente) -->
-                <ngx-datatable *ngIf="vista === 'producto'" class="material" [rows]="productosAgregados"
-                    [loadingIndicator]="loadingIndicator" [columnMode]="'force'" [headerHeight]="50"
-                    [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
-
-                    <ngx-datatable-column name="Código" prop="codigoProducto" [width]="100"></ngx-datatable-column>
-                    <ngx-datatable-column name="Producto" prop="nombreProducto"></ngx-datatable-column>
-                    <ngx-datatable-column name="Cantidad Faltante" prop="cantidadFaltanteTotal" [width]="180"
-                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
-                    <ngx-datatable-column name="Piezas Faltante" prop="piezasFaltanteTotal" [width]="180"
-                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
-
-                </ngx-datatable>
             </div>
         </div>
     </div>

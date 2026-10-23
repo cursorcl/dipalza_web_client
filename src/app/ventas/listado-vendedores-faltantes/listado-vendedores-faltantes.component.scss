@@ -1,9 +1,29 @@
-::ng-deep .ngx-datatable.material .datatable-row-detail {
-    height: auto !important;
-    overflow: visible !important;
+// Mismo patrón que listado-hoja-ruta.component.scss.
+.faltantes-controles {
+    position: sticky;
+    top: var(--faltantes-navbar-h, 70px);
+    z-index: 10;
+    background: #fff;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
 }
 
-::ng-deep .datatable-row-detail {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+// Color primario del tema ($colors.primary en _variable.scss, #6777ef) al 10% de opacidad.
+.grupo-header {
+    th {
+        background: rgba(103, 119, 239, .1);
+        color: #6777ef;
+    }
+}
+
+@media print {
+    .faltantes-controles {
+        position: static;
+        box-shadow: none;
+    }
+
+    .card {
+        border: none !important;
+    }
 }

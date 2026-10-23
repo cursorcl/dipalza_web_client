@@ -1,8 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { NgxDatatableModule } from '@swimlane/ngx-datatable';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VentasService } from '../ventas.service';
 import { FacturaFaltantesDTO } from '../models/model';
@@ -26,11 +25,11 @@ interface ProductoAgregado {
 
 @Component({
   selector: 'app-listado-vendedores-faltantes',
-  imports: [CommonModule, FormsModule, NgxDatatableModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './listado-vendedores-faltantes.component.html',
   styleUrl: './listado-vendedores-faltantes.component.scss'
 })
-export class ListadoVendedoresFaltantesComponent implements OnInit {
+export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewInit {
 
   fecha: string | null = null;
   rows: FilaFactura[] = [];
@@ -38,12 +37,20 @@ export class ListadoVendedoresFaltantesComponent implements OnInit {
   vista: 'factura' | 'producto' = 'factura';
   loadingIndicator = true;
 
-  constructor(private ventaService: VentasService, private router: Router, private location: Location) {
+  constructor(private ventaService: VentasService, private router: Router, private location: Location, private host: ElementRef<HTMLElement>) {
   }
 
   ngOnInit(): void {
     // Sin fecha: el backend resuelve la última fecha real con faltantes.
     this.cargar(undefined);
+  }
+
+  // Mismo criterio que Hoja de Ruta: el navbar superior es position:fixed, así que la barra
+  // de controles necesita un "top" igual a su altura real para quedar pegada justo debajo.
+  ngAfterViewInit(): void {
+    const navbar = document.querySelector<HTMLElement>('nav.main-navbar');
+    const alto = navbar?.offsetHeight ?? 70;
+    this.host.nativeElement.style.setProperty('--faltantes-navbar-h', `${alto}px`);
   }
 
   private cargar(fecha: string | undefined) {
@@ -117,6 +124,10 @@ export class ListadoVendedoresFaltantesComponent implements OnInit {
     this.router.navigate(['/ventas/faltantes/detalle'], {
       state: { facturaSeleccionada: fila.factura }
     });
+  }
+
+  imprimir() {
+    window.print();
   }
 
   goBack() {

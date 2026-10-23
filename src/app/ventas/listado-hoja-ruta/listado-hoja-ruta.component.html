@@ -15,12 +15,13 @@
             <div class="col-sm-12">
                 <div class="card">
                     <div class="card-body">
-                        <p class="text-muted">
+                        <p class="text-muted no-print">
                             Productos numerados vendidos (ventas ya facturadas) en el día elegido,
                             agrupados por ruta de reparto, con los números de pieza de cada producto.
                         </p>
+                        <p class="d-none d-print-block"><strong>Fecha:</strong> {{ fecha }}</p>
 
-                        <div class="form-group row align-items-center mb-3 hoja-ruta-controles">
+                        <div class="form-group row align-items-center mb-3 hoja-ruta-controles no-print">
                             <div class="col-sm-5">
                                 <div class="d-flex align-items-center">
                                     <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
@@ -34,7 +35,11 @@
                                 </div>
                             </div>
                             <div class="col-sm-7 text-sm-end">
-                                <button class="btn btn-primary" [disabled]="!fecha || descargando || !hayDatos" (click)="descargar('xlsx')">
+                                <button class="btn btn-outline-secondary" [disabled]="!hayDatos" (click)="imprimir()">
+                                    <i class="fas fa-print"></i>
+                                    Imprimir
+                                </button>
+                                <button class="btn btn-primary ms-2" [disabled]="!fecha || descargando || !hayDatos" (click)="descargar('xlsx')">
                                     <span *ngIf="descargando === 'xlsx'" class="spinner-border spinner-border-sm me-1"></span>
                                     Descargar Excel
                                 </button>
@@ -58,7 +63,7 @@
                         <ng-container *ngIf="!loadingIndicator">
                             <div class="mb-4" *ngFor="let ruta of rutas">
                                 <ng-container *ngIf="ruta.items.length > 0">
-                                    <h6 class="bg-secondary text-white p-2 mb-0">{{ ruta.nombreRuta }}</h6>
+                                    <h6 class="grupo-header p-2 mb-0">{{ ruta.nombreRuta }}</h6>
                                     <table class="table table-bordered table-sm mb-0">
                                         <thead>
                                             <tr>

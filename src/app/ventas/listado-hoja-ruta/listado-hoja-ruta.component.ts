@@ -101,6 +101,10 @@ export class ListadoHojaRutaComponent implements OnInit, AfterViewInit {
     });
   }
 
+  imprimir() {
+    window.print();
+  }
+
   goBack() {
     this.location.back();
   }

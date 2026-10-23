@@ -1,1 +1,14 @@
 /* You can add global styles to this file, and also import other style files */
+
+// Al imprimir una pantalla (botón "Imprimir" de Hoja de Ruta/Faltantes), se oculta todo el
+// chrome del layout (navbar fijo, sidebars) y cualquier control marcado .no-print (selector
+// de fecha, botones de descarga) -- solo queda el contenido que realmente se quiere imprimir.
+@media print {
+    app-header,
+    app-sidebar,
+    app-right-sidebar,
+    .breadcrumb-style,
+    .no-print {
+        display: none !important;
+    }
+}

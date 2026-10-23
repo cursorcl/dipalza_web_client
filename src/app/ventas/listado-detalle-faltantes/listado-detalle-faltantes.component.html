@@ -1,10 +1,7 @@
 <section class="main-content">
     <ul class="breadcrumb breadcrumb-style">
         <li class="breadcrumb-item">
-            <h5 class="page-title m-b-0">
-                Faltantes de {{ factura?.nombreCliente }}
-                <small class="text-muted">({{ factura?.nroFactura ?? ('Venta #' + factura?.ventaId + ' sin factura') }})</small>
-            </h5>
+            <h5 class="page-title m-b-0">Faltantes de {{ factura?.nombreCliente }}</h5>
         </li>
 
         <li class="breadcrumb-item bcrumb-1">
@@ -22,46 +19,60 @@
     <div class="section-body">
         <div class="row">
             <div class="col-sm-12">
-                <ngx-datatable class="material" [rows]="rows" [columnMode]="'force'" [headerHeight]="50"
-                    [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-end mb-2 no-print">
+                            <button class="btn btn-sm btn-outline-secondary" (click)="imprimir()">
+                                <i class="fas fa-print"></i>
+                                Imprimir
+                            </button>
+                        </div>
 
-                    <ngx-datatable-column name="Código" prop="codigoProducto" [width]="100"></ngx-datatable-column>
-                    <ngx-datatable-column name="Producto" prop="nombreProducto"></ngx-datatable-column>
-                    <ngx-datatable-column name="Cantidad Solicitada" prop="cantidadSolicitada" [width]="150"
-                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
-                    <ngx-datatable-column name="Cantidad Faltante" prop="cantidadFaltante" [width]="150"
-                        headerClass="align-center-header" cellClass="align-center-cell">
-                        <ng-template let-value="value" ngx-datatable-cell-template>
-                            {{ value ?? '—' }}
-                        </ng-template>
-                    </ngx-datatable-column>
-                    <ngx-datatable-column name="Piezas Solicitadas" prop="piezasSolicitadas" [width]="150"
-                        headerClass="align-center-header" cellClass="align-center-cell">
-                        <ng-template let-value="value" ngx-datatable-cell-template>
-                            {{ value ?? '—' }}
-                        </ng-template>
-                    </ngx-datatable-column>
-                    <ngx-datatable-column name="Piezas Faltantes" prop="piezasFaltantes" [width]="150"
-                        headerClass="align-center-header" cellClass="align-center-cell">
-                        <ng-template let-value="value" ngx-datatable-cell-template>
-                            {{ value ?? '—' }}
-                        </ng-template>
-                    </ngx-datatable-column>
-                    <ngx-datatable-column name="Motivo" prop="motivo">
-                        <ng-template let-value="value" ngx-datatable-cell-template>
-                            <span class="text-danger">{{ value ?? '—' }}</span>
-                        </ng-template>
-                    </ngx-datatable-column>
-                    <ngx-datatable-column name="Factura" prop="nroFactura" [width]="140">
-                        <ng-template let-value="value" let-row="row" ngx-datatable-cell-template>
-                            <span *ngIf="value" [title]="row.facturaEstimada ? 'Estimada: la línea facturada más cercana de esta venta, esta línea no se facturó' : ''">
-                                {{ value }}<span *ngIf="row.facturaEstimada">&nbsp;(est.)</span>
-                            </span>
-                            <span *ngIf="!value">—</span>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                </ngx-datatable>
+                        <table class="table table-bordered table-sm mb-0">
+                            <thead>
+                                <tr class="grupo-header">
+                                    <th colspan="7" class="p-2">
+                                        {{ factura?.nombreCliente }}
+                                        <span *ngIf="factura?.rutCliente" class="fw-normal">({{ factura?.rutCliente }})</span>
+                                        &mdash;
+                                        <span *ngIf="factura?.nroFactura">
+                                            Factura {{ factura?.nroFactura }}
+                                            <span *ngIf="facturaEstimada">(est.)</span>
+                                        </span>
+                                        <span *ngIf="!factura?.nroFactura">Venta #{{ factura?.ventaId }} (sin factura)</span>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 100px;">Código</th>
+                                    <th>Producto</th>
+                                    <th style="width: 140px;" class="text-end">Cant. Solicitada</th>
+                                    <th style="width: 140px;" class="text-end">Cant. Faltante</th>
+                                    <th style="width: 140px;" class="text-end">Piezas Solicitadas</th>
+                                    <th style="width: 140px;" class="text-end">Piezas Faltantes</th>
+                                    <th>Motivo</th>
+                                    <th style="width: 140px;">Factura</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let item of rows">
+                                    <td>{{ item.codigoProducto }}</td>
+                                    <td>{{ item.nombreProducto }}</td>
+                                    <td class="text-end">{{ item.cantidadSolicitada }}</td>
+                                    <td class="text-end">{{ item.cantidadFaltante ?? '—' }}</td>
+                                    <td class="text-end">{{ item.piezasSolicitadas ?? '—' }}</td>
+                                    <td class="text-end">{{ item.piezasFaltantes ?? '—' }}</td>
+                                    <td><span class="text-danger">{{ item.motivo ?? '—' }}</span></td>
+                                    <td>
+                                        <span *ngIf="item.nroFactura" [title]="item.facturaEstimada ? 'Estimada: la línea facturada más cercana de esta venta, esta línea no se facturó' : ''">
+                                            {{ item.nroFactura }}<span *ngIf="item.facturaEstimada">&nbsp;(est.)</span>
+                                        </span>
+                                        <span *ngIf="!item.nroFactura">—</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

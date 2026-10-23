@@ -63,10 +63,7 @@
                         <ng-container *ngIf="!loadingIndicator && vista === 'factura'">
                             <div class="mb-4" *ngFor="let factura of facturas">
                                 <h6 class="grupo-header p-2 mb-0">
-                                    <span *ngIf="factura.nroFactura">
-                                        Factura {{ factura.nroFactura }}
-                                        <span *ngIf="factura.items[0]?.facturaEstimada">(est.)</span>
-                                    </span>
+                                    <span *ngIf="factura.nroFactura">Factura {{ factura.nroFactura }}</span>
                                     <span *ngIf="!factura.nroFactura">Venta #{{ factura.ventaId }} (sin factura)</span>
                                     &mdash; {{ factura.nombreCliente }}
                                     <span *ngIf="factura.rutCliente" class="fw-normal">({{ factura.rutCliente }})</span>

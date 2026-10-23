@@ -28,9 +28,9 @@
                     </div>
                     <div class="col-sm-7 text-sm-end">
                         <div class="btn-group" role="group">
-                            <button class="btn btn-sm" [class.btn-primary]="vista === 'vendedor'"
-                                [class.btn-outline-primary]="vista !== 'vendedor'" (click)="vista = 'vendedor'">
-                                Por Vendedor
+                            <button class="btn btn-sm" [class.btn-primary]="vista === 'factura'"
+                                [class.btn-outline-primary]="vista !== 'factura'" (click)="vista = 'factura'">
+                                Por Factura
                             </button>
                             <button class="btn btn-sm" [class.btn-primary]="vista === 'producto'"
                                 [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
@@ -40,56 +40,32 @@
                     </div>
                 </div>
 
-                <!-- Vista: Vendedor -> Cliente (fila expandible) -->
-                <ngx-datatable *ngIf="vista === 'vendedor'" class="material" [rows]="rows"
+                <!-- Vista: una fila por factura (o por venta, si no llegó a facturar nada) -->
+                <ngx-datatable *ngIf="vista === 'factura'" class="material" [rows]="rows"
                     [loadingIndicator]="loadingIndicator" [columnMode]="'force'" [headerHeight]="50"
                     [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
 
-                    <ngx-datatable-row-detail [rowHeight]="getRowDetailHeight" #myDetailRow>
-                        <ng-template let-row="row" ngx-datatable-row-detail-template>
-                            <div style="padding-left:50px; margin-bottom: 20px;">
-                                <table class="table table-sm table-hover border">
-                                    <thead class="thead-light">
-                                        <tr>
-                                            <th>Rut</th>
-                                            <th>Cliente</th>
-                                            <th class="text-center">Productos Faltantes</th>
-                                            <th></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr *ngFor="let cliente of row.clientes">
-                                            <td>{{ cliente.rutCliente }}</td>
-                                            <td>{{ cliente.nombreCliente }}</td>
-                                            <td class="text-center"><span class="badge bg-danger">{{ cliente.items.length }}</span></td>
-                                            <td>
-                                                <a class="tblViewBtn" (click)="gotoDetalle(cliente)" style="cursor: pointer;">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </ng-template>
-                    </ngx-datatable-row-detail>
-
-                    <ngx-datatable-column [width]="50" [resizeable]="false" [sortable]="false" [draggable]="false"
-                        [canAutoResize]="false">
-                        <ng-template let-row="row" let-expanded="expanded" ngx-datatable-cell-template>
-                            <a href="javascript:void(0)" [class.datatable-icon-right]="!expanded"
-                                [class.datatable-icon-down]="expanded" title="Expandir/Colapsar"
-                                (click)="toggleExpandRow(row)">
-                            </a>
+                    <ngx-datatable-column name="Factura" prop="nroFactura" [width]="150">
+                        <ng-template let-value="value" let-row="row" ngx-datatable-cell-template>
+                            <span *ngIf="value" [title]="row.facturaEstimada ? 'Estimada: la línea facturada más cercana de esta venta' : ''">
+                                {{ value }}<span *ngIf="row.facturaEstimada">&nbsp;(est.)</span>
+                            </span>
+                            <span *ngIf="!value">Venta #{{ row.ventaId }} (sin factura)</span>
                         </ng-template>
                     </ngx-datatable-column>
-
-                    <ngx-datatable-column name="Código" prop="codigoVendedor" [width]="120"></ngx-datatable-column>
+                    <ngx-datatable-column name="Cliente" prop="nombreCliente"></ngx-datatable-column>
                     <ngx-datatable-column name="Vendedor" prop="nombreVendedor"></ngx-datatable-column>
-                    <ngx-datatable-column name="Clientes" [width]="100" headerClass="align-center-header"
-                        cellClass="align-center-cell">
+                    <ngx-datatable-column name="Productos Faltantes" prop="cantidadItems" [width]="180"
+                        headerClass="align-center-header" cellClass="align-center-cell">
+                        <ng-template let-value="value" ngx-datatable-cell-template>
+                            <span class="badge bg-danger">{{ value }}</span>
+                        </ng-template>
+                    </ngx-datatable-column>
+                    <ngx-datatable-column name="" [width]="60" [sortable]="false">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            {{ row.clientes.length }}
+                            <a class="tblViewBtn" (click)="gotoDetalle(row)" style="cursor: pointer;">
+                                <i class="fas fa-eye"></i>
+                            </a>
                         </ng-template>
                     </ngx-datatable-column>
 

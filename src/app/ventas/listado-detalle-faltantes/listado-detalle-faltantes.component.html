@@ -1,7 +1,10 @@
 <section class="main-content">
     <ul class="breadcrumb breadcrumb-style">
         <li class="breadcrumb-item">
-            <h5 class="page-title m-b-0">Faltantes de {{ cliente?.nombreCliente }}</h5>
+            <h5 class="page-title m-b-0">
+                Faltantes de {{ factura?.nombreCliente }}
+                <small class="text-muted">({{ factura?.nroFactura ?? ('Venta #' + factura?.ventaId + ' sin factura') }})</small>
+            </h5>
         </li>
 
         <li class="breadcrumb-item bcrumb-1">

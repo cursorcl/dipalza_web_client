@@ -216,7 +216,7 @@ export interface FacturacionResponse {
 }
 
 // Pantalla "Faltantes" (menú permanente, no efímera): productos sin facturar por falta de
-// stock en una fecha puntual, agrupados por vendedor y cliente.
+// stock en una fecha puntual, agrupados por factura.
 // Cada línea solo llena su propia dimensión (cantidad o piezas), nunca las dos a la vez --
 // la que no aplica llega en null.
 // nroFactura: real si el faltante es parcial (esa misma línea sí se facturó por la parte
@@ -238,23 +238,23 @@ export interface ItemFaltanteDTO {
     facturaEstimada: boolean;
 }
 
-export interface ClienteFaltantesDTO {
+// nroFactura es null solo cuando ninguna línea de ventaId se facturó -- en ese caso el grupo
+// se identifica por ventaId en su lugar.
+export interface FacturaFaltantesDTO {
+    nroFactura: string | null;
+    ventaId: number;
     rutCliente: string | null;
     codigoCliente: string | null;
     nombreCliente: string | null;
-    items: ItemFaltanteDTO[];
-}
-
-export interface VendedorFaltantesDTO {
     codigoVendedor: string | null;
     tipoVendedor: string | null;
     nombreVendedor: string | null;
-    clientes: ClienteFaltantesDTO[];
+    items: ItemFaltanteDTO[];
 }
 
 export interface FaltantesPorFechaDTO {
     fecha: string | null;
-    vendedores: VendedorFaltantesDTO[];
+    facturas: FacturaFaltantesDTO[];
 }
 
 // Reporte "Hoja de Ruta": productos numerados vendidos (ventas ya facturadas) en una fecha,

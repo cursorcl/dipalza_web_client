@@ -1,0 +1,102 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Hoja de Ruta</h5>
+        </li>
+
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center">
+                <i class="fas fa-home font-20"></i>
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted no-print">
+                            Productos numerados vendidos (ventas ya facturadas) en el día elegido,
+                            agrupados por ruta de reparto, con los números de pieza de cada producto.
+                        </p>
+                        <p class="d-none d-print-block"><strong>Fecha:</strong> {{ fecha }}</p>
+
+                        <div class="form-group row align-items-center mb-3 hoja-ruta-controles no-print">
+                            <div class="col-sm-5">
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <input type="date" class="form-control mx-2" style="max-width: 180px;"
+                                        [(ngModel)]="fecha" (change)="onFechaChange()">
+                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-7 text-sm-end">
+                                <button class="btn btn-outline-secondary" [disabled]="!hayDatos" (click)="imprimir()">
+                                    <i class="fas fa-print"></i>
+                                    Imprimir
+                                </button>
+                                <button class="btn btn-primary ms-2" [disabled]="!fecha || descargando || !hayDatos" (click)="descargar('xlsx')">
+                                    <span *ngIf="descargando === 'xlsx'" class="spinner-border spinner-border-sm me-1"></span>
+                                    Descargar Excel
+                                </button>
+                                <button class="btn btn-outline-primary ms-2" [disabled]="!fecha || descargando || !hayDatos" (click)="descargar('pdf')">
+                                    <span *ngIf="descargando === 'pdf'" class="spinner-border spinner-border-sm me-1"></span>
+                                    Descargar PDF
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-danger" *ngIf="error">{{ error }}</div>
+
+                        <div class="text-center py-4" *ngIf="loadingIndicator">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+
+                        <div class="alert alert-info" *ngIf="!loadingIndicator && !error && !hayDatos">
+                            No hay productos numerados en ventas facturadas para este día.
+                        </div>
+
+                        <ng-container *ngIf="!loadingIndicator">
+                            <div class="mb-4" *ngFor="let ruta of rutas">
+                                <ng-container *ngIf="ruta.items.length > 0">
+                                    <h6 class="grupo-header p-2 mb-0">{{ ruta.nombreRuta }}</h6>
+                                    <table class="table table-bordered table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th style="width: 90px;">Código</th>
+                                                <th>Producto</th>
+                                                <th style="width: 220px;">Números de Pieza</th>
+                                                <th style="width: 110px;" class="text-end">Cantidad</th>
+                                                <th style="width: 130px;" class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr *ngFor="let item of ruta.items">
+                                                <td>{{ item.codigoProducto }}</td>
+                                                <td>{{ item.nombreProducto }}</td>
+                                                <td>{{ item.numerosPiezas }}</td>
+                                                <td class="text-end">{{ item.cantidad | number:'1.2-2' }}</td>
+                                                <td class="text-end">{{ item.totalLinea | number:'1.0-0' }}</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="fw-bold">
+                                                <td colspan="3" class="text-end">TOTAL</td>
+                                                <td class="text-end">{{ ruta.totalCantidad | number:'1.2-2' }}</td>
+                                                <td class="text-end">{{ ruta.totalLinea | number:'1.0-0' }}</td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </ng-container>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

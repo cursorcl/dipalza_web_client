@@ -1,0 +1,35 @@
+// El navbar superior del layout es position:fixed, así que esta barra necesita quedar
+// pegada justo debajo de él (no en top:0, que quedaría tapada) -- la altura real se mide en
+// el componente (ver ngAfterViewInit) y llega acá como variable CSS, con un valor de
+// respaldo por si la medición falla.
+.hoja-ruta-controles {
+    position: sticky;
+    top: var(--hoja-ruta-navbar-h, 70px);
+    z-index: 10;
+    background: #fff;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
+}
+
+// Color primario del tema ($colors.primary en _variable.scss, #6777ef) al 10% de opacidad,
+// en vez del bg-secondary gris genérico de Bootstrap.
+.grupo-header {
+    background: rgba(103, 119, 239, .1);
+    color: #6777ef;
+    font-weight: 600;
+}
+
+// Las reglas que ocultan navbar/sidebar al imprimir van en src/styles.scss (global) --
+// app-header/app-sidebar no son parte de la plantilla de este componente, así que un
+// @media print acá (con encapsulación de vista) no los alcanza.
+@media print {
+    .hoja-ruta-controles {
+        position: static;
+        box-shadow: none;
+    }
+
+    .card {
+        border: none !important;
+    }
+}

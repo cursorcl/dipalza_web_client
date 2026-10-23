@@ -1,9 +1,47 @@
-::ng-deep .ngx-datatable.material .datatable-row-detail {
-    height: auto !important;
-    overflow: visible !important;
+// Mismo patrón que listado-hoja-ruta.component.scss.
+.faltantes-controles {
+    position: sticky;
+    top: var(--faltantes-navbar-h, 70px);
+    z-index: 10;
+    background: #fff;
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
 }
 
-::ng-deep .datatable-row-detail {
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #dee2e6;
+// Color primario del tema ($colors.primary en _variable.scss, #6777ef) al 10% de opacidad --
+// mismo criterio que listado-hoja-ruta.component.scss. Se aplica tanto al <h6> de cada factura
+// (vista "Por Factura") como a las <th> de la fila de encabezado de la tabla "Por Producto".
+.grupo-header {
+    background: rgba(103, 119, 239, .1);
+    color: #6777ef;
+    font-weight: 600;
+
+    th {
+        background: rgba(103, 119, 239, .1);
+        color: #6777ef;
+    }
+}
+
+// Cada factura es una <table> independiente -- sin table-layout:fixed, el navegador calcula el
+// ancho de "Producto" según el contenido de esa tabla sola, así que la misma columna queda con
+// un ancho distinto en cada tabla. Con table-layout:fixed, los anchos declarados en <th> (ver
+// el .html) se respetan igual en todas, columna por columna.
+.table {
+    table-layout: fixed;
+
+    td {
+        overflow-wrap: break-word;
+    }
+}
+
+@media print {
+    .faltantes-controles {
+        position: static;
+        box-shadow: none;
+    }
+
+    .card {
+        border: none !important;
+    }
 }

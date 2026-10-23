@@ -1,11 +1,10 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
-import { DatatableComponent, NgxDatatableModule } from '@swimlane/ngx-datatable';
+import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VentasService } from '../ventas.service';
-import { ClienteFaltantesDTO, VendedorFaltantesDTO } from '../models/model';
+import { FacturaFaltantesDTO } from '../models/model';
 
 interface ProductoAgregado {
   codigoProducto: string;
@@ -16,21 +15,19 @@ interface ProductoAgregado {
 
 @Component({
   selector: 'app-listado-vendedores-faltantes',
-  imports: [CommonModule, FormsModule, NgxDatatableModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './listado-vendedores-faltantes.component.html',
   styleUrl: './listado-vendedores-faltantes.component.scss'
 })
-export class ListadoVendedoresFaltantesComponent implements OnInit {
+export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewInit {
 
   fecha: string | null = null;
-  rows: VendedorFaltantesDTO[] = [];
+  facturas: FacturaFaltantesDTO[] = [];
   productosAgregados: ProductoAgregado[] = [];
-  vista: 'vendedor' | 'producto' = 'vendedor';
+  vista: 'factura' | 'producto' = 'factura';
   loadingIndicator = true;
 
-  @ViewChild(DatatableComponent) table!: DatatableComponent;
-
-  constructor(private ventaService: VentasService, private router: Router, private location: Location) {
+  constructor(private ventaService: VentasService, private location: Location, private host: ElementRef<HTMLElement>) {
   }
 
   ngOnInit(): void {
@@ -38,17 +35,22 @@ export class ListadoVendedoresFaltantesComponent implements OnInit {
     this.cargar(undefined);
   }
 
+  // Mismo criterio que Hoja de Ruta: el navbar superior es position:fixed, así que la barra
+  // de controles necesita un "top" igual a su altura real para quedar pegada justo debajo.
+  ngAfterViewInit(): void {
+    const navbar = document.querySelector<HTMLElement>('nav.main-navbar');
+    const alto = navbar?.offsetHeight ?? 70;
+    this.host.nativeElement.style.setProperty('--faltantes-navbar-h', `${alto}px`);
+  }
+
   private cargar(fecha: string | undefined) {
     this.loadingIndicator = true;
     this.ventaService.obtenerFaltantes(fecha).subscribe({
       next: (resultado) => {
         this.fecha = resultado.fecha;
-        this.rows = resultado.vendedores;
-        this.productosAgregados = this.calcularProductosAgregados(resultado.vendedores);
+        this.facturas = resultado.facturas;
+        this.productosAgregados = this.calcularProductosAgregados(resultado.facturas);
         this.loadingIndicator = false;
-        // La tabla debe iniciar con todas las filas expandidas; expandAllRows() necesita que
-        // ngx-datatable ya haya procesado las filas nuevas, por eso se llama en el próximo tick.
-        setTimeout(() => this.table?.rowDetail?.expandAllRows());
       },
       error: (error: HttpErrorResponse) => {
         console.error('Error al obtener los faltantes:', error);
@@ -57,29 +59,29 @@ export class ListadoVendedoresFaltantesComponent implements OnInit {
     });
   }
 
-  // Suma el faltante REAL (solicitada - asignada), no la cantidad solicitada completa -- una
-  // línea con stock parcial ya alcanzó a cubrir una parte, esa parte no debe contarse como faltante.
-  private calcularProductosAgregados(vendedores: VendedorFaltantesDTO[]): ProductoAgregado[] {
+  private calcularProductosAgregados(facturas: FacturaFaltantesDTO[]): ProductoAgregado[] {
     const totales = new Map<string, ProductoAgregado>();
-    for (const vendedor of vendedores) {
-      for (const cliente of vendedor.clientes) {
-        for (const item of cliente.items) {
-          const existente = totales.get(item.codigoProducto);
-          if (existente) {
-            existente.cantidadFaltanteTotal += item.cantidadFaltante ?? 0;
-            existente.piezasFaltanteTotal += item.piezasFaltantes ?? 0;
-          } else {
-            totales.set(item.codigoProducto, {
-              codigoProducto: item.codigoProducto,
-              nombreProducto: item.nombreProducto,
-              cantidadFaltanteTotal: item.cantidadFaltante ?? 0,
-              piezasFaltanteTotal: item.piezasFaltantes ?? 0
-            });
-          }
+    for (const factura of facturas) {
+      for (const item of factura.items) {
+        const existente = totales.get(item.codigoProducto);
+        if (existente) {
+          existente.cantidadFaltanteTotal += item.cantidadFaltante ?? 0;
+          existente.piezasFaltanteTotal += item.piezasFaltantes ?? 0;
+        } else {
+          totales.set(item.codigoProducto, {
+            codigoProducto: item.codigoProducto,
+            nombreProducto: item.nombreProducto,
+            cantidadFaltanteTotal: item.cantidadFaltante ?? 0,
+            piezasFaltanteTotal: item.piezasFaltantes ?? 0
+          });
         }
       }
     }
     return Array.from(totales.values()).sort((a, b) => a.codigoProducto.localeCompare(b.codigoProducto));
+  }
+
+  get hayDatos(): boolean {
+    return this.facturas.length > 0;
   }
 
   onFechaChange() {
@@ -104,19 +106,8 @@ export class ListadoVendedoresFaltantesComponent implements OnInit {
     this.cargar(this.fecha);
   }
 
-  toggleExpandRow(row: VendedorFaltantesDTO) {
-    this.table.rowDetail.toggleExpandRow(row);
-  }
-
-  getRowDetailHeight(row?: VendedorFaltantesDTO): number {
-    if (!row) return 50;
-    return (row.clientes.length * 40) + 50;
-  }
-
-  gotoDetalle(cliente: ClienteFaltantesDTO) {
-    this.router.navigate(['/ventas/faltantes/detalle'], {
-      state: { clienteSeleccionado: cliente }
-    });
+  imprimir() {
+    window.print();
   }
 
   goBack() {

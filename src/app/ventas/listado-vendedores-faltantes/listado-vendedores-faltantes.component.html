@@ -13,101 +13,110 @@
     <div class="section-body">
         <div class="row">
             <div class="col-sm-12">
-                <div class="form-group row align-items-center">
-                    <div class="col-sm-5">
-                        <div class="d-flex align-items-center">
-                            <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <input type="date" class="form-control mx-2" style="max-width: 180px;"
-                                [(ngModel)]="fecha" (change)="onFechaChange()">
-                            <button class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="col-sm-7 text-sm-end">
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-sm" [class.btn-primary]="vista === 'vendedor'"
-                                [class.btn-outline-primary]="vista !== 'vendedor'" (click)="vista = 'vendedor'">
-                                Por Vendedor
-                            </button>
-                            <button class="btn btn-sm" [class.btn-primary]="vista === 'producto'"
-                                [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
-                                Por Producto
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <p class="text-muted no-print">
+                            Productos sin facturar por falta de stock en el día elegido, agrupados por factura.
+                        </p>
+                        <p class="d-none d-print-block"><strong>Fecha:</strong> {{ fecha }}</p>
 
-                <!-- Vista: Vendedor -> Cliente (fila expandible) -->
-                <ngx-datatable *ngIf="vista === 'vendedor'" class="material" [rows]="rows"
-                    [loadingIndicator]="loadingIndicator" [columnMode]="'force'" [headerHeight]="50"
-                    [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
+                        <div class="form-group row align-items-center mb-3 faltantes-controles no-print">
+                            <div class="col-sm-5">
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <input type="date" class="form-control mx-2" style="max-width: 180px;"
+                                        [(ngModel)]="fecha" (change)="onFechaChange()">
+                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-sm-7 text-sm-end">
+                                <div class="btn-group me-2" role="group">
+                                    <button class="btn btn-sm" [class.btn-primary]="vista === 'factura'"
+                                        [class.btn-outline-primary]="vista !== 'factura'" (click)="vista = 'factura'">
+                                        Por Factura
+                                    </button>
+                                    <button class="btn btn-sm" [class.btn-primary]="vista === 'producto'"
+                                        [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
+                                        Por Producto
+                                    </button>
+                                </div>
+                                <button class="btn btn-outline-secondary" [disabled]="!hayDatos" (click)="imprimir()">
+                                    <i class="fas fa-print"></i>
+                                    Imprimir
+                                </button>
+                            </div>
+                        </div>
 
-                    <ngx-datatable-row-detail [rowHeight]="getRowDetailHeight" #myDetailRow>
-                        <ng-template let-row="row" ngx-datatable-row-detail-template>
-                            <div style="padding-left:50px; margin-bottom: 20px;">
-                                <table class="table table-sm table-hover border">
-                                    <thead class="thead-light">
+                        <div class="text-center py-4" *ngIf="loadingIndicator">
+                            <div class="spinner-border text-primary"></div>
+                        </div>
+
+                        <div class="alert alert-info" *ngIf="!loadingIndicator && !hayDatos">
+                            No hay faltantes para este día.
+                        </div>
+
+                        <!-- Vista: agrupada por factura, igual que Hoja de Ruta se agrupa por ruta -->
+                        <ng-container *ngIf="!loadingIndicator && vista === 'factura'">
+                            <div class="mb-4" *ngFor="let factura of facturas">
+                                <h6 class="grupo-header p-2 mb-0">
+                                    <span *ngIf="factura.nroFactura">Factura {{ factura.nroFactura }}</span>
+                                    <span *ngIf="!factura.nroFactura">Venta #{{ factura.ventaId }} (sin factura)</span>
+                                    &mdash; {{ factura.nombreCliente }}
+                                    <span *ngIf="factura.rutCliente" class="fw-normal">({{ factura.rutCliente }})</span>
+                                    &mdash; {{ factura.nombreVendedor }}
+                                </h6>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <thead>
                                         <tr>
-                                            <th>Rut</th>
-                                            <th>Cliente</th>
-                                            <th class="text-center">Productos Faltantes</th>
-                                            <th></th>
+                                            <th style="width: 8%;">Código</th>
+                                            <th style="width: 24%;">Producto</th>
+                                            <th style="width: 11%;" class="text-end">Cant. Solicitada</th>
+                                            <th style="width: 11%;" class="text-end">Cant. Faltante</th>
+                                            <th style="width: 12%;" class="text-end">Piezas Solicitadas</th>
+                                            <th style="width: 12%;" class="text-end">Piezas Faltantes</th>
+                                            <th style="width: 22%;">Motivo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr *ngFor="let cliente of row.clientes">
-                                            <td>{{ cliente.rutCliente }}</td>
-                                            <td>{{ cliente.nombreCliente }}</td>
-                                            <td class="text-center"><span class="badge bg-danger">{{ cliente.items.length }}</span></td>
-                                            <td>
-                                                <a class="tblViewBtn" (click)="gotoDetalle(cliente)" style="cursor: pointer;">
-                                                    <i class="fas fa-eye"></i>
-                                                </a>
-                                            </td>
+                                        <tr *ngFor="let item of factura.items">
+                                            <td>{{ item.codigoProducto }}</td>
+                                            <td>{{ item.nombreProducto }}</td>
+                                            <td class="text-end">{{ item.cantidadSolicitada }}</td>
+                                            <td class="text-end">{{ item.cantidadFaltante ?? '—' }}</td>
+                                            <td class="text-end">{{ item.piezasSolicitadas ?? '—' }}</td>
+                                            <td class="text-end">{{ item.piezasFaltantes ?? '—' }}</td>
+                                            <td><span class="text-danger">{{ item.motivo ?? '—' }}</span></td>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
-                        </ng-template>
-                    </ngx-datatable-row-detail>
+                        </ng-container>
 
-                    <ngx-datatable-column [width]="50" [resizeable]="false" [sortable]="false" [draggable]="false"
-                        [canAutoResize]="false">
-                        <ng-template let-row="row" let-expanded="expanded" ngx-datatable-cell-template>
-                            <a href="javascript:void(0)" [class.datatable-icon-right]="!expanded"
-                                [class.datatable-icon-down]="expanded" title="Expandir/Colapsar"
-                                (click)="toggleExpandRow(row)">
-                            </a>
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                    <ngx-datatable-column name="Código" prop="codigoVendedor" [width]="120"></ngx-datatable-column>
-                    <ngx-datatable-column name="Vendedor" prop="nombreVendedor"></ngx-datatable-column>
-                    <ngx-datatable-column name="Clientes" [width]="100" headerClass="align-center-header"
-                        cellClass="align-center-cell">
-                        <ng-template let-row="row" ngx-datatable-cell-template>
-                            {{ row.clientes.length }}
-                        </ng-template>
-                    </ngx-datatable-column>
-
-                </ngx-datatable>
-
-                <!-- Vista: total de productos faltantes (agregado, sin vendedor/cliente) -->
-                <ngx-datatable *ngIf="vista === 'producto'" class="material" [rows]="productosAgregados"
-                    [loadingIndicator]="loadingIndicator" [columnMode]="'force'" [headerHeight]="50"
-                    [footerHeight]="50" [rowHeight]="'auto'" [limit]="10">
-
-                    <ngx-datatable-column name="Código" prop="codigoProducto" [width]="100"></ngx-datatable-column>
-                    <ngx-datatable-column name="Producto" prop="nombreProducto"></ngx-datatable-column>
-                    <ngx-datatable-column name="Cantidad Faltante" prop="cantidadFaltanteTotal" [width]="180"
-                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
-                    <ngx-datatable-column name="Piezas Faltante" prop="piezasFaltanteTotal" [width]="180"
-                        headerClass="align-center-header" cellClass="align-center-cell"></ngx-datatable-column>
-
-                </ngx-datatable>
+                        <!-- Vista: total de productos faltantes (agregado, sin factura/cliente) -->
+                        <table class="table table-bordered table-sm" *ngIf="!loadingIndicator && vista === 'producto' && hayDatos">
+                            <thead>
+                                <tr>
+                                    <th style="width: 12%;">Código</th>
+                                    <th style="width: 46%;">Producto</th>
+                                    <th style="width: 21%;" class="text-end">Cant. Faltante</th>
+                                    <th style="width: 21%;" class="text-end">Piezas Faltantes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let p of productosAgregados">
+                                    <td>{{ p.codigoProducto }}</td>
+                                    <td>{{ p.nombreProducto }}</td>
+                                    <td class="text-end">{{ p.cantidadFaltanteTotal | number:'1.2-2' }}</td>
+                                    <td class="text-end">{{ p.piezasFaltanteTotal | number:'1.2-2' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

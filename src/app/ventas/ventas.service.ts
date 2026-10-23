@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { environment } from 'environments/environment';
-import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, VentaFacturaResumen, FacturacionResponse, LoteFacturacionDetalle, LoteFacturacionResumen, PageResponse, FaltantesPorFechaDTO } from './models/model';
+import { Numerado, NumeradoPayload, NumeradoResumen, Producto, ProductoElegibleNumerado, Venta, VentaDetalle, VentaFacturaResumen, FacturacionResponse, LoteFacturacionDetalle, LoteFacturacionResumen, PageResponse, FaltantesPorFechaDTO, HojaRutaDTO } from './models/model';
 import { Observable } from 'rxjs';
 import { FiltroVentas } from './models/other-models';
 
@@ -87,6 +87,19 @@ export class VentasService {
 
   obtenerEstadoConexionMastersoft(): Observable<{ disponible: boolean }> {
     return this.httpClient.get<{ disponible: boolean }>(`${this.urlFacturar}/estado-conexion-mastersoft`);
+  }
+
+  // Reporte "Hoja de Ruta": productos numerados vendidos ese día, agrupados por ruta de
+  // reparto y producto, para mostrar en pantalla antes de descargar.
+  obtenerHojaRuta(fecha: string): Observable<HojaRutaDTO> {
+    const params = new HttpParams().set('fecha', fecha);
+    return this.httpClient.get<HojaRutaDTO>(`${this.urlVenta}/hoja-ruta/datos`, { params });
+  }
+
+  // El backend arma el archivo completo (xlsx o pdf) y lo entrega como descarga.
+  descargarHojaRuta(fecha: string, formato: 'xlsx' | 'pdf'): Observable<Blob> {
+    const params = new HttpParams().set('fecha', fecha).set('formato', formato);
+    return this.httpClient.get(`${this.urlVenta}/hoja-ruta`, { params, responseType: 'blob' });
   }
 
   obtenerLotesFacturacion(page: number = 0, size: number = 20): Observable<PageResponse<LoteFacturacionResumen>> {

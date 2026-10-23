@@ -78,6 +78,17 @@
       "submenu": []
     },
     {
+      "path": "ventas/hoja-ruta",
+      "title": "Hoja de Ruta",
+      "iconType": "feather",
+      "icon": "map",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
+    },
+    {
       "path": "numerados",
       "title": "Productos Numerados",
       "iconType": "feather",

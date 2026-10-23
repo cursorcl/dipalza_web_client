@@ -44,7 +44,7 @@
                                         Por Producto
                                     </button>
                                 </div>
-                                <button class="btn btn-sm btn-outline-secondary" [disabled]="!rows.length" (click)="imprimir()">
+                                <button class="btn btn-outline-secondary" [disabled]="!hayDatos" (click)="imprimir()">
                                     <i class="fas fa-print"></i>
                                     Imprimir
                                 </button>
@@ -55,43 +55,52 @@
                             <div class="spinner-border text-primary"></div>
                         </div>
 
-                        <div class="alert alert-info" *ngIf="!loadingIndicator && !rows.length">
+                        <div class="alert alert-info" *ngIf="!loadingIndicator && !hayDatos">
                             No hay faltantes para este día.
                         </div>
 
-                        <!-- Vista: una fila por factura (o por venta, si no llegó a facturar nada) -->
-                        <table class="table table-bordered table-sm" *ngIf="!loadingIndicator && vista === 'factura' && rows.length">
-                            <thead>
-                                <tr class="grupo-header">
-                                    <th style="width: 170px;">Factura</th>
-                                    <th>Cliente</th>
-                                    <th>Vendedor</th>
-                                    <th style="width: 170px;" class="text-center">Productos Faltantes</th>
-                                    <th style="width: 50px;" class="no-print"></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let fila of rows">
-                                    <td>
-                                        <span *ngIf="fila.nroFactura" [title]="fila.facturaEstimada ? 'Estimada: la línea facturada más cercana de esta venta' : ''">
-                                            {{ fila.nroFactura }}<span *ngIf="fila.facturaEstimada">&nbsp;(est.)</span>
-                                        </span>
-                                        <span *ngIf="!fila.nroFactura">Venta #{{ fila.ventaId }} (sin factura)</span>
-                                    </td>
-                                    <td>{{ fila.nombreCliente }}</td>
-                                    <td>{{ fila.nombreVendedor }}</td>
-                                    <td class="text-center"><span class="badge bg-danger">{{ fila.cantidadItems }}</span></td>
-                                    <td class="no-print">
-                                        <a class="tblViewBtn" (click)="gotoDetalle(fila)" style="cursor: pointer;">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <!-- Vista: agrupada por factura, igual que Hoja de Ruta se agrupa por ruta -->
+                        <ng-container *ngIf="!loadingIndicator && vista === 'factura'">
+                            <div class="mb-4" *ngFor="let factura of facturas">
+                                <h6 class="grupo-header p-2 mb-0">
+                                    <span *ngIf="factura.nroFactura">
+                                        Factura {{ factura.nroFactura }}
+                                        <span *ngIf="factura.items[0]?.facturaEstimada">(est.)</span>
+                                    </span>
+                                    <span *ngIf="!factura.nroFactura">Venta #{{ factura.ventaId }} (sin factura)</span>
+                                    &mdash; {{ factura.nombreCliente }}
+                                    <span *ngIf="factura.rutCliente" class="fw-normal">({{ factura.rutCliente }})</span>
+                                    &mdash; {{ factura.nombreVendedor }}
+                                </h6>
+                                <table class="table table-bordered table-sm mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 100px;">Código</th>
+                                            <th>Producto</th>
+                                            <th style="width: 130px;" class="text-end">Cant. Solicitada</th>
+                                            <th style="width: 130px;" class="text-end">Cant. Faltante</th>
+                                            <th style="width: 130px;" class="text-end">Piezas Solicitadas</th>
+                                            <th style="width: 130px;" class="text-end">Piezas Faltantes</th>
+                                            <th>Motivo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr *ngFor="let item of factura.items">
+                                            <td>{{ item.codigoProducto }}</td>
+                                            <td>{{ item.nombreProducto }}</td>
+                                            <td class="text-end">{{ item.cantidadSolicitada }}</td>
+                                            <td class="text-end">{{ item.cantidadFaltante ?? '—' }}</td>
+                                            <td class="text-end">{{ item.piezasSolicitadas ?? '—' }}</td>
+                                            <td class="text-end">{{ item.piezasFaltantes ?? '—' }}</td>
+                                            <td><span class="text-danger">{{ item.motivo ?? '—' }}</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </ng-container>
 
                         <!-- Vista: total de productos faltantes (agregado, sin factura/cliente) -->
-                        <table class="table table-bordered table-sm" *ngIf="!loadingIndicator && vista === 'producto' && rows.length">
+                        <table class="table table-bordered table-sm" *ngIf="!loadingIndicator && vista === 'producto' && hayDatos">
                             <thead>
                                 <tr class="grupo-header">
                                     <th style="width: 100px;">Código</th>

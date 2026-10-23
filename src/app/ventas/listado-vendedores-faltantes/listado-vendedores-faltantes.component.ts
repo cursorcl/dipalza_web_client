@@ -1,20 +1,10 @@
 import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VentasService } from '../ventas.service';
 import { FacturaFaltantesDTO } from '../models/model';
-
-interface FilaFactura {
-  nroFactura: string | null;
-  facturaEstimada: boolean;
-  ventaId: number;
-  nombreCliente: string | null;
-  nombreVendedor: string | null;
-  cantidadItems: number;
-  factura: FacturaFaltantesDTO;
-}
 
 interface ProductoAgregado {
   codigoProducto: string;
@@ -32,12 +22,12 @@ interface ProductoAgregado {
 export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewInit {
 
   fecha: string | null = null;
-  rows: FilaFactura[] = [];
+  facturas: FacturaFaltantesDTO[] = [];
   productosAgregados: ProductoAgregado[] = [];
   vista: 'factura' | 'producto' = 'factura';
   loadingIndicator = true;
 
-  constructor(private ventaService: VentasService, private router: Router, private location: Location, private host: ElementRef<HTMLElement>) {
+  constructor(private ventaService: VentasService, private location: Location, private host: ElementRef<HTMLElement>) {
   }
 
   ngOnInit(): void {
@@ -58,15 +48,7 @@ export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewIni
     this.ventaService.obtenerFaltantes(fecha).subscribe({
       next: (resultado) => {
         this.fecha = resultado.fecha;
-        this.rows = resultado.facturas.map(f => ({
-          nroFactura: f.nroFactura,
-          facturaEstimada: f.items.some(i => i.facturaEstimada),
-          ventaId: f.ventaId,
-          nombreCliente: f.nombreCliente,
-          nombreVendedor: f.nombreVendedor,
-          cantidadItems: f.items.length,
-          factura: f
-        }));
+        this.facturas = resultado.facturas;
         this.productosAgregados = this.calcularProductosAgregados(resultado.facturas);
         this.loadingIndicator = false;
       },
@@ -98,6 +80,10 @@ export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewIni
     return Array.from(totales.values()).sort((a, b) => a.codigoProducto.localeCompare(b.codigoProducto));
   }
 
+  get hayDatos(): boolean {
+    return this.facturas.length > 0;
+  }
+
   onFechaChange() {
     if (this.fecha) {
       this.cargar(this.fecha);
@@ -118,12 +104,6 @@ export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewIni
     fecha.setDate(fecha.getDate() + delta);
     this.fecha = fecha.toISOString().split('T')[0];
     this.cargar(this.fecha);
-  }
-
-  gotoDetalle(fila: FilaFactura) {
-    this.router.navigate(['/ventas/faltantes/detalle'], {
-      state: { facturaSeleccionada: fila.factura }
-    });
   }
 
   imprimir() {

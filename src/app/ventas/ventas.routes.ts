@@ -47,10 +47,6 @@ export const VENTAS_ROUTES: Route[] = [
         loadComponent: () => import('./listado-vendedores-faltantes/listado-vendedores-faltantes.component').then((m) => m.ListadoVendedoresFaltantesComponent)
     },
     {
-        path: 'faltantes/detalle',
-        loadComponent: () => import('./listado-detalle-faltantes/listado-detalle-faltantes.component').then((m) => m.ListadoDetalleFaltantesComponent)
-    },
-    {
         path: 'hoja-ruta',
         loadComponent: () => import('./listado-hoja-ruta/listado-hoja-ruta.component').then((m) => m.ListadoHojaRutaComponent)
     },

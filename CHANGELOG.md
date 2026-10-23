@@ -1,3 +1,10 @@
+# [1.17.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.16.2...v1.17.0) (2026-10-23)
+
+
+### Features
+
+* agrega pantalla para descargar la Hoja de Ruta (Excel/PDF) ([#41](https://github.com/cursorcl/dipalza_web_client/issues/41)) ([c707920](https://github.com/cursorcl/dipalza_web_client/commit/c707920a6897fcc9ba799bbe22bfeb66fdffc889))
+
 ## [1.16.2](https://github.com/cursorcl/dipalza_web_client/compare/v1.16.1...v1.16.2) (2026-10-16)
 
 

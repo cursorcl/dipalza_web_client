@@ -9,8 +9,14 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, .08);
 }
 
-// Color primario del tema ($colors.primary en _variable.scss, #6777ef) al 10% de opacidad.
+// Color primario del tema ($colors.primary en _variable.scss, #6777ef) al 10% de opacidad --
+// mismo criterio que listado-hoja-ruta.component.scss. Se aplica tanto al <h6> de cada factura
+// (vista "Por Factura") como a las <th> de la fila de encabezado de la tabla "Por Producto".
 .grupo-header {
+    background: rgba(103, 119, 239, .1);
+    color: #6777ef;
+    font-weight: 600;
+
     th {
         background: rgba(103, 119, 239, .1);
         color: #6777ef;

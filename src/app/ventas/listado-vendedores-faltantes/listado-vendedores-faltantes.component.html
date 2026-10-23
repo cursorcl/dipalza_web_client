@@ -102,11 +102,11 @@
                         <!-- Vista: total de productos faltantes (agregado, sin factura/cliente) -->
                         <table class="table table-bordered table-sm" *ngIf="!loadingIndicator && vista === 'producto' && hayDatos">
                             <thead>
-                                <tr class="grupo-header">
+                                <tr>
                                     <th style="width: 100px;">Código</th>
                                     <th>Producto</th>
-                                    <th style="width: 180px;" class="text-end">Cantidad Faltante</th>
-                                    <th style="width: 180px;" class="text-end">Piezas Faltante</th>
+                                    <th style="width: 130px;" class="text-end">Cant. Faltante</th>
+                                    <th style="width: 130px;" class="text-end">Piezas Faltantes</th>
                                 </tr>
                             </thead>
                             <tbody>

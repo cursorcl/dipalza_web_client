@@ -1,3 +1,10 @@
+# [1.19.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.18.0...v1.19.0) (2026-10-25)
+
+
+### Features
+
+* Enter al elegir producto también salta a número en numerados ([#43](https://github.com/cursorcl/dipalza_web_client/issues/43)) ([9f26816](https://github.com/cursorcl/dipalza_web_client/commit/9f268162a82bf9aacc1537e7c5e11075c0e0a731))
+
 # [1.18.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.17.0...v1.18.0) (2026-10-25)
 
 

@@ -1,3 +1,10 @@
+# [1.18.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.17.0...v1.18.0) (2026-10-25)
+
+
+### Features
+
+* ingreso rápido por teclado en el alta de numerados ([#42](https://github.com/cursorcl/dipalza_web_client/issues/42)) ([ce6d2e9](https://github.com/cursorcl/dipalza_web_client/commit/ce6d2e95ca6ccfc23b4244e0cdafc24f1a01b0be))
+
 # [1.17.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.16.2...v1.17.0) (2026-10-23)
 
 

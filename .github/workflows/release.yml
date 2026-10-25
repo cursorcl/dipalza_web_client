@@ -36,6 +36,8 @@ jobs:
         run: npm ci
 
       - name: Run semantic-release
+        id: release
+        continue-on-error: true
         run: npx semantic-release ${{ inputs.dry_run && '--dry-run' || '' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -43,3 +45,39 @@ jobs:
           # para disparar sync-frontend.yml en dipalza_server via la API de Actions —
           # el GITHUB_TOKEN de arriba no tiene permisos sobre ese repo.
           DISPATCH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+
+      # semantic-release ya hizo tag+push de la version (commit "chore(release)"
+      # + tag) ANTES de fallar al pushear sus propias notas de canal
+      # (`refs/notes/semantic-release-vX.Y.Z`), rechazadas por GitHub con
+      # "missing necessary objects" -- un rechazo transitorio (el objeto recien
+      # pusheado aun no estaba visible para el chequeo de conectividad del
+      # push de notas, ~1s despues). Pasó la primera vez con la v1.19.0: el tag
+      # quedó publicado pero el Release de GitHub y el dispatch a
+      # sync-frontend.yml (que dependen del publish/success de los plugins,
+      # posteriores al push de notas) nunca se ejecutaron. Este paso detecta
+      # exactamente ese caso recuperable y completa manualmente lo que
+      # semantic-release no llegó a hacer; cualquier otra falla deja el job en
+      # rojo igual que antes.
+      - name: Recuperar release si semantic-release falló después de taguear
+        if: steps.release.outcome == 'failure' && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v${VERSION}"
+
+          if ! git ls-remote --exit-code --tags origin "refs/tags/${TAG}" >/dev/null 2>&1; then
+            echo "::error::semantic-release falló antes de publicar el tag ${TAG}; no es un caso recuperable, revisar el log del paso anterior."
+            exit 1
+          fi
+
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "::error::semantic-release falló pero el release ${TAG} ya existe; revisar manualmente qué quedó a medias."
+            exit 1
+          fi
+
+          echo "Tag ${TAG} publicado sin su Release/dispatch -- completando manualmente."
+          gh release create "${TAG}" --title "${TAG}" --generate-notes
+          gh api repos/cursorcl/dipalza_server/actions/workflows/sync-frontend.yml/dispatches \
+            -X POST -f ref=main -f "inputs[web_client_version]=${TAG}"

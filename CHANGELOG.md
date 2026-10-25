@@ -1,3 +1,10 @@
+## [1.19.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.0...v1.19.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* completa el release manualmente si semantic-release falla al pushear sus notas ([#44](https://github.com/cursorcl/dipalza_web_client/issues/44)) ([f7bc326](https://github.com/cursorcl/dipalza_web_client/commit/f7bc32652178b92d017a4ca18948c90931b30f3c))
+
 # [1.19.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.18.0...v1.19.0) (2026-10-25)
 
 

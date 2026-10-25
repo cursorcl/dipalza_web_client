@@ -42,6 +42,20 @@ describe('EdicionNumeradosComponent', () => {
     expect(component.form.get('numero')?.enabled).toBeTrue();
   });
 
+  it('al elegir un producto en el typeahead (selectItem), el foco pasa a "número"', fakeAsync(() => {
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/productos`).flush([producto]);
+
+    const focusSpy = spyOn(component.numeroInputRef!.nativeElement, 'focus');
+    const selectSpy = spyOn(component.numeroInputRef!.nativeElement, 'select');
+
+    component.irANumero();
+    tick();
+
+    expect(focusSpy).toHaveBeenCalled();
+    expect(selectSpy).toHaveBeenCalled();
+  }));
+
   it('Enter en "número" no envía el formulario, solo pasa el foco a "peso"', () => {
     fixture.detectChanges();
     httpMock.expectOne(`${environment.apiUrl}/productos`).flush([]);

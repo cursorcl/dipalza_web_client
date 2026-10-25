@@ -27,6 +27,7 @@ export class EdicionNumeradosComponent implements OnInit {
   @Input() codigoProductoPreseleccionado: string | null = null;
 
   @ViewChild('pesoInput') pesoInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('numeroInput') numeroInputRef?: ElementRef<HTMLInputElement>;
 
   form: FormGroup;
 
@@ -52,7 +53,9 @@ export class EdicionNumeradosComponent implements OnInit {
     // @Input() ya está poblado en este punto (Angular los setea antes de ngOnInit),
     // por eso esEdicion recién se puede usar de forma confiable acá y no en el constructor.
     if (!this.esEdicion) {
-      this.form.get('numero')?.disable();
+      // El número queda habilitado (no disable()): se sugiere el siguiente disponible
+      // para agilizar el ingreso, pero el operador puede sobreescribirlo (p.ej. si una
+      // pieza viene con un número ya marcado físicamente).
       this.form.get('producto')?.valueChanges.subscribe((producto: Producto | string | null) => {
         this.actualizarNumeroSugerido(producto);
       });
@@ -62,6 +65,12 @@ export class EdicionNumeradosComponent implements OnInit {
       next: (productos) => {
         this.productos = productos.filter(p => p.numbered === true);
         this.preseleccionarProducto();
+        if (!this.esEdicion && this.form.get('producto')?.value) {
+          // Producto ya viene preseleccionado (se abrió el modal desde la ficha de un
+          // producto puntual) -- deja el foco listo en "Número" para empezar a cargar
+          // piezas de inmediato, sin tener que hacer clic.
+          setTimeout(() => this.enfocarNumero());
+        }
       },
       error: () => {
         this.error = 'No se pudo cargar la lista de productos.';
@@ -129,6 +138,18 @@ export class EdicionNumeradosComponent implements OnInit {
     return candidato;
   }
 
+  /** Enter en "Número" no debe enviar el formulario -- pasa el foco a "Peso". */
+  irAPeso(event: Event): void {
+    event.preventDefault();
+    this.pesoInputRef?.nativeElement.focus();
+  }
+
+  /** Enter en "Peso" guarda directamente, sin depender del submit implícito del form. */
+  confirmarPeso(event: Event): void {
+    event.preventDefault();
+    this.submit();
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -186,7 +207,9 @@ export class EdicionNumeradosComponent implements OnInit {
   /**
    * Tras guardar un alta, deja el diálogo abierto con el mismo producto
    * seleccionado y el próximo número sugerido, para poder cargar varios
-   * numerados seguidos del mismo producto sin reabrir el diálogo.
+   * numerados seguidos del mismo producto sin reabrir el diálogo. El foco
+   * vuelve a "Número" (no a "Peso") para repetir el ciclo número -> Enter ->
+   * peso -> Enter -> guardar -> número de nuevo, sin tocar el mouse.
    */
   private prepararSiguienteNumerado(producto: Producto | null): void {
     this.form.get('peso')?.reset(null);
@@ -194,7 +217,13 @@ export class EdicionNumeradosComponent implements OnInit {
     if (producto) {
       this.actualizarNumeroSugerido(producto);
     }
-    setTimeout(() => this.pesoInputRef?.nativeElement.focus());
+    setTimeout(() => this.enfocarNumero());
+  }
+
+  private enfocarNumero(): void {
+    const input = this.numeroInputRef?.nativeElement;
+    input?.focus();
+    input?.select();
   }
 
   cerrar(): void {

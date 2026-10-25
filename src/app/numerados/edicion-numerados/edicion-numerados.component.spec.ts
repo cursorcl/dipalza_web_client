@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
@@ -36,6 +36,38 @@ describe('EdicionNumeradosComponent', () => {
     expect(component.esEdicion).toBeFalse();
   });
 
+  it('en modo alta, el campo "número" queda habilitado (editable, no de solo lectura)', () => {
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/productos`).flush([producto]);
+    expect(component.form.get('numero')?.enabled).toBeTrue();
+  });
+
+  it('Enter en "número" no envía el formulario, solo pasa el foco a "peso"', () => {
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/productos`).flush([]);
+
+    const preventDefault = jasmine.createSpy('preventDefault');
+    const focusSpy = spyOn(component.pesoInputRef!.nativeElement, 'focus');
+
+    component.irAPeso({ preventDefault } as unknown as Event);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(focusSpy).toHaveBeenCalled();
+  });
+
+  it('Enter en "peso" no depende del submit implícito del form -- llama a submit() directamente', () => {
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/productos`).flush([]);
+
+    const preventDefault = jasmine.createSpy('preventDefault');
+    const submitSpy = spyOn(component, 'submit');
+
+    component.confirmarPeso({ preventDefault } as unknown as Event);
+
+    expect(preventDefault).toHaveBeenCalled();
+    expect(submitSpy).toHaveBeenCalled();
+  });
+
   it('tras un alta exitosa, no cierra el diálogo y prepara el siguiente numerado del mismo producto', () => {
     fixture.detectChanges();
     httpMock.expectOne(`${environment.apiUrl}/productos`).flush([producto]);
@@ -60,6 +92,28 @@ describe('EdicionNumeradosComponent', () => {
     expect(component.form.get('peso')?.value).toBeNull();
     expect(component.form.get('numero')?.value).toBe(2);
   });
+
+  it('tras un alta exitosa, el foco vuelve a "número" (no a "peso") para encadenar el siguiente ingreso', fakeAsync(() => {
+    fixture.detectChanges();
+    httpMock.expectOne(`${environment.apiUrl}/productos`).flush([producto]);
+
+    component.form.get('producto')?.setValue(producto);
+    httpMock.expectOne(req => req.url.endsWith('/numerados/byProduct')).flush([]);
+
+    component.form.get('peso')?.setValue(2.5);
+    const focusSpy = spyOn(component.numeroInputRef!.nativeElement, 'focus');
+    const selectSpy = spyOn(component.numeroInputRef!.nativeElement, 'select');
+
+    component.submit();
+    httpMock.expectOne(`${environment.apiUrl}/numerados`)
+      .flush({ id: 1, codigoProducto: 'ART001', numero: 1, peso: 2.5, estado: 'D' });
+    httpMock.expectOne(req => req.url.endsWith('/numerados/byProduct')).flush([]);
+
+    tick();
+
+    expect(focusSpy).toHaveBeenCalled();
+    expect(selectSpy).toHaveBeenCalled();
+  }));
 
   it('tras editar, cierra el diálogo con close(true)', () => {
     const numeradoEnEdicion: Numerado = {

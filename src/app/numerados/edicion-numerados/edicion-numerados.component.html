@@ -10,7 +10,8 @@
       <label>Seleccione producto (busque por código o nombre)</label>
       <input type="text" formControlName="producto" class="form-control"
         [ngbTypeahead]="buscarProducto" [resultFormatter]="formatearProducto"
-        [inputFormatter]="formatearProducto" placeholder="Ej: ART001 o Queso" />
+        [inputFormatter]="formatearProducto" placeholder="Ej: ART001 o Queso"
+        (selectItem)="irANumero()" />
       @if (form.get('producto')?.touched && form.get('producto')?.invalid) {
         <small style="color:red">Debe seleccionar un producto</small>
       }

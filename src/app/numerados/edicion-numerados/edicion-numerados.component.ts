@@ -138,6 +138,18 @@ export class EdicionNumeradosComponent implements OnInit {
     return candidato;
   }
 
+  /**
+   * Se dispara con (selectItem) del typeahead al elegir un producto (por Enter o clic) --
+   * no se puede usar (keydown.enter) acá porque ngbTypeahead ya captura ese Enter para
+   * seleccionar la sugerencia resaltada; interceptarlo aparte rompería esa selección.
+   * El valor de "Número" todavía no está listo (actualizarNumeroSugerido es async, la
+   * dispara el propio valueChanges de "producto"), por eso se enfoca después de un tick,
+   * igual que en prepararSiguienteNumerado.
+   */
+  irANumero(): void {
+    setTimeout(() => this.enfocarNumero());
+  }
+
   /** Enter en "Número" no debe enviar el formulario -- pasa el foco a "Peso". */
   irAPeso(event: Event): void {
     event.preventDefault();

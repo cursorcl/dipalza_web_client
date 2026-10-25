@@ -17,8 +17,9 @@
     </div>
 
     <div class="form-group">
-      <label>{{ esEdicion ? 'Número' : 'Número (asignado automáticamente)' }}</label>
-      <input type="number" formControlName="numero" class="form-control" placeholder="Ingrese número" />
+      <label>{{ esEdicion ? 'Número' : 'Número (sugerido, puede cambiarlo)' }}</label>
+      <input #numeroInput type="number" formControlName="numero" class="form-control" placeholder="Ingrese número"
+        (keydown.enter)="irAPeso($event)" />
       @if (form.get('numero')?.touched && form.get('numero')?.invalid) {
         <small style="color:red">Número inválido</small>
       }
@@ -26,7 +27,8 @@
 
     <div class="form-group">
       <label>Peso (kg)</label>
-      <input #pesoInput type="number" step="0.001" formControlName="peso" class="form-control" placeholder="Ej: 1.250" />
+      <input #pesoInput type="number" step="0.001" formControlName="peso" class="form-control" placeholder="Ej: 1.250"
+        (keydown.enter)="confirmarPeso($event)" />
       @if (form.get('peso')?.touched && form.get('peso')?.invalid) {
         <small style="color:red">Peso inválido</small>
       }

@@ -17,8 +17,9 @@ describe('ListadoVentasDiaComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    ventasServiceMock = jasmine.createSpyObj('VentasService', ['obtainSales', 'facture']);
+    ventasServiceMock = jasmine.createSpyObj('VentasService', ['obtainSales', 'facture', 'obtenerEstadoConexionMastersoft']);
     ventasServiceMock.obtainSales.and.returnValue(of([]));
+    ventasServiceMock.obtenerEstadoConexionMastersoft.and.returnValue(of({ disponible: true }));
 
     dataResultServiceMock = jasmine.createSpyObj('DataResultService', ['setPorVendedor', 'getPorVendedor']);
 

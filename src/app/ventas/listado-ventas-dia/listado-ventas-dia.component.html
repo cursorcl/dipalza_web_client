@@ -25,11 +25,11 @@
                             <span class="text-danger align-self-center" *ngIf="!mastersoftDisponible">
                                 <i class="fas fa-exclamation-triangle"></i> Sin conexión con Mastersoft
                             </span>
-                            <button class="btn btn-primary" (click)="facture()"
+                            <button class="btn btn-primary" (click)="confirmarFacturacion()"
                                 [disabled]="!canFacture || procesando || !mastersoftDisponible"
                                 [title]="!mastersoftDisponible ? 'No se puede facturar: sin conexión con Mastersoft' : ''">
                                 <i class="fas fa-spinner fa-spin" *ngIf="procesando"></i>
-                                {{ procesando ? 'Procesando...' : 'Facturar' }}
+                                {{ procesando ? 'Procesando…' : 'Facturar' }}
                             </button>
                         </div>
                     </div>

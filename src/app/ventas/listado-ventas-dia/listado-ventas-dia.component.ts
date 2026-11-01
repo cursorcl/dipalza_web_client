@@ -9,6 +9,7 @@ import { DataResultService } from '../models/data-results.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
+import Swal from 'sweetalert2';
 
 const INTERVALO_VERIFICACION_MASTERSOFT_MS = 30000;
 
@@ -107,6 +108,25 @@ export class ListadoVentasDiaComponent implements OnInit {
   onSelect({ selected }: { selected: Venta[] }) {
     this.selected = selected;
     this.canFacture = this.selected.length > 0;
+  }
+
+  // Facturar envía las ventas a Mastersoft y no se puede deshacer desde acá,
+  // así que se pide confirmación explícita indicando cuántas ventas se enviarán.
+  confirmarFacturacion() {
+    const cantidad = this.selected.length;
+    Swal.fire({
+      title: 'Facturar ventas',
+      text: `¿Facturar ${cantidad} venta${cantidad === 1 ? '' : 's'} en Mastersoft? Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Facturar',
+      cancelButtonText: 'Cancelar',
+      confirmButtonColor: '#d33'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.facture();
+      }
+    });
   }
 
   facture() {

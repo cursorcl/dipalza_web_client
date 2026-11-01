@@ -8,6 +8,7 @@ import { ListadoVentasDiaComponent } from './listado-ventas-dia.component';
 import { VentasService } from '../ventas.service';
 import { DataResultService } from '../models/data-results.service';
 import { FacturacionResponse, VendedorResultadoDTO } from '../models/model';
+import Swal from 'sweetalert2';
 
 describe('ListadoVentasDiaComponent', () => {
   let component: ListadoVentasDiaComponent;
@@ -17,8 +18,9 @@ describe('ListadoVentasDiaComponent', () => {
   let router: Router;
 
   beforeEach(async () => {
-    ventasServiceMock = jasmine.createSpyObj('VentasService', ['obtainSales', 'facture']);
+    ventasServiceMock = jasmine.createSpyObj('VentasService', ['obtainSales', 'facture', 'obtenerEstadoConexionMastersoft']);
     ventasServiceMock.obtainSales.and.returnValue(of([]));
+    ventasServiceMock.obtenerEstadoConexionMastersoft.and.returnValue(of({ disponible: true }));
 
     dataResultServiceMock = jasmine.createSpyObj('DataResultService', ['setPorVendedor', 'getPorVendedor']);
 
@@ -52,6 +54,41 @@ describe('ListadoVentasDiaComponent', () => {
 
       component.onSelect({ selected: [] });
       expect(component.canFacture).toBeFalse();
+    });
+  });
+
+  describe('confirmarFacturacion()', () => {
+    // fixture.whenStable() no sirve acá: el interval de verificación de Mastersoft mantiene
+    // la zona ocupada. Se espera la promesa del Swal y un tick para que corra su .then().
+    const esperarConfirmacion = async () => {
+      await (Swal.fire as jasmine.Spy).calls.mostRecent().returnValue;
+      await Promise.resolve();
+    };
+
+    it('factura solo si el usuario confirma', async () => {
+      spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: true } as any);
+      spyOn(component, 'facture');
+      component.selected = [{ id: 1 } as any, { id: 2 } as any];
+
+      component.confirmarFacturacion();
+      await esperarConfirmacion();
+
+      expect(Swal.fire).toHaveBeenCalledWith(jasmine.objectContaining({
+        text: jasmine.stringContaining('2 ventas')
+      }));
+      expect(component.facture).toHaveBeenCalled();
+    });
+
+    it('no factura si el usuario cancela', async () => {
+      spyOn(Swal, 'fire').and.resolveTo({ isConfirmed: false } as any);
+      spyOn(component, 'facture');
+      component.selected = [{ id: 1 } as any];
+
+      component.confirmarFacturacion();
+      await esperarConfirmacion();
+
+      expect(component.facture).not.toHaveBeenCalled();
+      expect(ventasServiceMock.facture).not.toHaveBeenCalled();
     });
   });
 

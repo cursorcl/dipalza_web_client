@@ -1,5 +1,19 @@
 /* You can add global styles to this file, and also import other style files */
 
+// Indicador de foco para navegación por teclado. El tema elimina outline y box-shadow en
+// .btn:focus (override/_button.scss, override/_misc.scss) sin dejar reemplazo, así que con Tab
+// no se veía qué botón estaba activo. :focus-visible solo aplica al navegar con teclado,
+// no al hacer clic, por lo que no cambia la apariencia para el uso con mouse.
+.btn:focus-visible,
+.btn-close:focus-visible,
+a:focus-visible,
+.dropdown-item:focus-visible,
+.page-link:focus-visible,
+.form-check-input:focus-visible {
+    outline: 2px solid #6777ef !important;
+    outline-offset: 2px;
+}
+
 // Al imprimir una pantalla (botón "Imprimir" de Hoja de Ruta/Faltantes), se oculta todo el
 // chrome del layout (navbar fijo, sidebars) y cualquier control marcado .no-print (selector
 // de fecha, botones de descarga) -- solo queda el contenido que realmente se quiere imprimir.

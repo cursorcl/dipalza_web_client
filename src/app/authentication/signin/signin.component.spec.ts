@@ -1,10 +1,10 @@
 /// <reference types="jasmine" />
 import { UntypedFormBuilder, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService, RememberedAccountsService } from '@core';
+import { AuthService } from '@core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CambiarClaveObligatorioComponent } from 'app/perfil/cambiar-clave-obligatorio/cambiar-clave-obligatorio.component';
-import { of, throwError } from 'rxjs';
+import { of, throwError, Subject } from 'rxjs';
 import { SigninComponent } from './signin.component';
 import { ProductoService } from 'app/services/producto.service';
 
@@ -14,7 +14,6 @@ describe('SigninComponent', () => {
   let authServiceMock: any;
   let routerMock: any;
   let productoServiceMock: any;
-  let rememberedAccountsServiceMock: any;
   let ngbModalMock: any;
 
   beforeEach(() => {
@@ -32,11 +31,6 @@ describe('SigninComponent', () => {
       loadProductos: jasmine.createSpy('loadProductos').and.returnValue(of([]))
     };
 
-    rememberedAccountsServiceMock = {
-      getAccounts: jasmine.createSpy('getAccounts').and.returnValue([]),
-      saveAccount: jasmine.createSpy('saveAccount')
-    };
-
     ngbModalMock = {
       open: jasmine.createSpy('open').and.returnValue({
         componentInstance: {},
@@ -51,7 +45,6 @@ describe('SigninComponent', () => {
       routerMock,
       authServiceMock as AuthService,
       productoServiceMock as ProductoService,
-      rememberedAccountsServiceMock as RememberedAccountsService,
       ngbModalMock as unknown as NgbModal
     );
   });
@@ -119,165 +112,41 @@ describe('SigninComponent', () => {
     });
   });
 
-  describe('cuentas recordadas', () => {
-    beforeEach(() => {
-      rememberedAccountsServiceMock.getAccounts.and.returnValue([
-        { username: 'juan', password: 'clave123' },
-        { username: 'juana', password: 'clave456' },
-        { username: 'pedro', password: 'clave789' },
-      ]);
+  describe('cuentas recordadas (legado)', () => {
+    // Versiones anteriores guardaban usuario y clave en texto plano en localStorage.
+    // Ahora el gestor de contraseñas del navegador se encarga, y el login borra lo antiguo.
+    it('borra las cuentas guardadas en texto plano al inicializar', () => {
+      localStorage.setItem('dipalza_remembered_accounts', JSON.stringify([{ username: 'juan', password: 'clave123' }]));
+
       component.ngOnInit();
-    });
 
-    it('debería exponer las cuentas guardadas al inicializar', () => {
-      expect(component.accounts.length).toBe(3);
-    });
-
-    describe('onUsernameFocus', () => {
-      it('debería mostrar todas las cuentas si el input está vacío', () => {
-        component.onUsernameFocus();
-        expect(component.filteredAccounts.length).toBe(3);
-        expect(component.showSuggestions).toBeTrue();
-      });
-
-      it('debería resetear highlightedIndex a -1', () => {
-        component.highlightedIndex = 2;
-        component.onUsernameFocus();
-        expect(component.highlightedIndex).toBe(-1);
-      });
-    });
-
-    describe('onUsernameInput', () => {
-      it('debería filtrar cuentas por prefijo del username (case-insensitive)', () => {
-        component.loginForm.get('username')?.setValue('JU');
-        component.onUsernameInput();
-        expect(component.filteredAccounts).toEqual([
-          { username: 'juan', password: 'clave123' },
-          { username: 'juana', password: 'clave456' },
-        ]);
-        expect(component.showSuggestions).toBeTrue();
-      });
-
-      it('debería ocultar la lista si no hay coincidencias', () => {
-        component.loginForm.get('username')?.setValue('zzz');
-        component.onUsernameInput();
-        expect(component.filteredAccounts).toEqual([]);
-        expect(component.showSuggestions).toBeFalse();
-      });
-
-      it('debería mostrar todas las cuentas si el input queda vacío', () => {
-        component.loginForm.get('username')?.setValue('');
-        component.onUsernameInput();
-        expect(component.filteredAccounts.length).toBe(3);
-      });
-
-      it('debería tolerar cuentas con username inválido sin lanzar TypeError', () => {
-        component.accounts = [
-          { username: 'juan', password: 'clave123' },
-          { username: undefined, password: 'clave456' } as any,
-          { username: 'pedro', password: 'clave789' },
-        ];
-        component.loginForm.get('username')?.setValue('j');
-        expect(() => component.onUsernameInput()).not.toThrow();
-        expect(component.filteredAccounts).toEqual([
-          { username: 'juan', password: 'clave123' },
-        ]);
-      });
-    });
-
-    describe('selectAccount', () => {
-      it('debería precargar usuario, clave y marcar remember', () => {
-        component.selectAccount({ username: 'juan', password: 'clave123' });
-        expect(component.loginForm.get('username')?.value).toBe('juan');
-        expect(component.loginForm.get('password')?.value).toBe('clave123');
-        expect(component.loginForm.get('remember')?.value).toBe(true);
-      });
-
-      it('debería cerrar la lista de sugerencias', () => {
-        component.showSuggestions = true;
-        component.highlightedIndex = 1;
-        component.selectAccount({ username: 'juan', password: 'clave123' });
-        expect(component.showSuggestions).toBeFalse();
-        expect(component.highlightedIndex).toBe(-1);
-      });
-    });
-
-    describe('onUsernameBlur', () => {
-      it('debería cerrar la lista de sugerencias', () => {
-        component.showSuggestions = true;
-        component.highlightedIndex = 1;
-        component.onUsernameBlur();
-        expect(component.showSuggestions).toBeFalse();
-        expect(component.highlightedIndex).toBe(-1);
-      });
-    });
-
-    describe('onUsernameKeydown', () => {
-      function keyEvent(key: string): KeyboardEvent {
-        return new KeyboardEvent('keydown', { key });
-      }
-
-      beforeEach(() => {
-        component.onUsernameFocus();
-      });
-
-      it('ArrowDown debería avanzar highlightedIndex sin pasar del último elemento', () => {
-        component.onUsernameKeydown(keyEvent('ArrowDown'));
-        expect(component.highlightedIndex).toBe(0);
-        component.onUsernameKeydown(keyEvent('ArrowDown'));
-        component.onUsernameKeydown(keyEvent('ArrowDown'));
-        component.onUsernameKeydown(keyEvent('ArrowDown'));
-        expect(component.highlightedIndex).toBe(2);
-      });
-
-      it('ArrowUp debería retroceder highlightedIndex sin bajar de 0', () => {
-        component.highlightedIndex = 1;
-        component.onUsernameKeydown(keyEvent('ArrowUp'));
-        expect(component.highlightedIndex).toBe(0);
-        component.onUsernameKeydown(keyEvent('ArrowUp'));
-        expect(component.highlightedIndex).toBe(0);
-      });
-
-      it('Enter con una sugerencia resaltada debería seleccionarla y no enviar el formulario', () => {
-        component.highlightedIndex = 1;
-        const event = keyEvent('Enter');
-        spyOn(event, 'preventDefault');
-        component.onUsernameKeydown(event);
-        expect(event.preventDefault).toHaveBeenCalled();
-        expect(component.loginForm.get('username')?.value).toBe('juana');
-      });
-
-      it('Enter sin sugerencia resaltada no debería interceptar el evento', () => {
-        component.highlightedIndex = -1;
-        const event = keyEvent('Enter');
-        spyOn(event, 'preventDefault');
-        component.onUsernameKeydown(event);
-        expect(event.preventDefault).not.toHaveBeenCalled();
-      });
-
-      it('Escape debería cerrar la lista sin seleccionar', () => {
-        component.highlightedIndex = 1;
-        component.onUsernameKeydown(keyEvent('Escape'));
-        expect(component.showSuggestions).toBeFalse();
-        expect(component.highlightedIndex).toBe(-1);
-        expect(component.loginForm.get('username')?.value).toBe('');
-      });
-
-      it('no debería hacer nada si showSuggestions es false', () => {
-        component.showSuggestions = false;
-        component.onUsernameKeydown(keyEvent('ArrowDown'));
-        expect(component.highlightedIndex).toBe(-1);
-      });
+      expect(localStorage.getItem('dipalza_remembered_accounts')).toBeNull();
     });
   });
 
   describe('onSubmit', () => {
-    it('debería mostrar error si formulario es inválido', () => {
+    it('con el formulario inválido no llama al backend y marca submitted para mostrar los errores por campo', () => {
       component.ngOnInit();
       component.loginForm.get('username')?.setValue('');
       component.loginForm.get('password')?.setValue('');
       component.onSubmit();
-      expect(component.error).toBe('Usuario y/o clave inválidos !');
+      expect(authServiceMock.login).not.toHaveBeenCalled();
+      expect(component.submitted).toBeTrue();
+      expect(component.cargando).toBeFalse();
+    });
+
+    it('activa cargando mientras la petición está en curso', () => {
+      component.ngOnInit();
+      component.loginForm.get('username')?.setValue('testuser');
+      component.loginForm.get('password')?.setValue('testpass');
+      const respuesta = new Subject<any>();
+      authServiceMock.login.and.returnValue(respuesta.asObservable());
+
+      component.onSubmit();
+      expect(component.cargando).toBeTrue();
+
+      respuesta.error({ status: 500, message: 'Error interno' });
+      expect(component.cargando).toBeFalse();
     });
 
     it('debería llamar authService.login con credenciales válidas', () => {
@@ -341,23 +210,42 @@ describe('SigninComponent', () => {
       component.onSubmit();
       expect(component.submitted).toBeFalse();
     });
+  });
 
-    it('debería guardar la cuenta si "recordarme" está marcado tras login exitoso', () => {
+  describe('guardar la clave en el navegador', () => {
+    let storeSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      storeSpy = spyOn(navigator.credentials, 'store').and.resolveTo(undefined as any);
       component.ngOnInit();
-      component.loginForm.get('username')?.setValue('testuser');
-      component.loginForm.get('password')?.setValue('testpass');
-      component.loginForm.get('remember')?.setValue(true);
-      component.onSubmit();
-      expect(rememberedAccountsServiceMock.saveAccount).toHaveBeenCalledWith('testuser', 'testpass');
+      component.loginForm.get('username')?.setValue('jperez');
+      component.loginForm.get('password')?.setValue('clave1234');
     });
 
-    it('no debería guardar la cuenta si "recordarme" no está marcado', () => {
-      component.ngOnInit();
-      component.loginForm.get('username')?.setValue('testuser');
-      component.loginForm.get('password')?.setValue('testpass');
-      component.loginForm.get('remember')?.setValue(false);
+    it('tras un login exitoso le pide al navegador guardar usuario y clave', () => {
       component.onSubmit();
-      expect(rememberedAccountsServiceMock.saveAccount).not.toHaveBeenCalled();
+
+      expect(storeSpy).toHaveBeenCalledTimes(1);
+      const credencial = storeSpy.calls.mostRecent().args[0] as any;
+      expect(credencial.id).toBe('jperez');
+      expect(credencial.password).toBe('clave1234');
+    });
+
+    it('no la guarda si el login falla', () => {
+      authServiceMock.login.and.returnValue(throwError(() => ({ status: 403 })));
+
+      component.onSubmit();
+
+      expect(storeSpy).not.toHaveBeenCalled();
+    });
+
+    it('no guarda la clave temporal cuando se exige cambiarla', () => {
+      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+
+      component.onSubmit();
+
+      expect(storeSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -405,7 +293,7 @@ describe('SigninComponent', () => {
       expect(modalRef.componentInstance.claveActualForzada).toBe('claveTemp123');
     });
 
-    it('resetea submitted a false cuando se cierra el diálogo (el botón Ingresar no debe quedar deshabilitado)', () => {
+    it('resetea submitted y cargando cuando se cierra el diálogo (el botón Ingresar no debe quedar deshabilitado)', () => {
       authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
       authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
       const modalRef = { componentInstance: {} as any, closed: of(undefined) };
@@ -414,16 +302,7 @@ describe('SigninComponent', () => {
       component.onSubmit();
 
       expect(component.submitted).toBeFalse();
-    });
-
-    it('no guarda la cuenta recordada si mustChangePassword es true, aunque "recordarme" esté marcado', () => {
-      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
-      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
-      component.loginForm.get('remember')?.setValue(true);
-
-      component.onSubmit();
-
-      expect(rememberedAccountsServiceMock.saveAccount).not.toHaveBeenCalled();
+      expect(component.cargando).toBeFalse();
     });
 
     it('no carga productos si mustChangePassword es true', () => {

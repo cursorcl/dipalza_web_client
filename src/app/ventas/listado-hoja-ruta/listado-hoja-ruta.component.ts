@@ -1,10 +1,12 @@
-import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VentasService } from '../ventas.service';
 import { RutaHojaRutaDTO } from '../models/model';
+
+const FORMATO_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
 @Component({
   selector: 'app-listado-hoja-ruta',
@@ -23,8 +25,13 @@ export class ListadoHojaRutaComponent implements OnInit, AfterViewInit {
   constructor(private ventaService: VentasService, private location: Location, private host: ElementRef<HTMLElement>) {
   }
 
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   ngOnInit(): void {
-    this.fecha = new Date().toISOString().split('T')[0];
+    // La fecha viaja en la URL (?fecha=2026-10-15) para poder recargar o compartir el enlace.
+    const fecha = this.route.snapshot.queryParamMap.get('fecha');
+    this.fecha = fecha && FORMATO_FECHA.test(fecha) ? fecha : new Date().toISOString().split('T')[0];
     this.cargar();
   }
 
@@ -37,8 +44,19 @@ export class ListadoHojaRutaComponent implements OnInit, AfterViewInit {
     this.host.nativeElement.style.setProperty('--hoja-ruta-navbar-h', `${alto}px`);
   }
 
+  // replaceUrl: cambiar de día no agrega entradas al historial del navegador.
+  private actualizarUrl(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { fecha: this.fecha },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
+  }
+
   private cargar() {
     if (!this.fecha) return;
+    this.actualizarUrl();
     this.loadingIndicator = true;
     this.error = null;
     this.ventaService.obtenerHojaRuta(this.fecha).subscribe({

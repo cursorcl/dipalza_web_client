@@ -78,10 +78,26 @@ describe('VendorListComponent', () => {
     const emitidos: VendedorListItem[] = [];
     component.trayectoriaToggled.subscribe((v) => emitidos.push(v));
 
-    const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
-    fila.dispatchEvent(new Event('click'));
+    const boton: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__seleccionar');
+    boton.dispatchEvent(new Event('click'));
 
     expect(emitidos).toEqual([vendedorEjemplo]);
+  });
+
+  it('el botón ⌖ centra el mapa en el vendedor (alternativa al doble clic para teclado y táctil)', () => {
+    component.vendedores = [vendedorEjemplo];
+    fixture.detectChanges();
+
+    const emitidos: string[] = [];
+    component.vendedorSeleccionado.subscribe((id) => emitidos.push(id));
+    const emitidosTrayectoria: VendedorListItem[] = [];
+    component.trayectoriaToggled.subscribe((v) => emitidosTrayectoria.push(v));
+
+    const botones: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.vendor-list__accion-btn');
+    botones[0].dispatchEvent(new Event('click'));
+
+    expect(emitidos).toEqual([vendedorEjemplo.vendedorId]);
+    expect(emitidosTrayectoria).toEqual([]);
   });
 
   it('el panel inicia expandido: el cuerpo con la lista es visible', () => {

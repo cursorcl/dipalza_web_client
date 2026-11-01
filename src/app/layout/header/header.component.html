@@ -2,36 +2,36 @@
   <div class="form-inline me-auto">
     <ul class="navbar-nav msr-3">
       <li>
-        <a data-toggle="sidebar" class="nav-link nav-link-lg
-          collapse-btn" (click)="mobileMenuSidebarOpen($event,'overlay-open')">
-          <i-feather name="menu"></i-feather>
-        </a>
+        <button type="button" data-toggle="sidebar" class="nav-link nav-link-lg collapse-btn"
+          aria-label="Mostrar u ocultar menú" (click)="mobileMenuSidebarOpen($event,'overlay-open')">
+          <i-feather aria-hidden="true" name="menu"></i-feather>
+        </button>
       </li>
-
     </ul>
   </div>
   <ul class="navbar-nav navbar-right">
     <li>
-      <a class="nav-link nav-link-lg collapse-btn" (click)="callFullscreen()">
-        <i-feather name="maximize"></i-feather>
-      </a>
+      <button type="button" class="nav-link nav-link-lg collapse-btn"
+        [attr.aria-label]="isFullScreen ? 'Salir de pantalla completa' : 'Pantalla completa'"
+        [title]="isFullScreen ? 'Salir de pantalla completa' : 'Pantalla completa'" (click)="callFullscreen()">
+        <i-feather aria-hidden="true" name="maximize"></i-feather>
+      </button>
     </li>
 
     <li ngbDropdown>
-      <a ngbDropdownToggle data-toggle="dropdown" class="nav-link dropdown-toggle nav-link-lg nav-link-user">
-        <img alt="image" src="assets/images/user.png" class="user-img-radious-style collapse-btn">
-        <span class="d-sm-none d-lg-inline-block"></span>
-      </a>
+      <button type="button" ngbDropdownToggle class="nav-link dropdown-toggle nav-link-lg nav-link-user"
+        aria-label="Menú de usuario">
+        <img alt="" src="assets/images/user.png" width="30" height="30" class="user-img-radious-style collapse-btn">
+      </button>
       <div ngbDropdownMenu class="dropdown-menu dropdown-menu-right header-dropdown pullDown">
-        <div class="dropdown-title">Hola {{userFullName}}..</div>
-        <a routerLink="/perfil" class="dropdown-item has-icon"> <i class="far
-    fa-user"></i> Cambiar contraseña
+        <div class="dropdown-title">Hola, {{ userFullName }}</div>
+        <a routerLink="/perfil" class="dropdown-item has-icon">
+          <i aria-hidden="true" class="far fa-user"></i> Cambiar Contraseña
         </a>
         <div class="dropdown-divider"></div>
-        <a href="javascript:void(0);" class="dropdown-item has-icon text-danger" (click)="logout()"> <i
-            class="fas fa-sign-out-alt"></i>
-          Logout
-        </a>
+        <button type="button" class="dropdown-item has-icon text-danger" (click)="logout()">
+          <i aria-hidden="true" class="fas fa-sign-out-alt"></i> Cerrar Sesión
+        </button>
       </div>
     </li>
   </ul>

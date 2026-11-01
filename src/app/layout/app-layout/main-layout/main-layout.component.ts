@@ -1,7 +1,6 @@
 import { Direction } from '@angular/cdk/bidi';
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { RightSidebarComponent } from '../../right-sidebar/right-sidebar.component';
 import { SidebarComponent } from '../../sidebar/sidebar.component';
 import { HeaderComponent } from '../../header/header.component';
 import { DirectionService, InConfiguration } from '@core';
@@ -14,7 +13,6 @@ import { ConfigService } from '@config/config.service';
     imports: [
         HeaderComponent,
         SidebarComponent,
-        RightSidebarComponent,
         RouterOutlet,
     ]
 })

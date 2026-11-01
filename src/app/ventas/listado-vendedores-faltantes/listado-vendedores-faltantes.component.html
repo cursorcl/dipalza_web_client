@@ -5,8 +5,8 @@
         </li>
 
         <li class="breadcrumb-item bcrumb-1">
-            <a routerLink="/" class="d-flex align-items-center">
-                <i class="fas fa-home font-20"></i>
+            <a routerLink="/" class="d-flex align-items-center" aria-label="Inicio">
+                <i class="fas fa-home font-20" aria-hidden="true"></i>
             </a>
         </li>
     </ul>
@@ -23,36 +23,36 @@
                         <div class="form-group row align-items-center mb-3 faltantes-controles no-print">
                             <div class="col-sm-5">
                                 <div class="d-flex align-items-center">
-                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha">
-                                        <i class="fas fa-chevron-left"></i>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="diaAnterior()" [disabled]="!fecha" aria-label="Día anterior" title="Día anterior">
+                                        <i aria-hidden="true" class="fas fa-chevron-left"></i>
                                     </button>
-                                    <input type="date" class="form-control mx-2" style="max-width: 180px;"
+                                    <input type="date" class="form-control mx-2" style="max-width: 180px;" aria-label="Fecha"
                                         [(ngModel)]="fecha" (change)="onFechaChange()">
-                                    <button class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha">
-                                        <i class="fas fa-chevron-right"></i>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" (click)="diaSiguiente()" [disabled]="!fecha" aria-label="Día siguiente" title="Día siguiente">
+                                        <i aria-hidden="true" class="fas fa-chevron-right"></i>
                                     </button>
                                 </div>
                             </div>
                             <div class="col-sm-7 text-sm-end">
-                                <div class="btn-group me-2" role="group">
-                                    <button class="btn btn-sm" [class.btn-primary]="vista === 'factura'"
-                                        [class.btn-outline-primary]="vista !== 'factura'" (click)="vista = 'factura'">
+                                <div class="btn-group me-2" role="group" aria-label="Agrupar faltantes">
+                                    <button type="button" class="btn btn-sm" [attr.aria-pressed]="vista === 'factura'" [class.btn-primary]="vista === 'factura'"
+                                        [class.btn-outline-primary]="vista !== 'factura'" (click)="cambiarVista('factura')">
                                         Por Factura
                                     </button>
-                                    <button class="btn btn-sm" [class.btn-primary]="vista === 'producto'"
-                                        [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
+                                    <button type="button" class="btn btn-sm" [attr.aria-pressed]="vista === 'producto'" [class.btn-primary]="vista === 'producto'"
+                                        [class.btn-outline-primary]="vista !== 'producto'" (click)="cambiarVista('producto')">
                                         Por Producto
                                     </button>
                                 </div>
-                                <button class="btn btn-outline-secondary" [disabled]="!hayDatos" (click)="imprimir()">
-                                    <i class="fas fa-print"></i>
+                                <button type="button" class="btn btn-outline-secondary" [disabled]="!hayDatos" (click)="imprimir()">
+                                    <i aria-hidden="true" class="fas fa-print"></i>
                                     Imprimir
                                 </button>
                             </div>
                         </div>
 
                         <div class="text-center py-4" *ngIf="loadingIndicator">
-                            <div class="spinner-border text-primary"></div>
+                            <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando…</span></div>
                         </div>
 
                         <div class="alert alert-info" *ngIf="!loadingIndicator && !hayDatos">

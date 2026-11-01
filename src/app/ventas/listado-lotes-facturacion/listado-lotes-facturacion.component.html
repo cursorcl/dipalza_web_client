@@ -4,8 +4,8 @@
             <h5 class="page-title m-b-0">Corridas de Facturación</h5>
         </li>
         <li class="breadcrumb-item bcrumb-1">
-            <a routerLink="/" class="d-flex align-items-center">
-                <i class="fas fa-home font-20"></i>
+            <a routerLink="/" class="d-flex align-items-center" aria-label="Inicio">
+                <i class="fas fa-home font-20" aria-hidden="true"></i>
             </a>
         </li>
         <li class="breadcrumb-item bcrumb-2">
@@ -47,7 +47,8 @@
                     </ngx-datatable-column>
                     <ngx-datatable-column name="" [sortable]="false">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <button class="btn btn-sm btn-primary" (click)="verDetalle(row)">Ver</button>
+                            <a class="btn btn-sm btn-primary" [routerLink]="['/ventas/lotes-facturacion', row.id]"
+                                [attr.aria-label]="'Ver detalle de la corrida del ' + (row.iniciadoEn | date:'dd/MM/yyyy HH:mm')">Ver</a>
                         </ng-template>
                     </ngx-datatable-column>
 

@@ -276,13 +276,40 @@ describe('MapaComponent', () => {
     const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
     expect(fila).toBeTruthy();
 
-    fila.dispatchEvent(new Event('click'));
+    fila.querySelector<HTMLElement>('.vendor-list__seleccionar')!.dispatchEvent(new Event('click'));
 
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
       { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
     ]);
 
     expect(component.seleccionado()).toBe('001_0');
+  });
+
+  it('Tab llega a la lista de vendedores antes que al mapa, y los marcadores no son paradas de Tab', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+
+    httpMock.expectOne(`${environment.apiUrl}/posicion`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
+    ]);
+    httpMock.expectOne(`${environment.apiUrl}/vendedores`).flush([{ codigo: '001', tipo: '0', nombre: 'Juan Perez' }]);
+    fixture.detectChanges();
+
+    const lista: HTMLElement = fixture.nativeElement.querySelector('app-vendor-list');
+    const mapa: HTMLElement = fixture.nativeElement.querySelector('.map-container');
+    expect(lista.compareDocumentPosition(mapa) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+
+    const marcadores: NodeListOf<HTMLElement> = fixture.nativeElement.querySelectorAll('.leaflet-marker-icon');
+    expect(marcadores.length).toBeGreaterThan(0);
+    marcadores.forEach(m => expect(m.getAttribute('tabindex')).not.toBe('0'));
+  });
+
+  it('los controles del mapa están en español', () => {
+    TestBed.inject(HttpTestingController);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.leaflet-control-zoom-in').getAttribute('title')).toBe('Acercar');
+    expect(fixture.nativeElement.querySelector('.leaflet-control-zoom-out').getAttribute('title')).toBe('Alejar');
+    expect(fixture.nativeElement.querySelector('.leaflet-control-attribution').textContent).toContain('colaboradores de OpenStreetMap');
   });
 
   it('la fila no queda resaltada tras un historial vacío', () => {
@@ -293,7 +320,7 @@ describe('MapaComponent', () => {
     fixture.detectChanges();
 
     const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
-    fila.dispatchEvent(new Event('click'));
+    fila.querySelector<HTMLElement>('.vendor-list__seleccionar')!.dispatchEvent(new Event('click'));
 
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
     fixture.detectChanges();

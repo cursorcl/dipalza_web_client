@@ -7,40 +7,45 @@
       <div class="card-body">
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
           <div class="form-group">
-            <label>Clave actual</label>
-            <input type="password" class="form-control" formControlName="claveActual"
+            <label for="claveActual">Clave actual</label>
+            <input id="claveActual" name="claveActual" type="password" class="form-control" formControlName="claveActual"
+              autocomplete="current-password" aria-describedby="claveActual-error"
               [class.is-invalid]="submitted && f['claveActual'].errors">
             @if (submitted && f['claveActual'].errors) {
-              <div class="invalid-feedback">Ingrese su clave actual.</div>
+              <div id="claveActual-error" class="invalid-feedback">Ingrese su clave actual.</div>
             }
           </div>
           <div class="form-group">
-            <label>Clave nueva</label>
-            <input type="password" class="form-control" formControlName="claveNueva"
+            <label for="claveNueva">Clave nueva</label>
+            <input id="claveNueva" name="claveNueva" type="password" class="form-control" formControlName="claveNueva"
+              autocomplete="new-password" aria-describedby="claveNueva-error"
               [class.is-invalid]="submitted && f['claveNueva'].errors">
             @if (submitted && f['claveNueva'].errors) {
-              <div class="invalid-feedback">La clave nueva debe tener al menos 8 caracteres.</div>
+              <div id="claveNueva-error" class="invalid-feedback">La clave nueva debe tener al menos 8 caracteres.</div>
             }
           </div>
           <div class="form-group">
-            <label>Confirmar clave nueva</label>
-            <input type="password" class="form-control" formControlName="confirmarClave"
+            <label for="confirmarClave">Confirmar clave nueva</label>
+            <input id="confirmarClave" name="confirmarClave" type="password" class="form-control" formControlName="confirmarClave"
+              autocomplete="new-password" aria-describedby="confirmarClave-error"
               [class.is-invalid]="submitted && (f['confirmarClave'].errors || form.errors?.['clavesNoCoinciden'])">
             @if (submitted && form.errors?.['clavesNoCoinciden']) {
-              <div class="invalid-feedback">Las claves no coinciden.</div>
+              <div id="confirmarClave-error" class="invalid-feedback">Las claves no coinciden. Escriba la misma clave nueva en ambos campos.</div>
             }
           </div>
           @if (error) {
-            <div class="alert alert-danger">{{ error }}</div>
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
           }
           @if (success) {
-            <div class="alert alert-success">{{ success }}</div>
+            <div class="alert alert-success" role="status">{{ success }}</div>
           }
           <button type="submit" class="btn btn-primary" [disabled]="loading">
             @if (loading) {
-              <span class="spinner-border spinner-border-sm me-1"></span>
+              <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              Guardando…
+            } @else {
+              Cambiar Clave
             }
-            Guardar
           </button>
         </form>
       </div>

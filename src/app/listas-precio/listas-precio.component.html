@@ -4,8 +4,8 @@
             <h5 class="page-title m-b-0">Listas de Precio</h5>
         </li>
         <li class="breadcrumb-item bcrumb-1">
-            <a routerLink="/" class="d-flex align-items-center">
-                <i class="fas fa-home font-20"></i>
+            <a routerLink="/" class="d-flex align-items-center" aria-label="Inicio">
+                <i class="fas fa-home font-20" aria-hidden="true"></i>
             </a>
         </li>
     </ul>
@@ -14,7 +14,7 @@
             <div class="col-sm-12">
                 <div class="form-group row">
                     <div class="col-sm-auto ms-auto d-flex gap-2">
-                        <button class="btn btn-outline-primary" (click)="gestionar()">Gestionar</button>
+                        <button type="button" class="btn btn-outline-primary" (click)="gestionar()">Gestionar Listas</button>
                         <button class="btn btn-primary" (click)="cargarListas()">Actualizar</button>
                     </div>
                 </div>

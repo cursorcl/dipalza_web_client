@@ -1,9 +1,10 @@
-<div class="tramos-table__header" (click)="alternarColapso()">
+<button type="button" class="tramos-table__header" [attr.aria-expanded]="!colapsado()" aria-controls="tramos-table-body"
+  (click)="alternarColapso()">
   <span class="tramos-table__titulo">Tramos del recorrido</span>
-  <span class="tramos-table__flecha" [class.tramos-table__flecha--colapsado]="colapsado()">▾</span>
-</div>
+  <span class="tramos-table__flecha" [class.tramos-table__flecha--colapsado]="colapsado()" aria-hidden="true">▾</span>
+</button>
 @if (!colapsado()) {
-  <div class="tramos-table__body">
+  <div class="tramos-table__body" id="tramos-table-body">
     <table class="tramos-table__tabla">
       <thead>
         <tr>
@@ -20,7 +21,13 @@
             [class.tramos-table__fila--selected]="isSelected(fila.numero)"
             (click)="seleccionarFila(fila.numero)"
             (dblclick)="onDoubleClick(fila.numero)">
-            <td>{{ fila.numero }}</td>
+            <!-- Mouse: clic selecciona y doble clic centra el mapa. Teclado/táctil: el botón hace ambas cosas. -->
+            <td>
+              <button type="button" class="tramos-table__centrar-btn"
+                [attr.aria-label]="'Centrar mapa en ' + fila.tipo"
+                title="Centrar mapa en este punto"
+                (click)="seleccionarFila(fila.numero); onDoubleClick(fila.numero); $event.stopPropagation()">{{ fila.numero }}</button>
+            </td>
             <td>{{ fila.tipo }}</td>
             <td>{{ fila.calle ?? 'Buscando calle…' }}</td>
             <td>{{ fila.horaDetencion }}</td>

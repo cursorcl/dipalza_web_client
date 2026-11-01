@@ -2,10 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { UntypedFormBuilder, UntypedFormGroup, Validators, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
-import { AuthService, RememberedAccountsService, RememberedAccount } from '@core';
+import { AuthService } from '@core';
 import { ProductoService } from 'app/services/producto.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { CambiarClaveObligatorioComponent } from 'app/perfil/cambiar-clave-obligatorio/cambiar-clave-obligatorio.component';
+
+// Clave de localStorage donde versiones anteriores guardaban "cuentas recordadas"
+// con la contraseña en texto plano. Ahora el recordar cuentas lo hace el gestor de
+// contraseñas del navegador (cifrado), así que al abrir el login se borra lo que
+// haya quedado guardado.
+const CLAVE_CUENTAS_RECORDADAS_LEGADO = 'dipalza_remembered_accounts';
+
 @Component({
   selector: 'app-signin',
   templateUrl: './signin.component.html',
@@ -23,25 +30,20 @@ export class SigninComponent implements OnInit {
   returnUrl!: string;
   error = '';
   hide = true;
-  accounts: RememberedAccount[] = [];
-  filteredAccounts: RememberedAccount[] = [];
-  showSuggestions = false;
-  highlightedIndex = -1;
+  cargando = false;
   constructor(
     private formBuilder: UntypedFormBuilder,
     private router: Router,
     private authService: AuthService,
     private productoService: ProductoService,
-    private rememberedAccountsService: RememberedAccountsService,
     private modalService: NgbModal
   ) { }
   ngOnInit() {
     this.loginForm = this.formBuilder.group({
       username: ['', Validators.required],
       password: ['', Validators.required],
-      remember: [''],
     });
-    this.accounts = this.rememberedAccountsService.getAccounts();
+    this.borrarCuentasRecordadasLegado();
 
     if (this.authService.currentUserValue?.mustChangePassword) {
       this.abrirModalCambioObligatorio();
@@ -63,70 +65,58 @@ export class SigninComponent implements OnInit {
     modalRef.closed.subscribe(() => {
       this.authService.logout();
       this.submitted = false;
+      this.cargando = false;
       this.router.navigate(['/authentication/signin']);
     });
   }
   get f() {
     return this.loginForm.controls;
   }
-  private filterAccounts(): RememberedAccount[] {
-    const valor = (this.f['username'].value ?? '').toLowerCase();
-    return this.accounts.filter(a => (a.username ?? '').toLowerCase().startsWith(valor));
+  private borrarCuentasRecordadasLegado(): void {
+    try {
+      localStorage.removeItem(CLAVE_CUENTAS_RECORDADAS_LEGADO);
+    } catch {
+      // localStorage puede no estar disponible (modo privado estricto); no hay nada que borrar.
+    }
   }
 
-  onUsernameFocus(): void {
-    this.onUsernameInput();
-  }
-
-  onUsernameInput(): void {
-    this.filteredAccounts = this.filterAccounts();
-    this.showSuggestions = this.filteredAccounts.length > 0;
-    this.highlightedIndex = -1;
-  }
-
-  onUsernameBlur(): void {
-    this.showSuggestions = false;
-    this.highlightedIndex = -1;
-  }
-
-  onUsernameKeydown(event: KeyboardEvent): void {
-    if (!this.showSuggestions || this.filteredAccounts.length === 0) {
+  // El login es una petición en segundo plano (no un envío real del formulario), y Chrome no
+  // siempre la reconoce como ingreso exitoso, así que no ofrecía guardar la clave. Con la API
+  // Credential Management se le pide explícitamente: Chrome/Edge muestran "¿Guardar contraseña?".
+  // En navegadores sin PasswordCredential (Safari, Firefox) o fuera de un contexto seguro
+  // (HTTPS o localhost) no hace nada y queda la detección propia del navegador.
+  private guardarCredencialEnNavegador(username: string, password: string): void {
+    const PasswordCredentialCtor = (window as unknown as {
+      PasswordCredential?: new (datos: { id: string; password: string }) => Credential;
+    }).PasswordCredential;
+    if (!PasswordCredentialCtor || !navigator.credentials?.store) {
       return;
     }
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      this.highlightedIndex = Math.min(this.highlightedIndex + 1, this.filteredAccounts.length - 1);
-    } else if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
-    } else if (event.key === 'Enter') {
-      if (this.highlightedIndex >= 0) {
-        event.preventDefault();
-        this.selectAccount(this.filteredAccounts[this.highlightedIndex]);
-      }
-    } else if (event.key === 'Escape') {
-      this.showSuggestions = false;
-      this.highlightedIndex = -1;
+    navigator.credentials
+      .store(new PasswordCredentialCtor({ id: username, password }))
+      .catch(() => {
+        // Si el usuario o el navegador lo rechazan no hay nada que hacer; el ingreso sigue igual.
+      });
+  }
+
+  // Pone el foco en el primer campo con error para que quien usa teclado o lector
+  // de pantalla llegue directo a lo que falta corregir.
+  private enfocarPrimerError(): void {
+    const primero = ['username', 'password'].find(campo => this.f[campo].invalid);
+    if (primero) {
+      document.getElementById(primero)?.focus();
     }
   }
 
-  selectAccount(account: RememberedAccount): void {
-    this.loginForm.patchValue({
-      username: account.username,
-      password: account.password,
-      remember: true,
-    });
-    this.showSuggestions = false;
-    this.highlightedIndex = -1;
-  }
   onSubmit() {
     this.submitted = true;
     this.error = '';
 
     if (this.loginForm.invalid) {
-      this.error = 'Usuario y/o clave inválidos !';
+      this.enfocarPrimerError();
       return;
     } else {
+      this.cargando = true;
       this.authService
         .login(this.f['username'].value, this.f['password'].value)
         .subscribe({
@@ -138,12 +128,7 @@ export class SigninComponent implements OnInit {
                   if (this.authService.currentUserValue.mustChangePassword) {
                     this.abrirModalCambioObligatorio(this.f['password'].value);
                   } else {
-                    if (this.f['remember'].value) {
-                      this.rememberedAccountsService.saveAccount(
-                        this.f['username'].value,
-                        this.f['password'].value
-                      );
-                    }
+                    this.guardarCredencialEnNavegador(this.f['username'].value, this.f['password'].value);
                     this.productoService.loadProductos().subscribe({
                       next: () => console.log('Productos cargados en segundo plano'),
                       error: (err) => console.error('Error cargando productos post-login', err)
@@ -153,9 +138,11 @@ export class SigninComponent implements OnInit {
                 }
               } else {
                 this.error = 'Usuario inválido';
+                this.cargando = false;
               }
             } else {
               this.error = 'Usuario inválido';
+              this.cargando = false;
             }
           },
           error: (error) => {
@@ -164,6 +151,7 @@ export class SigninComponent implements OnInit {
               this.error = "Usuario no autorizado!!";
             }
             this.submitted = false;
+            this.cargando = false;
           },
         });
     }

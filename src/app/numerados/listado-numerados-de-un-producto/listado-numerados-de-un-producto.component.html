@@ -5,8 +5,8 @@
         </li>
 
         <li class="breadcrumb-item bcrumb-1">
-            <a routerLink="/" class="d-flex align-items-center">
-                <i class="fas fa-home font-20"></i>
+            <a routerLink="/" class="d-flex align-items-center" aria-label="Inicio">
+                <i class="fas fa-home font-20" aria-hidden="true"></i>
             </a>
         </li>
 
@@ -18,20 +18,20 @@
     </ul>
     <div class="section-body">
         @if (error) {
-            <div class="alert alert-danger">{{ error }}</div>
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
         }
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group row">
                     <div class="col-sm-4">
                         <div class="d-flex">
-                            <label class="col-form-label msr-3">Buscar:</label>
-                            <input type="text" class="form-control" (keyup)='updateFilter($event)'>
+                            <label for="buscar" class="col-form-label msr-3">Buscar:</label>
+                            <input id="buscar" name="buscar" type="search" class="form-control" autocomplete="off" (input)="updateFilter($event)">
                         </div>
                     </div>
                     <div class="col-sm-auto ms-auto">
-                        <button class="btn btn-primary" (click)="agregarNumerado()">
-                            Agregar
+                        <button type="button" class="btn btn-primary" (click)="agregarNumerado()">
+                            Agregar Numerado
                         </button>
                     </div>
                 </div>
@@ -61,9 +61,9 @@
                         cellClass="align-center-cell">
                         <ng-template let-value="value" let-row="row" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>
-                            <a class="msr-2 h-auto tblDelBtn" (click)="eliminarNumerado(row)" style="cursor: pointer;">
-                                <i class="fas fa-minus"></i>
-                            </a>
+                            <button type="button" class="msr-2 h-auto tblDelBtn" (click)="eliminarNumerado(row)" [attr.aria-label]="'Eliminar numerado ' + row.numero" [title]="'Eliminar numerado ' + row.numero">
+                                <i class="fas fa-minus" aria-hidden="true"></i>
+                            </button>
                         </ng-template>
                     </ngx-datatable-column>
                 </ngx-datatable>

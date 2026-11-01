@@ -43,14 +43,31 @@ describe('CrearUsuarioComponent', () => {
     expect(component.form.get('password')?.value.length).toBeGreaterThanOrEqual(8);
   });
 
-  it('envía el nombre sin espacios sobrantes cuando se ingresa', () => {
-    component.form.patchValue({ username: 'lzamora', nombre: '  Luis Zamora ', password: 'claveLarga1' });
+  it('no vendedor: oculta el vendedor, exige el nombre y lo envía sin espacios sobrantes', () => {
+    component.esVendedorControl.setValue(false);
+    component.form.patchValue({ username: 'lzamora', password: 'claveLarga1' });
+
+    component.submit();
+    httpMock.expectNone(`${environment.apiUrl}/usuarios`);
+    expect(component.form.get('nombre')?.hasError('required')).toBeTrue();
+
+    component.form.patchValue({ nombre: '  Luis Zamora ' });
 
     component.submit();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/usuarios`);
     expect(req.request.body.nombre).toBe('Luis Zamora');
+    expect(req.request.body.codigoVendedor).toBeUndefined();
     req.flush({ usuario: { id: 2, username: 'lzamora', email: null, codigoVendedor: null, tipoVendedor: null, nombreVendedor: null, enabled: true, locked: false, createdAt: null, nombre: 'Luis Zamora' }, correoEnviado: false });
+  });
+
+  it('vendedor: no deja guardar sin elegir un vendedor de la lista', () => {
+    component.form.patchValue({ username: 'jperez', password: 'claveLarga1' });
+
+    component.submit();
+
+    httpMock.expectNone(`${environment.apiUrl}/usuarios`);
+    expect(component.faltaVendedor).toBeTrue();
   });
 
   it('crea el usuario y cierra el modal con el resultado', () => {
@@ -68,7 +85,7 @@ describe('CrearUsuarioComponent', () => {
       codigoVendedor: '001',
       tipoVendedor: '0',
       password: 'claveLarga1',
-      nombre: undefined
+      nombre: 'Juan Perez'
     });
     const result: CrearUsuarioResult = {
       usuario: { id: 1, username: 'nuevo', email: 'nuevo@dipalza.cl', codigoVendedor: '001', tipoVendedor: '0', nombreVendedor: 'Juan Perez', enabled: true, locked: false, createdAt: null, nombre: null },
@@ -81,7 +98,8 @@ describe('CrearUsuarioComponent', () => {
 
   it('muestra un toast con el mensaje de error del backend si falla la creación', () => {
     const swalSpy = spyOn(Swal, 'fire');
-    component.form.patchValue({ username: 'jperez', password: 'claveLarga1' });
+    component.esVendedorControl.setValue(false);
+    component.form.patchValue({ username: 'jperez', nombre: 'Juan Pérez', password: 'claveLarga1' });
 
     component.submit();
 

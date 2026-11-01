@@ -16,26 +16,52 @@
       }
     </div>
 
-    <div class="form-group">
-      <label for="nuevo-nombre">Nombre (opcional)</label>
-      <input id="nuevo-nombre" name="nombre" type="text" formControlName="nombre" class="form-control"
-        placeholder="Ej: Luis Zamora…" autocomplete="off" maxlength="100"
-        aria-describedby="nuevo-nombre-ayuda" />
-      <small id="nuevo-nombre-ayuda" class="form-text text-muted">Se muestra en el saludo del sistema. Para vendedores se usa el nombre del vendedor.</small>
-    </div>
+    <fieldset class="form-group">
+      <legend class="col-form-label pt-0">¿Es vendedor?</legend>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="nuevo-es-vendedor-si" name="nuevo-esVendedor"
+          [formControl]="esVendedorControl" [value]="true" />
+        <label class="form-check-label" for="nuevo-es-vendedor-si">Sí</label>
+      </div>
+      <div class="form-check form-check-inline">
+        <input class="form-check-input" type="radio" id="nuevo-es-vendedor-no" name="nuevo-esVendedor"
+          [formControl]="esVendedorControl" [value]="false" />
+        <label class="form-check-label" for="nuevo-es-vendedor-no">No</label>
+      </div>
+    </fieldset>
+
+    @if (esVendedorControl.value) {
+      <!-- Vendedor: el nombre del usuario se toma del vendedor elegido. -->
+      <div class="form-group">
+        <label for="nuevo-vendedor">Vendedor (busque por código o nombre)</label>
+        <input id="nuevo-vendedor" name="vendedor" type="text" class="form-control" autocomplete="off"
+          [formControl]="buscadorVendedorControl"
+          [ngbTypeahead]="buscarVendedor" [resultFormatter]="formatearVendedor"
+          [inputFormatter]="formatearVendedor" (selectItem)="seleccionarVendedor($event)"
+          placeholder="Ej: 001 o Juan Pérez…"
+          [class.is-invalid]="intentoGuardar && faltaVendedor"
+          aria-describedby="nuevo-vendedor-error" aria-required="true" />
+        @if (intentoGuardar && faltaVendedor) {
+          <div id="nuevo-vendedor-error" class="invalid-feedback">Seleccione un vendedor de la lista.</div>
+        }
+      </div>
+    } @else {
+      <div class="form-group">
+        <label for="nuevo-nombre">Nombre</label>
+        <input id="nuevo-nombre" name="nombre" type="text" formControlName="nombre" class="form-control"
+          placeholder="Ej: Luis Zamora…" autocomplete="off" maxlength="100"
+          [class.is-invalid]="form.get('nombre')?.touched && form.get('nombre')?.invalid"
+          aria-describedby="nuevo-nombre-error" aria-required="true" />
+        @if (form.get('nombre')?.touched && form.get('nombre')?.invalid) {
+          <div id="nuevo-nombre-error" class="invalid-feedback">Ingrese el nombre del usuario.</div>
+        }
+      </div>
+    }
 
     <div class="form-group">
       <label for="nuevo-email">Correo (opcional)</label>
       <input id="nuevo-email" name="email" type="email" formControlName="email" class="form-control"
         placeholder="Ej: jperez@dipalza.cl…" autocomplete="off" spellcheck="false" />
-    </div>
-
-    <div class="form-group">
-      <label for="nuevo-vendedor">Vendedor asociado (opcional, busque por código o nombre)</label>
-      <input id="nuevo-vendedor" name="vendedor" type="text" class="form-control" [formControl]="buscadorVendedorControl"
-        [ngbTypeahead]="buscarVendedor" [resultFormatter]="formatearVendedor"
-        [inputFormatter]="formatearVendedor" (selectItem)="seleccionarVendedor($event)"
-        placeholder="Ej: 001 o Juan Pérez…" autocomplete="off" />
     </div>
 
     <div class="form-group">

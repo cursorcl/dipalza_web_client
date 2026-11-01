@@ -22,6 +22,10 @@ export class ModificarUsuarioComponent implements OnInit {
   vendedores: VendedorDTO[] = [];
   vendedorSeleccionado: VendedorDTO | null = null;
   buscadorVendedorControl = new FormControl<string | VendedorDTO | null>('');
+  // true: el usuario es un vendedor y su nombre se toma del vendedor elegido.
+  // false: no es vendedor y el nombre se ingresa a mano (obligatorio).
+  esVendedorControl = new FormControl<boolean>(true, { nonNullable: true });
+  intentoGuardar = false;
 
   loading = false;
 
@@ -39,6 +43,7 @@ export class ModificarUsuarioComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.esVendedorControl.setValue(!!this.usuario.codigoVendedor, { emitEvent: false });
     this.form.patchValue({
       nombre: this.usuario.nombre ?? '',
       email: this.usuario.email ?? '',
@@ -66,6 +71,28 @@ export class ModificarUsuarioComponent implements OnInit {
         this.vendedorSeleccionado = null;
       }
     });
+    this.esVendedorControl.valueChanges.subscribe(esVendedor => this.aplicarTipoUsuario(esVendedor));
+    this.aplicarTipoUsuario(this.esVendedorControl.value, true);
+  }
+
+  // Vendedor: deja de exigirse el nombre manual. No vendedor: se quita el vendedor elegido y el
+  // nombre pasa a ser obligatorio. inicial=true conserva los valores cargados del usuario.
+  private aplicarTipoUsuario(esVendedor: boolean, inicial = false): void {
+    const nombre = this.form.get('nombre')!;
+    if (esVendedor) {
+      nombre.setValidators(Validators.maxLength(100));
+    } else {
+      nombre.setValidators([Validators.required, Validators.maxLength(100)]);
+      if (!inicial) {
+        this.vendedorSeleccionado = null;
+        this.buscadorVendedorControl.setValue('', { emitEvent: false });
+      }
+    }
+    nombre.updateValueAndValidity();
+  }
+
+  get faltaVendedor(): boolean {
+    return this.esVendedorControl.value && !this.vendedorSeleccionado;
   }
 
   buscarVendedor: OperatorFunction<string, readonly VendedorDTO[]> = (text$: Observable<string>) =>
@@ -89,19 +116,20 @@ export class ModificarUsuarioComponent implements OnInit {
     this.vendedorSeleccionado = event.item;
   }
 
-  quitarVendedor(): void {
-    this.vendedorSeleccionado = null;
-    this.buscadorVendedorControl.setValue('');
-  }
-
   submit(): void {
+    this.intentoGuardar = true;
+    if (this.form.invalid || this.faltaVendedor) {
+      this.form.markAllAsTouched();
+      return;
+    }
     this.loading = true;
 
+    const vendedor = this.esVendedorControl.value ? this.vendedorSeleccionado : null;
     const payload: ActualizarUsuarioPayload = {
-      nombre: this.form.get('nombre')?.value?.trim() || undefined,
+      nombre: vendedor ? vendedor.nombre : this.form.get('nombre')?.value?.trim(),
       email: this.form.get('email')?.value || undefined,
-      codigoVendedor: this.vendedorSeleccionado?.codigo,
-      tipoVendedor: this.vendedorSeleccionado?.tipo,
+      codigoVendedor: vendedor?.codigo,
+      tipoVendedor: vendedor?.tipo,
       enabled: this.form.get('enabled')?.value,
       locked: this.form.get('locked')?.value
     };

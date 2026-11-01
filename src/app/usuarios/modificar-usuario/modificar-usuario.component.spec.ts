@@ -45,18 +45,24 @@ describe('ModificarUsuarioComponent', () => {
     expect(component.vendedorSeleccionado).toEqual(vendedor);
   });
 
-  it('quitarVendedor limpia la selección', () => {
-    component.quitarVendedor();
+  it('un usuario con vendedor parte como vendedor; elegir "No" quita el vendedor', () => {
+    expect(component.esVendedorControl.value).toBeTrue();
+
+    component.esVendedorControl.setValue(false);
+
     expect(component.vendedorSeleccionado).toBeNull();
+    expect(component.form.get('nombre')?.hasError('required')).toBeTrue();
   });
 
-  it('permite registrar el nombre del usuario', () => {
+  it('no vendedor: envía el nombre ingresado y sin vendedor', () => {
+    component.esVendedorControl.setValue(false);
     component.form.patchValue({ nombre: 'Juan Pérez Soto' });
 
     component.submit();
 
     const req = httpMock.expectOne(`${environment.apiUrl}/usuarios/1`);
     expect(req.request.body.nombre).toBe('Juan Pérez Soto');
+    expect(req.request.body.codigoVendedor).toBeUndefined();
     req.flush({ ...usuario, nombre: 'Juan Pérez Soto' });
   });
 
@@ -69,7 +75,7 @@ describe('ModificarUsuarioComponent', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/usuarios/1`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual({
-      nombre: undefined,
+      nombre: 'Juan Perez',
       email: 'j@dipalza.cl',
       codigoVendedor: '001',
       tipoVendedor: '0',

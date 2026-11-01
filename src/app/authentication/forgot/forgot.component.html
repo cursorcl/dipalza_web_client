@@ -14,23 +14,28 @@
                 <form [formGroup]="form" (ngSubmit)="onSubmit()">
                   <div class="form-group">
                     <label for="usernameOrEmail">Usuario o correo</label>
-                    <input id="usernameOrEmail" type="text" class="form-control" formControlName="usernameOrEmail"
-                      [class.is-invalid]="submitted && f['usernameOrEmail'].errors" tabindex="1" autofocus>
+                    <input id="usernameOrEmail" name="usernameOrEmail" type="text" class="form-control" formControlName="usernameOrEmail"
+                      autocomplete="username" autocapitalize="none" spellcheck="false"
+                      [class.is-invalid]="submitted && f['usernameOrEmail'].errors"
+                      [attr.aria-invalid]="submitted && !!f['usernameOrEmail'].errors"
+                      aria-describedby="usernameOrEmail-error" autofocus>
                     @if (submitted && f['usernameOrEmail'].errors) {
-                      <div class="invalid-feedback">Ingrese su usuario o correo.</div>
+                      <div id="usernameOrEmail-error" class="invalid-feedback">Ingrese su usuario o correo.</div>
                     }
                   </div>
                   <div class="form-group">
-                    <button type="submit" class="btn btn-primary btn-lg btn-block" [disabled]="loading" tabindex="2">
+                    <button type="submit" class="btn btn-primary btn-lg btn-block" [disabled]="loading">
                       @if (loading) {
-                        <span class="spinner-border spinner-border-sm me-1"></span>
+                        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        Enviando…
+                      } @else {
+                        Enviar Código
                       }
-                      Enviar código
                     </button>
                   </div>
                 </form>
               } @else {
-                <div class="alert alert-success">
+                <div class="alert alert-success" role="status">
                   Si la cuenta existe, le enviamos un código de recuperación por correo.
                 </div>
               }

@@ -25,8 +25,8 @@
                 <div class="form-group row">
                     <div class="col-sm-4">
                         <div class="d-flex">
-                            <label class="col-form-label msr-3">Buscar:</label>
-                            <input type="text" class="form-control" (keyup)='updateFilter($event)'>
+                            <label for="buscar" class="col-form-label msr-3">Buscar:</label>
+                            <input id="buscar" name="buscar" type="search" class="form-control" autocomplete="off" (input)="updateFilter($event)">
                         </div>
                     </div>
                     <div class="col-sm-auto ms-auto">

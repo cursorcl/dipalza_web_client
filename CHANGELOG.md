@@ -1,3 +1,10 @@
+## [1.19.4](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.3...v1.19.4) (2026-11-01)
+
+
+### Bug Fixes
+
+* accesibilidad, formularios y login con gestor de contraseñas del navegador (revisión Web Interface Guidelines P2–P4) ([#47](https://github.com/cursorcl/dipalza_web_client/issues/47)) ([36cd68b](https://github.com/cursorcl/dipalza_web_client/commit/36cd68bcdf8c5dfde5714fe43df1650ba5c97db3))
+
 ## [1.19.3](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.2...v1.19.3) (2026-11-01)
 
 

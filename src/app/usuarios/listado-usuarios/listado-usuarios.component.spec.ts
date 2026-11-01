@@ -18,7 +18,7 @@ describe('ListadoUsuariosComponent', () => {
 
   const usuario: Usuario = {
     id: 1, username: 'jperez', email: 'j@dipalza.cl', codigoVendedor: null, tipoVendedor: null,
-    nombreVendedor: null, enabled: true, locked: false, createdAt: null
+    nombreVendedor: null, enabled: true, locked: false, createdAt: null, nombre: null
   };
 
   beforeEach(async () => {
@@ -49,6 +49,14 @@ describe('ListadoUsuariosComponent', () => {
 
   it('should create y carga la lista', () => {
     expect(component.rows).toEqual([usuario]);
+  });
+
+  it('el buscador encuentra usuarios por su nombre', () => {
+    component.temp = [usuario, { ...usuario, id: 2, username: 'lzamora', email: null, nombre: 'Luis Zamora' }];
+
+    component.updateFilter({ target: { value: 'zamora' } } as unknown as Event);
+
+    expect(component.rows.map(u => u.username)).toEqual(['lzamora']);
   });
 
   it('toggleHabilitado confirma y llama deshabilitar si el usuario está habilitado', () => {

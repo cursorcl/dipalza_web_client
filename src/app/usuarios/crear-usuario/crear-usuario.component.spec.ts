@@ -43,6 +43,16 @@ describe('CrearUsuarioComponent', () => {
     expect(component.form.get('password')?.value.length).toBeGreaterThanOrEqual(8);
   });
 
+  it('envía el nombre sin espacios sobrantes cuando se ingresa', () => {
+    component.form.patchValue({ username: 'lzamora', nombre: '  Luis Zamora ', password: 'claveLarga1' });
+
+    component.submit();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/usuarios`);
+    expect(req.request.body.nombre).toBe('Luis Zamora');
+    req.flush({ usuario: { id: 2, username: 'lzamora', email: null, codigoVendedor: null, tipoVendedor: null, nombreVendedor: null, enabled: true, locked: false, createdAt: null, nombre: 'Luis Zamora' }, correoEnviado: false });
+  });
+
   it('crea el usuario y cierra el modal con el resultado', () => {
     component.form.patchValue({ username: 'nuevo', email: 'nuevo@dipalza.cl', password: 'claveLarga1' });
     component.vendedorSeleccionado = vendedor;
@@ -57,10 +67,11 @@ describe('CrearUsuarioComponent', () => {
       email: 'nuevo@dipalza.cl',
       codigoVendedor: '001',
       tipoVendedor: '0',
-      password: 'claveLarga1'
+      password: 'claveLarga1',
+      nombre: undefined
     });
     const result: CrearUsuarioResult = {
-      usuario: { id: 1, username: 'nuevo', email: 'nuevo@dipalza.cl', codigoVendedor: '001', tipoVendedor: '0', nombreVendedor: 'Juan Perez', enabled: true, locked: false, createdAt: null },
+      usuario: { id: 1, username: 'nuevo', email: 'nuevo@dipalza.cl', codigoVendedor: '001', tipoVendedor: '0', nombreVendedor: 'Juan Perez', enabled: true, locked: false, createdAt: null, nombre: null },
       correoEnviado: true
     };
     req.flush(result);

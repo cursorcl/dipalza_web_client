@@ -8,6 +8,8 @@ export interface Usuario {
   enabled: boolean;
   locked: boolean;
   createdAt: string | null;
+  // Nombre para mostrar; opcional (los vendedores muestran nombreVendedor).
+  nombre: string | null;
 }
 
 export interface CrearUsuarioPayload {
@@ -16,6 +18,7 @@ export interface CrearUsuarioPayload {
   codigoVendedor?: string;
   tipoVendedor?: string;
   password: string;
+  nombre?: string;
 }
 
 export interface CrearUsuarioResult {
@@ -29,4 +32,5 @@ export interface ActualizarUsuarioPayload {
   tipoVendedor?: string;
   enabled: boolean;
   locked: boolean;
+  nombre?: string;
 }

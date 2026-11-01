@@ -30,6 +30,7 @@ export class CrearUsuarioComponent implements OnInit {
   ) {
     this.form = new FormGroup({
       username: new FormControl<string>('', Validators.required),
+      nombre: new FormControl<string>('', Validators.maxLength(100)),
       email: new FormControl<string>(''),
       password: new FormControl<string>('', [Validators.required, Validators.minLength(8)])
     });
@@ -96,7 +97,8 @@ export class CrearUsuarioComponent implements OnInit {
       email: this.form.get('email')?.value || undefined,
       codigoVendedor: this.vendedorSeleccionado?.codigo,
       tipoVendedor: this.vendedorSeleccionado?.tipo,
-      password: this.form.get('password')?.value
+      password: this.form.get('password')?.value,
+      nombre: this.form.get('nombre')?.value?.trim() || undefined
     };
 
     this.usuariosService.crear(payload).subscribe({

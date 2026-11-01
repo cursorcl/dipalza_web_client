@@ -17,7 +17,7 @@ describe('ModificarUsuarioComponent', () => {
   const vendedor: VendedorDTO = { codigo: '001', tipo: '0', nombre: 'Juan Perez' } as VendedorDTO;
   const usuario: Usuario = {
     id: 1, username: 'jperez', email: 'j@dipalza.cl', codigoVendedor: '001', tipoVendedor: '0',
-    nombreVendedor: 'Juan Perez', enabled: true, locked: false, createdAt: null
+    nombreVendedor: 'Juan Perez', enabled: true, locked: false, createdAt: null, nombre: null
   };
 
   beforeEach(async () => {
@@ -50,6 +50,16 @@ describe('ModificarUsuarioComponent', () => {
     expect(component.vendedorSeleccionado).toBeNull();
   });
 
+  it('permite registrar el nombre del usuario', () => {
+    component.form.patchValue({ nombre: 'Juan Pérez Soto' });
+
+    component.submit();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/usuarios/1`);
+    expect(req.request.body.nombre).toBe('Juan Pérez Soto');
+    req.flush({ ...usuario, nombre: 'Juan Pérez Soto' });
+  });
+
   it('guarda los cambios y cierra el modal con el usuario actualizado', () => {
     component.form.patchValue({ enabled: false, locked: true });
     const closeSpy = spyOn(component.activeModal, 'close');
@@ -59,6 +69,7 @@ describe('ModificarUsuarioComponent', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/usuarios/1`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual({
+      nombre: undefined,
       email: 'j@dipalza.cl',
       codigoVendedor: '001',
       tipoVendedor: '0',

@@ -31,6 +31,11 @@
                             <div>{{ row.username }}</div>
                         </ng-template>
                     </ngx-datatable-column>
+                    <ngx-datatable-column name="Nombre" headerClass="align-center-header" prop="nombre">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <div>{{ row.nombre || '-' }}</div>
+                        </ng-template>
+                    </ngx-datatable-column>
                     <ngx-datatable-column name="Correo" headerClass="align-center-header" prop="email">
                         <ng-template let-row="row" ngx-datatable-cell-template>
                             <div>{{ row.email || '-' }}</div>

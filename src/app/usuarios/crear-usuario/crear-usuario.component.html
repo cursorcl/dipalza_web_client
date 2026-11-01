@@ -17,6 +17,14 @@
     </div>
 
     <div class="form-group">
+      <label for="nuevo-nombre">Nombre (opcional)</label>
+      <input id="nuevo-nombre" name="nombre" type="text" formControlName="nombre" class="form-control"
+        placeholder="Ej: Luis Zamora…" autocomplete="off" maxlength="100"
+        aria-describedby="nuevo-nombre-ayuda" />
+      <small id="nuevo-nombre-ayuda" class="form-text text-muted">Se muestra en el saludo del sistema. Para vendedores se usa el nombre del vendedor.</small>
+    </div>
+
+    <div class="form-group">
       <label for="nuevo-email">Correo (opcional)</label>
       <input id="nuevo-email" name="email" type="email" formControlName="email" class="form-control"
         placeholder="Ej: jperez@dipalza.cl…" autocomplete="off" spellcheck="false" />

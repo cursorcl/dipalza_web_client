@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ReactiveFormsModule, FormGroup, FormControl } from '@angular/forms';
+import { ReactiveFormsModule, FormGroup, FormControl, Validators } from '@angular/forms';
 import { NgbActiveModal, NgbTypeahead, NgbTypeaheadSelectItemEvent } from '@ng-bootstrap/ng-bootstrap';
 import { Observable, OperatorFunction, debounceTime, distinctUntilChanged, map } from 'rxjs';
 import { VendedorDTO } from 'app/mapa/models/model';
@@ -31,6 +31,7 @@ export class ModificarUsuarioComponent implements OnInit {
     private vendedorService: VendedorService
   ) {
     this.form = new FormGroup({
+      nombre: new FormControl<string>('', Validators.maxLength(100)),
       email: new FormControl<string>(''),
       enabled: new FormControl<boolean>(true),
       locked: new FormControl<boolean>(false)
@@ -39,6 +40,7 @@ export class ModificarUsuarioComponent implements OnInit {
 
   ngOnInit(): void {
     this.form.patchValue({
+      nombre: this.usuario.nombre ?? '',
       email: this.usuario.email ?? '',
       enabled: this.usuario.enabled,
       locked: this.usuario.locked
@@ -96,6 +98,7 @@ export class ModificarUsuarioComponent implements OnInit {
     this.loading = true;
 
     const payload: ActualizarUsuarioPayload = {
+      nombre: this.form.get('nombre')?.value?.trim() || undefined,
       email: this.form.get('email')?.value || undefined,
       codigoVendedor: this.vendedorSeleccionado?.codigo,
       tipoVendedor: this.vendedorSeleccionado?.tipo,

@@ -76,3 +76,9 @@ td.text-end,
         scroll-behavior: auto !important;
     }
 }
+
+// El tema da 13px solo a los <a> de los menús desplegables; las acciones que son <button>
+// (p. ej. "Cerrar Sesión") deben verse igual.
+.dropdown-menu button.dropdown-item {
+    font-size: 13px;
+}

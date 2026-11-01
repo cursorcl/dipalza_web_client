@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+
 import { ListadoNumeradosDeUnProductoComponent } from './listado-numerados-de-un-producto.component';
 
 describe('ListadoNumeradosDeUnProductoComponent', () => {
@@ -8,7 +12,8 @@ describe('ListadoNumeradosDeUnProductoComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ListadoNumeradosDeUnProductoComponent]
+      imports: [ListadoNumeradosDeUnProductoComponent],
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()]
     })
     .compileComponents();
 

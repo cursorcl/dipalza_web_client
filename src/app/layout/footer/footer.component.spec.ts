@@ -1,5 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { FeatherModule } from 'angular-feather';
+import { allIcons } from 'angular-feather/icons';
+
 import { FooterComponent } from './footer.component';
 
 describe('FooterComponent', () => {
@@ -8,7 +11,7 @@ describe('FooterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-    imports: [FooterComponent]
+    imports: [FooterComponent, FeatherModule.pick(allIcons)]
 })
     .compileComponents();
   });

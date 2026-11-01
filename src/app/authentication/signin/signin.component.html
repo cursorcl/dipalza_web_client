@@ -3,77 +3,72 @@
     <div class="card login-card mb-0">
       <div class="row no-gutters">
         <div class="col-lg-5 d-none d-lg-block">
-          <img src="assets/images/login.jpg" alt="login" class="login-card-img">
-          </div>
-          <div class="col-12 col-lg-7">
-            <div class="login-body">
-              <div class="text-center">
-                <div class="brand-wrapper">
-                  <img src="assets/images/logo_dipalza.png" alt="logo" class="logo"><span class="logo-name">Dipalza</span>
-                </div>
-              </div>
-              <form class="validate-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <div class="form-group position-relative">
-                      <label>Cuenta <span class="text-danger">*</span></label>
-                      <i-feather name="user" class="login-icons"></i-feather>
-                      <input type="email" class="form-control psl-5" formControlName="username" placeholder="Email"
-                        autocomplete="off"
-                        (focus)="onUsernameFocus()"
-                        (input)="onUsernameInput()"
-                        (keydown)="onUsernameKeydown($event)"
-                        (blur)="onUsernameBlur()">
-                      @if (showSuggestions) {
-                        <ul class="dropdown-menu show w-100">
-                          @for (account of filteredAccounts; track account.username; let i = $index) {
-                            <li>
-                              <button type="button" class="dropdown-item"
-                                [class.active]="highlightedIndex === i"
-                                (mousedown)="$event.preventDefault()"
-                                (click)="selectAccount(account)">
-                                {{ account.username }}
-                              </button>
-                            </li>
-                          }
-                        </ul>
-                      }
-                    </div>
-                  </div>
-                    <div class="col-lg-12">
-                      <div class="form-group position-relative">
-                        <label>Clave <span class="text-danger">*</span></label>
-                        <i-feather name="key" class="login-icons"></i-feather>
-                        <input type="password" class="form-control psl-5" formControlName="password"
-                          placeholder="Password">
-                        </div>
-                      </div>
-                      <div class="col-lg-12">
-                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
-                          <div class="form-group">
-                            <div class="form-check">
-                              <input class="form-check-input" type="checkbox" id="customCheck1" formControlName="remember">
-                                <label class="form-check-label" for="customCheck1">
-                                  Recordame
-                                </label>
-                              </div>
-                            </div>
-                            <p class="forgot-pass mb-0"><a routerLink="/authentication/forgot"
-                            class="text-dark fw-bold text-nowrap">Olvidó su clave ?</a></p>
-                          </div>
-                        </div>
-                        @if (error) {
-                          <div class="alert alert-danger mb-3 msl-3">{{error}}</div>
-                        }
-                        <div class="col-lg-12 mb-0">
-                          <button class="btn btn-primary auth-form-btn" [disabled]="loginForm.invalid || submitted">Ingresar</button>
-                        </div>
-                    </div>
-                  </form>
-                </div>
+          <img src="assets/images/login.jpg" alt="" width="462" height="634" class="login-card-img">
+        </div>
+        <div class="col-12 col-lg-7">
+          <div class="login-body">
+            <div class="text-center">
+              <div class="brand-wrapper">
+                <img src="assets/images/logo_dipalza.png" alt="" width="82" height="37" class="logo"><span class="logo-name" translate="no">Dipalza</span>
               </div>
             </div>
+            <!-- autocomplete username/current-password: el gestor de contraseñas del navegador
+                 reconoce este formulario, ofrece las cuentas guardadas y pregunta si guardar la
+                 clave tras ingresar (reemplaza la lista propia que guardaba claves en texto plano). -->
+            <form class="validate-form" [formGroup]="loginForm" (ngSubmit)="onSubmit()" novalidate>
+              <div class="row">
+                <div class="col-lg-12">
+                  <div class="form-group position-relative">
+                    <label for="username">Usuario <span class="text-danger" aria-hidden="true">*</span></label>
+                    <i-feather name="user" class="login-icons" aria-hidden="true"></i-feather>
+                    <input id="username" name="username" type="text" class="form-control psl-5" formControlName="username"
+                      placeholder="Ej: jperez…" autocomplete="username" autocapitalize="none" spellcheck="false"
+                      [class.is-invalid]="submitted && f['username'].errors"
+                      [attr.aria-invalid]="submitted && !!f['username'].errors"
+                      aria-describedby="username-error" aria-required="true">
+                    @if (submitted && f['username'].errors) {
+                      <div id="username-error" class="invalid-feedback">Ingrese su usuario.</div>
+                    }
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <div class="form-group position-relative">
+                    <label for="password">Clave <span class="text-danger" aria-hidden="true">*</span></label>
+                    <i-feather name="key" class="login-icons" aria-hidden="true"></i-feather>
+                    <input id="password" name="password" type="password" class="form-control psl-5" formControlName="password"
+                      autocomplete="current-password"
+                      [class.is-invalid]="submitted && f['password'].errors"
+                      [attr.aria-invalid]="submitted && !!f['password'].errors"
+                      aria-describedby="password-error" aria-required="true">
+                    @if (submitted && f['password'].errors) {
+                      <div id="password-error" class="invalid-feedback">Ingrese su clave.</div>
+                    }
+                  </div>
+                </div>
+                <div class="col-lg-12">
+                  <p class="forgot-pass mb-3"><a routerLink="/authentication/forgot"
+                    class="text-dark fw-bold text-nowrap">¿Olvidó su clave?</a></p>
+                </div>
+                @if (error) {
+                  <div class="col-lg-12">
+                    <div class="alert alert-danger mb-3" role="alert">{{ error }}</div>
+                  </div>
+                }
+                <div class="col-lg-12 mb-0">
+                  <button type="submit" class="btn btn-primary auth-form-btn" [disabled]="cargando">
+                    @if (cargando) {
+                      <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                      Ingresando…
+                    } @else {
+                      Ingresar
+                    }
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
-      </main>
-      
+      </div>
+    </div>
+  </div>
+</main>

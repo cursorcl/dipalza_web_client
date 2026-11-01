@@ -1,3 +1,10 @@
+## [1.19.3](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.2...v1.19.3) (2026-11-01)
+
+
+### Bug Fixes
+
+* deja la suite de tests en verde y elimina pantallas sin uso de la plantilla ([#46](https://github.com/cursorcl/dipalza_web_client/issues/46)) ([759b9c2](https://github.com/cursorcl/dipalza_web_client/commit/759b9c2d270e678c5ec22540680094c0068e7f6f))
+
 ## [1.19.2](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.1...v1.19.2) (2026-11-01)
 
 

@@ -14,7 +14,7 @@ import { NgScrollbar } from 'ngx-scrollbar';
 import { NgbDropdown, NgbDropdownToggle, NgbDropdownMenu } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule } from '@angular/forms';
 import { FeatherModule } from 'angular-feather';
-import { AuthService, InConfiguration, LanguageService, RightSidebarService } from '@core';
+import { AuthService, InConfiguration, LanguageService } from '@core';
 import { ConfigService } from '@config/config.service';
 
 
@@ -30,8 +30,7 @@ import { ConfigService } from '@config/config.service';
     NgbDropdownMenu,
     RouterLink,
     TranslateModule,
-  ],
-  providers: [RightSidebarService]
+  ]
 })
 export class HeaderComponent implements OnInit, AfterViewInit {
   public config!: InConfiguration;
@@ -40,7 +39,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
   countryName: string | string[] = [];
   langStoreValue?: string;
   defaultFlag?: string;
-  isOpenSidebar?: boolean;
   docElement?: HTMLElement;
   isFullScreen = false;
   userFullName?: string;
@@ -48,7 +46,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     @Inject(DOCUMENT) private document: Document,
     private renderer: Renderer2,
     public elementRef: ElementRef,
-    private rightSidebarService: RightSidebarService,
     private configService: ConfigService,
     private authService: AuthService,
     private router: Router,
@@ -144,15 +141,6 @@ export class HeaderComponent implements OnInit, AfterViewInit {
         this.renderer.addClass(this.document.body, 'submenu-closed');
       }
     }
-  }
-  public toggleRightSidebar(): void {
-    this.rightSidebarService.sidebarState.subscribe((isRunning) => {
-      this.isOpenSidebar = isRunning;
-    });
-
-    this.rightSidebarService.setRightSidebar(
-      (this.isOpenSidebar = !this.isOpenSidebar)
-    );
   }
   logout() {
     this.authService.logout().subscribe((res) => {

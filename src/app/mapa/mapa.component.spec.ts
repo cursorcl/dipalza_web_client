@@ -276,7 +276,7 @@ describe('MapaComponent', () => {
     const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
     expect(fila).toBeTruthy();
 
-    fila.dispatchEvent(new Event('click'));
+    fila.querySelector<HTMLElement>('.vendor-list__seleccionar')!.dispatchEvent(new Event('click'));
 
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
       { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 }
@@ -293,7 +293,7 @@ describe('MapaComponent', () => {
     fixture.detectChanges();
 
     const fila: HTMLElement = fixture.nativeElement.querySelector('.vendor-list__item');
-    fila.dispatchEvent(new Event('click'));
+    fila.querySelector<HTMLElement>('.vendor-list__seleccionar')!.dispatchEvent(new Event('click'));
 
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([]);
     fixture.detectChanges();

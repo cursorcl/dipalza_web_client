@@ -81,3 +81,13 @@
 .historial-panel__fila:hover {
     background-color: rgba(0, 0, 0, 0.04);
 }
+
+.historial-panel__fecha-btn {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}

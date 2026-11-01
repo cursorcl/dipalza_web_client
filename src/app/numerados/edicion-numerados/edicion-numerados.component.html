@@ -36,13 +36,13 @@
     </div>
 
     @if (!esEdicion && guardadosCount > 0) {
-      <div class="alert alert-success py-1">
+      <div class="alert alert-success py-1" role="status">
         {{ guardadosCount }} numerado{{ guardadosCount === 1 ? '' : 's' }} agregado{{ guardadosCount === 1 ? '' : 's' }} a este producto. Puede seguir agregando o cerrar cuando termine.
       </div>
     }
 
     @if (error) {
-      <div class="alert alert-danger">{{ error }}</div>
+      <div class="alert alert-danger" role="alert">{{ error }}</div>
     }
   </form>
 </div>

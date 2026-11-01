@@ -4,8 +4,8 @@
             <h5 class="page-title m-b-0">Ventas por Facturar</h5>
         </li>
         <li class="breadcrumb-item bcrumb-1">
-            <a routerLink="/" class="d-flex align-items-center">
-                <i class="fas fa-home font-20"></i>
+            <a routerLink="/" class="d-flex align-items-center" aria-label="Inicio">
+                <i class="fas fa-home font-20" aria-hidden="true"></i>
             </a>
         </li>
     </ul>
@@ -22,13 +22,13 @@
                     <div class="col-sm-auto ms-auto">
                         <div class="d-flex justify-content-end gap-2">
                             <button class="btn btn-primary" (click)="updateSalesByDate()">Actualizar</button>
-                            <span class="text-danger align-self-center" *ngIf="!mastersoftDisponible">
-                                <i class="fas fa-exclamation-triangle"></i> Sin conexión con Mastersoft
+                            <span class="text-danger align-self-center" role="status" *ngIf="!mastersoftDisponible">
+                                <i aria-hidden="true" class="fas fa-exclamation-triangle"></i> Sin conexión con Mastersoft
                             </span>
                             <button class="btn btn-primary" (click)="confirmarFacturacion()"
                                 [disabled]="!canFacture || procesando || !mastersoftDisponible"
                                 [title]="!mastersoftDisponible ? 'No se puede facturar: sin conexión con Mastersoft' : ''">
-                                <i class="fas fa-spinner fa-spin" *ngIf="procesando"></i>
+                                <i aria-hidden="true" class="fas fa-spinner fa-spin" *ngIf="procesando"></i>
                                 {{ procesando ? 'Procesando…' : 'Facturar' }}
                             </button>
                         </div>
@@ -99,9 +99,9 @@
                         cellClass="align-center-cell">
                         <ng-template let-value="value" let-row="row" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>
-                            <a class="msr-2 h-auto tblViewBtn" (click)="gotoToDetail(row)" style="cursor: pointer;">
-                                <i class="fas fa-eye"></i>
-                            </a>
+                            <button type="button" class="msr-2 h-auto tblViewBtn" (click)="gotoToDetail(row)" [attr.aria-label]="'Ver detalle de la venta de ' + row.nombreCliente" [title]="'Ver detalle de la venta de ' + row.nombreCliente">
+                                <i class="fas fa-eye" aria-hidden="true"></i>
+                            </button>
                         </ng-template>
                     </ngx-datatable-column>
                 </ngx-datatable>

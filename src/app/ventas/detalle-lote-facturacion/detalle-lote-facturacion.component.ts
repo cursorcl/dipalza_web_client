@@ -27,7 +27,13 @@ export class DetalleLoteFacturacionComponent implements OnInit {
   private modalService = inject(NgbModal);
 
   ngOnInit(): void {
+    this.cargarDetalle();
+  }
+
+  cargarDetalle(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.cargando = true;
+    this.error = false;
     this.ventasService.obtenerLoteFacturacionDetalle(id).subscribe({
       next: detalle => {
         this.detalle = detalle;

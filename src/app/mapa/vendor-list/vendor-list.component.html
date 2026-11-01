@@ -1,31 +1,51 @@
-<div class="vendor-list__header" (click)="alternarColapso()">
+<button type="button" class="vendor-list__header" [attr.aria-expanded]="!colapsado()" aria-controls="vendor-list-body"
+  (click)="alternarColapso()">
   <span class="vendor-list__titulo">Vendedores</span>
-  <span class="vendor-list__flecha" [class.vendor-list__flecha--colapsado]="colapsado()">▾</span>
-</div>
+  <span class="vendor-list__flecha" [class.vendor-list__flecha--colapsado]="colapsado()" aria-hidden="true">▾</span>
+</button>
 @if (!colapsado()) {
-  <div class="vendor-list__body">
+  <div class="vendor-list__body" id="vendor-list-body">
     @for (vendedor of vendedores; track vendedor.vendedorId) {
+      <!-- Mouse: clic muestra/oculta el recorrido y doble clic centra el mapa (comportamiento original).
+           Teclado y pantallas táctiles: el botón principal muestra/oculta el recorrido y el botón ⌖ centra. -->
       <div
         class="vendor-list__item"
         [class.vendor-list__item--selected]="isSelected(vendedor)"
-        (click)="onSeleccionar(vendedor)"
         (dblclick)="onDoubleClick(vendedor.vendedorId)">
-        <span class="vendor-list__dot" [style.background-color]="vendedor.color"></span>
-        <div class="vendor-list__info">
-          <span class="vendor-list__nombre">{{ vendedor.vendedorNombre }}</span>
-          <span class="vendor-list__tiempo">{{ vendedor.tiempoRelativo }}</span>
-        </div>
         <button
           type="button"
-          class="vendor-list__historial-btn"
+          class="vendor-list__seleccionar"
+          [attr.aria-pressed]="isSelected(vendedor)"
+          [attr.aria-label]="(isSelected(vendedor) ? 'Ocultar recorrido de ' : 'Mostrar recorrido de ') + vendedor.vendedorNombre"
+          (click)="onSeleccionar(vendedor)">
+          <span class="vendor-list__dot" [style.background-color]="vendedor.color" aria-hidden="true"></span>
+          <span class="vendor-list__info">
+            <span class="vendor-list__nombre" [title]="vendedor.vendedorNombre">{{ vendedor.vendedorNombre }}</span>
+            <span class="vendor-list__tiempo">{{ vendedor.tiempoRelativo }}</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          class="vendor-list__accion-btn"
+          title="Centrar mapa en el vendedor"
+          [attr.aria-label]="'Centrar mapa en ' + vendedor.vendedorNombre"
+          (click)="onCentrar($event, vendedor.vendedorId)">
+          <span aria-hidden="true">⌖</span>
+        </button>
+        <button
+          type="button"
+          class="vendor-list__accion-btn vendor-list__historial-btn"
           title="Ver historial de recorridos"
+          [attr.aria-label]="'Ver historial de recorridos de ' + vendedor.vendedorNombre"
           (click)="onHistorial($event, vendedor)">
-          🕘
+          <span aria-hidden="true">🕘</span>
         </button>
         <span
           class="vendor-list__estado"
           [class.vendor-list__estado--online]="vendedor.online"
-          [title]="vendedor.online ? 'Online' : 'Offline'">
+          role="img"
+          [attr.aria-label]="vendedor.online ? 'En línea' : 'Sin conexión'"
+          [title]="vendedor.online ? 'En línea' : 'Sin conexión'">
         </span>
       </div>
     }

@@ -20,7 +20,6 @@ a:focus-visible,
 @media print {
     app-header,
     app-sidebar,
-    app-right-sidebar,
     .breadcrumb-style,
     .no-print {
         display: none !important;
@@ -32,4 +31,27 @@ a:focus-visible,
     @page {
         size: landscape;
     }
+}
+
+// Botones de acción de las tablas (ver, editar, eliminar). Antes eran <a (click)> sin href, que no
+// se alcanzan con Tab; ahora son <button>, y esto les quita el borde y fondo nativos para que se
+// vean igual que antes (los colores e íconos vienen de .tblViewBtn/.tblEditBtn/.tblDelBtn).
+button.tblViewBtn,
+button.tblEditBtn,
+button.tblDelBtn {
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+button.tblDelBtn[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+// Controles del encabezado: antes <a (click)> sin href (no se alcanzaban con Tab); ahora <button>.
+// Se quitan borde y fondo nativos para que se vean igual que los enlaces del navbar.
+.main-navbar button.nav-link {
+    border: 0;
+    background: transparent;
 }

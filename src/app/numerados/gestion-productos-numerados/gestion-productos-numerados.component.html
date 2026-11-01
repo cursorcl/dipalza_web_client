@@ -53,13 +53,15 @@
     <ngx-datatable-column name="" [width]="80" [sortable]="false" headerClass="align-center-header"
       cellClass="align-center-cell">
       <ng-template let-row="row" ngx-datatable-cell-template>
-        <a class="msr-2 h-auto tblDelBtn"
-          [style.cursor]="row.tieneRegistrosAsociados ? 'not-allowed' : 'pointer'"
-          [style.opacity]="row.tieneRegistrosAsociados ? 0.4 : 1"
-          [attr.title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
+        <!-- aria-disabled (y no disabled) para que el tooltip que explica por qué no se puede
+             quitar siga visible; quitarProducto() ya ignora el clic en ese caso. -->
+        <button type="button" class="msr-2 h-auto tblDelBtn"
+          [attr.aria-disabled]="row.tieneRegistrosAsociados"
+          [attr.aria-label]="row.tieneRegistrosAsociados ? 'No se puede quitar ' + row.nombreProducto + ': tiene numerados asociados' : 'Quitar ' + row.nombreProducto + ' de la lista de numerados'"
+          [title]="row.tieneRegistrosAsociados ? 'No se puede quitar: tiene numerados asociados' : 'Quitar de la lista de numerados'"
           (click)="quitarProducto(row)">
-          <i class="fas fa-trash"></i>
-        </a>
+          <i class="fas fa-trash" aria-hidden="true"></i>
+        </button>
       </ng-template>
     </ngx-datatable-column>
   </ngx-datatable>

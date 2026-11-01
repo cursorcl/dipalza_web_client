@@ -28,6 +28,11 @@ export class VendorListComponent {
     this.trayectoriaToggled.emit(vendedor);
   }
 
+  onCentrar(event: Event, vendedorId: string): void {
+    event.stopPropagation();
+    this.vendedorSeleccionado.emit(vendedorId);
+  }
+
   onHistorial(event: Event, vendedor: VendedorListItem): void {
     event.stopPropagation();
     this.historialSolicitado.emit(vendedor);

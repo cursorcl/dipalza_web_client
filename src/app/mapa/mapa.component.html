@@ -3,7 +3,7 @@
   <div class="map-wrapper">
     <div class="map-container" #map></div>
     @if (toastMensaje(); as mensaje) {
-      <div class="mapa-toast">{{ mensaje }}</div>
+      <div class="mapa-toast" role="status">{{ mensaje }}</div>
     }
     <app-vendor-list
       [vendedores]="vendedores()"

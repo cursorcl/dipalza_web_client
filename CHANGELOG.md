@@ -1,3 +1,10 @@
+## [1.19.2](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.1...v1.19.2) (2026-11-01)
+
+
+### Bug Fixes
+
+* confirma antes de facturar, foco visible, locale es-CL y logo del sidebar ([#45](https://github.com/cursorcl/dipalza_web_client/issues/45)) ([bc33af0](https://github.com/cursorcl/dipalza_web_client/commit/bc33af0e27e187f929675fa8bbe4b981b5121f0f))
+
 ## [1.19.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.0...v1.19.1) (2026-10-25)
 
 

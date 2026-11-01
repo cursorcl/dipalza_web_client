@@ -24,7 +24,21 @@ export class MapInitializerService {
   createMap(el: HTMLElement, center = MAPA_CONFIG.defaultCenter, zoom = MAPA_CONFIG.defaultZoom): L.Map {
     this.configureDefaultIconsOnce();
 
-    const map = L.map(el).setView([center.lat, center.lng], zoom);
+    // Los controles por defecto de Leaflet vienen en inglés ("Zoom in", "Close popup"...); se
+    // crean a mano para darles textos en español.
+    const map = L.map(el, { zoomControl: false, attributionControl: false }).setView([center.lat, center.lng], zoom);
+
+    L.control.zoom({ zoomInTitle: 'Acercar', zoomOutTitle: 'Alejar' }).addTo(map);
+    L.control.attribution({
+      prefix: '<a href="https://leafletjs.com" title="Biblioteca de mapas interactivos">Leaflet</a>',
+    }).addTo(map);
+
+    // Leaflet no permite configurar el texto del botón de cerrar de los popups.
+    map.on('popupopen', (evento: L.PopupEvent) => {
+      const cerrar = evento.popup.getElement()?.querySelector('.leaflet-popup-close-button');
+      cerrar?.setAttribute('aria-label', 'Cerrar');
+      cerrar?.setAttribute('title', 'Cerrar');
+    });
 
     L.tileLayer(MAPA_CONFIG.tileUrl, {
       maxZoom: MAPA_CONFIG.maxZoom,

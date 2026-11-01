@@ -3,6 +3,6 @@ export const MAPA_CONFIG = {
   defaultZoom: 18,
   maxZoom: 19,
   tileUrl: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-  attribution: '&copy; OpenStreetMap contributors',
+  attribution: '&copy; colaboradores de <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   leafletAssetsPath: 'assets/leaflet',
 } as const;

@@ -1,10 +1,8 @@
 <section class="main-content">
 <div class="mapa-layout">
   <div class="map-wrapper">
-    <div class="map-container" #map></div>
-    @if (toastMensaje(); as mensaje) {
-      <div class="mapa-toast" role="status">{{ mensaje }}</div>
-    }
+    <!-- Los paneles van antes que el mapa en el HTML para que Tab llegue primero a ellos; están
+         posicionados de forma absoluta sobre el mapa, así que el orden no cambia lo que se ve. -->
     <app-vendor-list
       [vendedores]="vendedores()"
       [selectedId]="seleccionado()"
@@ -22,6 +20,10 @@
       </app-historial-panel>
     } @else if (nodosSeleccionados().length > 0) {
       <app-tramos-table [nodos]="nodosSeleccionados()" (centrarEnNodo)="centrarEnNodoDelMapa($event)"></app-tramos-table>
+    }
+    <div class="map-container" #map role="region" aria-label="Mapa de vendedores"></div>
+    @if (toastMensaje(); as mensaje) {
+      <div class="mapa-toast" role="status">{{ mensaje }}</div>
     }
   </div>
 </div>

@@ -112,7 +112,10 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       const markerColor = colorForVendedor(key);
       // Si es un vendedor nuevo, creamos el marcador y lo añadimos al mapa y al caché
       const label = this.generateLabel(data);
-      marker = L.marker(newLatLng)
+      // keyboard: false — Leaflet hace que cada marcador reciba el foco con Tab; con muchos
+      // vendedores y paradas, Tab nunca llegaba a la lista. Desde el teclado, la lista de
+      // vendedores y la tabla de tramos ofrecen las mismas acciones.
+      marker = L.marker(newLatLng, { keyboard: false })
         .addTo(this.map);
 
       marker.on('click', () => {
@@ -208,6 +211,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     }
 
     this.marcadorResaltado = L.marker([punto.latitud, punto.longitud], {
+      keyboard: false,
       icon: L.divIcon({
         html: '<div class="resaltado-punto-pulso"></div>',
         className: 'custom-resaltado-punto-icon',
@@ -391,6 +395,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     nodos.forEach(nodo => {
       const colorFondo = nodo.esInicio ? '#2ecc71' : nodo.esFin ? '#e74c3c' : color;
       const marker = L.marker([nodo.latitud, nodo.longitud], {
+        keyboard: false,
         icon: this.crearIconoNodo(nodo.numero, colorFondo)
       });
 

@@ -80,6 +80,25 @@ export class SigninComponent implements OnInit {
     }
   }
 
+  // El login es una petición en segundo plano (no un envío real del formulario), y Chrome no
+  // siempre la reconoce como ingreso exitoso, así que no ofrecía guardar la clave. Con la API
+  // Credential Management se le pide explícitamente: Chrome/Edge muestran "¿Guardar contraseña?".
+  // En navegadores sin PasswordCredential (Safari, Firefox) o fuera de un contexto seguro
+  // (HTTPS o localhost) no hace nada y queda la detección propia del navegador.
+  private guardarCredencialEnNavegador(username: string, password: string): void {
+    const PasswordCredentialCtor = (window as unknown as {
+      PasswordCredential?: new (datos: { id: string; password: string }) => Credential;
+    }).PasswordCredential;
+    if (!PasswordCredentialCtor || !navigator.credentials?.store) {
+      return;
+    }
+    navigator.credentials
+      .store(new PasswordCredentialCtor({ id: username, password }))
+      .catch(() => {
+        // Si el usuario o el navegador lo rechazan no hay nada que hacer; el ingreso sigue igual.
+      });
+  }
+
   // Pone el foco en el primer campo con error para que quien usa teclado o lector
   // de pantalla llegue directo a lo que falta corregir.
   private enfocarPrimerError(): void {
@@ -109,6 +128,7 @@ export class SigninComponent implements OnInit {
                   if (this.authService.currentUserValue.mustChangePassword) {
                     this.abrirModalCambioObligatorio(this.f['password'].value);
                   } else {
+                    this.guardarCredencialEnNavegador(this.f['username'].value, this.f['password'].value);
                     this.productoService.loadProductos().subscribe({
                       next: () => console.log('Productos cargados en segundo plano'),
                       error: (err) => console.error('Error cargando productos post-login', err)

@@ -212,6 +212,43 @@ describe('SigninComponent', () => {
     });
   });
 
+  describe('guardar la clave en el navegador', () => {
+    let storeSpy: jasmine.Spy;
+
+    beforeEach(() => {
+      storeSpy = spyOn(navigator.credentials, 'store').and.resolveTo(undefined as any);
+      component.ngOnInit();
+      component.loginForm.get('username')?.setValue('jperez');
+      component.loginForm.get('password')?.setValue('clave1234');
+    });
+
+    it('tras un login exitoso le pide al navegador guardar usuario y clave', () => {
+      component.onSubmit();
+
+      expect(storeSpy).toHaveBeenCalledTimes(1);
+      const credencial = storeSpy.calls.mostRecent().args[0] as any;
+      expect(credencial.id).toBe('jperez');
+      expect(credencial.password).toBe('clave1234');
+    });
+
+    it('no la guarda si el login falla', () => {
+      authServiceMock.login.and.returnValue(throwError(() => ({ status: 403 })));
+
+      component.onSubmit();
+
+      expect(storeSpy).not.toHaveBeenCalled();
+    });
+
+    it('no guarda la clave temporal cuando se exige cambiarla', () => {
+      authServiceMock.login.and.returnValue(of({ token: 'test-token', mustChangePassword: true }));
+      authServiceMock.currentUserValue = { token: 'test-token', mustChangePassword: true };
+
+      component.onSubmit();
+
+      expect(storeSpy).not.toHaveBeenCalled();
+    });
+  });
+
   describe('get f', () => {
     it('debería retornar controles del formulario', () => {
       component.ngOnInit();

@@ -7,31 +7,34 @@
   <form [formGroup]="form" (ngSubmit)="submit()">
 
     <div class="form-group">
-      <label>Seleccione producto (busque por código o nombre)</label>
-      <input type="text" formControlName="producto" class="form-control"
+      <label for="numerado-producto">Seleccione producto (busque por código o nombre)</label>
+      <input id="numerado-producto" name="producto" type="text" formControlName="producto" class="form-control" autocomplete="off"
+        aria-describedby="numerado-producto-error"
         [ngbTypeahead]="buscarProducto" [resultFormatter]="formatearProducto"
-        [inputFormatter]="formatearProducto" placeholder="Ej: ART001 o Queso"
+        [inputFormatter]="formatearProducto" placeholder="Ej: ART001 o Queso…"
         (selectItem)="irANumero()" />
       @if (form.get('producto')?.touched && form.get('producto')?.invalid) {
-        <small style="color:red">Debe seleccionar un producto</small>
+        <div id="numerado-producto-error" class="invalid-feedback d-block">Debe seleccionar un producto de la lista.</div>
       }
     </div>
 
     <div class="form-group">
-      <label>{{ esEdicion ? 'Número' : 'Número (sugerido, puede cambiarlo)' }}</label>
-      <input #numeroInput type="number" formControlName="numero" class="form-control" placeholder="Ingrese número"
+      <label for="numerado-numero">{{ esEdicion ? 'Número' : 'Número (sugerido, puede cambiarlo)' }}</label>
+      <input #numeroInput id="numerado-numero" name="numero" type="number" inputmode="numeric" formControlName="numero" class="form-control"
+        placeholder="Ej: 125…" autocomplete="off" aria-describedby="numerado-numero-error"
         (keydown.enter)="irAPeso($event)" />
       @if (form.get('numero')?.touched && form.get('numero')?.invalid) {
-        <small style="color:red">Número inválido</small>
+        <div id="numerado-numero-error" class="invalid-feedback d-block">Ingrese un número válido.</div>
       }
     </div>
 
     <div class="form-group">
-      <label>Peso (kg)</label>
-      <input #pesoInput type="number" step="0.001" formControlName="peso" class="form-control" placeholder="Ej: 1.250"
+      <label for="numerado-peso">Peso (kg)</label>
+      <input #pesoInput id="numerado-peso" name="peso" type="number" step="0.001" inputmode="decimal" formControlName="peso" class="form-control"
+        placeholder="Ej: 1.250…" autocomplete="off" aria-describedby="numerado-peso-error"
         (keydown.enter)="confirmarPeso($event)" />
       @if (form.get('peso')?.touched && form.get('peso')?.invalid) {
-        <small style="color:red">Peso inválido</small>
+        <div id="numerado-peso-error" class="invalid-feedback d-block">Ingrese un peso válido en kilos, por ejemplo 1.250.</div>
       }
     </div>
 
@@ -49,10 +52,12 @@
 
 <div class="modal-footer">
   <button type="button" class="btn btn-secondary" (click)="cerrar()">{{ guardadosCount > 0 ? 'Cerrar' : 'Cancelar' }}</button>
-  <button type="button" class="btn btn-primary" [disabled]="form.invalid || loading" (click)="submit()">
+  <button type="button" class="btn btn-primary" [disabled]="loading" (click)="submit()">
     @if (loading) {
-      <span class="spinner-border spinner-border-sm me-1"></span>
+      <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+      Guardando…
+    } @else {
+      Guardar Numerado
     }
-    Guardar
   </button>
 </div>

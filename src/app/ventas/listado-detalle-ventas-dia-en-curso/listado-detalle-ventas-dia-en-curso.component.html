@@ -17,6 +17,11 @@
         </li>
     </ul>
     <div class="section-body">
+        <!-- La venta llega desde el listado en memoria (router state); si se recarga la página se pierde. -->
+        <div class="alert alert-warning" role="status" *ngIf="!venta">
+            No hay una venta seleccionada (puede pasar al recargar la página).
+            <a routerLink="/ventas/ventas-en-curso" class="alert-link">Volver a Ventas en Curso</a> y elija una nuevamente.
+        </div>
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group row">
@@ -100,7 +105,7 @@
             </div>
         </div>
     </div>
-    <div class="floating-totals-container">
+    <div class="floating-totals-container" *ngIf="venta">
         <div class="totals-card">
             <div class="total-row">
                 <span>Neto:</span>

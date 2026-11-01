@@ -17,6 +17,11 @@
         </li>
     </ul>
     <div class="section-body">
+        <!-- La factura llega desde el listado en memoria (router state); si se recarga la página se pierde. -->
+        <div class="alert alert-warning" role="status" *ngIf="!factura">
+            No hay una factura seleccionada (puede pasar al recargar la página).
+            <a routerLink="/ventas/ventas-facturadas" class="alert-link">Volver a Ventas Facturadas</a> y elija una nuevamente.
+        </div>
         <div class="row">
             <div class="col-sm-12">
                 <div class="form-group row">
@@ -95,7 +100,7 @@
             </div>
         </div>
     </div>
-    <div class="floating-totals-container">
+    <div class="floating-totals-container" *ngIf="factura">
         <div class="totals-card totals-card-split">
             <div class="totals-column">
                 <div class="total-row">

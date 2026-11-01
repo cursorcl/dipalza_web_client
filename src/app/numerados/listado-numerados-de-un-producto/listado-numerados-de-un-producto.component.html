@@ -18,7 +18,7 @@
     </ul>
     <div class="section-body">
         @if (error) {
-            <div class="alert alert-danger">{{ error }}</div>
+            <div class="alert alert-danger" role="alert">{{ error }}</div>
         }
         <div class="row">
             <div class="col-sm-12">
@@ -30,8 +30,8 @@
                         </div>
                     </div>
                     <div class="col-sm-auto ms-auto">
-                        <button class="btn btn-primary" (click)="agregarNumerado()">
-                            Agregar
+                        <button type="button" class="btn btn-primary" (click)="agregarNumerado()">
+                            Agregar Numerado
                         </button>
                     </div>
                 </div>

@@ -47,7 +47,8 @@
                     </ngx-datatable-column>
                     <ngx-datatable-column name="" [sortable]="false">
                         <ng-template let-row="row" ngx-datatable-cell-template>
-                            <button class="btn btn-sm btn-primary" (click)="verDetalle(row)">Ver</button>
+                            <a class="btn btn-sm btn-primary" [routerLink]="['/ventas/lotes-facturacion', row.id]"
+                                [attr.aria-label]="'Ver detalle de la corrida del ' + (row.iniciadoEn | date:'dd/MM/yyyy HH:mm')">Ver</a>
                         </ng-template>
                     </ngx-datatable-column>
 

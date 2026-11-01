@@ -55,3 +55,24 @@ button.tblDelBtn[aria-disabled="true"] {
     border: 0;
     background: transparent;
 }
+
+// Columnas numéricas (montos, cantidades): con dígitos de ancho fijo las cifras quedan alineadas
+// verticalmente y se comparan de un vistazo.
+.align-right-cell,
+td.text-end,
+.total-row strong {
+    font-variant-numeric: tabular-nums;
+}
+
+// Respeta la preferencia del sistema operativo "reducir movimiento": anula animaciones y
+// transiciones del tema (muchas con transition: all) para quien las tiene desactivadas.
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

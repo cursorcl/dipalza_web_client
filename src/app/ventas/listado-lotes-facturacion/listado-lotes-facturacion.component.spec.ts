@@ -48,11 +48,24 @@ describe('ListadoLotesFacturacionComponent', () => {
     expect(component.loadingIndicator).toBeFalse();
   });
 
-  it('verDetalle navega a la ruta del lote seleccionado', () => {
+  it('cambiar de página la deja en la URL (contando desde 1) sin agregar entradas al historial', () => {
     fixture.detectChanges();
 
-    component.verDetalle(paginaEjemplo.content[0]);
+    component.onPage({ offset: 2 });
 
-    expect(router.navigate).toHaveBeenCalledWith(['/ventas/lotes-facturacion', 7]);
+    expect(router.navigate).toHaveBeenCalledWith([], jasmine.objectContaining({
+      queryParams: { pagina: 3 },
+      replaceUrl: true,
+    }));
+    expect(ventasServiceMock.obtenerLotesFacturacion).toHaveBeenCalledWith(2, 20);
+  });
+
+  it('el botón Ver es un enlace real al detalle del lote (permite Ctrl+clic y abrir en otra pestaña)', () => {
+    fixture.detectChanges();
+    fixture.detectChanges();
+
+    const enlace: HTMLAnchorElement = fixture.nativeElement.querySelector('a.btn-primary');
+    expect(enlace).toBeTruthy();
+    expect(enlace.getAttribute('href')).toContain('/ventas/lotes-facturacion/7');
   });
 });

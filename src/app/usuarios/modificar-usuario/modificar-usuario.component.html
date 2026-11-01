@@ -6,23 +6,24 @@
 <div class="modal-body">
   <form [formGroup]="form" (ngSubmit)="submit()">
     <div class="form-group">
-      <label>Username</label>
-      <input type="text" class="form-control" [value]="usuario.username" disabled />
+      <label for="mod-username">Username</label>
+      <input id="mod-username" type="text" class="form-control" [value]="usuario.username" disabled />
     </div>
 
     <div class="form-group">
-      <label>Correo</label>
-      <input type="email" formControlName="email" class="form-control" placeholder="Ej: jperez@dipalza.cl" />
+      <label for="mod-email">Correo</label>
+      <input id="mod-email" name="email" type="email" formControlName="email" class="form-control"
+        placeholder="Ej: jperez@dipalza.cl…" autocomplete="off" spellcheck="false" />
     </div>
 
     <div class="form-group">
-      <label>Vendedor asociado (opcional, busque por código o nombre)</label>
+      <label for="mod-vendedor">Vendedor asociado (opcional, busque por código o nombre)</label>
       <div class="d-flex gap-2">
-        <input type="text" class="form-control" [formControl]="buscadorVendedorControl"
+        <input id="mod-vendedor" name="vendedor" type="text" class="form-control" autocomplete="off" [formControl]="buscadorVendedorControl"
           [ngbTypeahead]="buscarVendedor" [resultFormatter]="formatearVendedor"
           [inputFormatter]="formatearVendedor" (selectItem)="seleccionarVendedor($event)"
-          placeholder="Ej: 001 o Juan Pérez" />
-        <button type="button" class="btn btn-secondary" (click)="quitarVendedor()">Quitar</button>
+          placeholder="Ej: 001 o Juan Pérez…" />
+        <button type="button" class="btn btn-secondary text-nowrap" (click)="quitarVendedor()">Quitar Vendedor</button>
       </div>
     </div>
 
@@ -42,8 +43,10 @@
   <button type="button" class="btn btn-secondary" (click)="activeModal.dismiss()">Cancelar</button>
   <button type="button" class="btn btn-primary" [disabled]="loading" (click)="submit()">
     @if (loading) {
-      <span class="spinner-border spinner-border-sm me-1"></span>
+      <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+      Guardando…
+    } @else {
+      Guardar Cambios
     }
-    Guardar
   </button>
 </div>

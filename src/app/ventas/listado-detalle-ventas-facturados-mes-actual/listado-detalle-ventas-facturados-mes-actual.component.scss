@@ -67,3 +67,15 @@
     color: #2c3e50;
     /* Color distintivo para el total final */
 }
+// En pantallas angostas el panel fijo tapaba columnas de la tabla: ahí pasa al flujo normal y
+// se muestra debajo de la tabla. En pantallas anchas se mantiene fijo (siempre visible).
+@media (max-width: 1399.98px) {
+    .floating-totals-container {
+        position: static;
+        margin-top: 1rem;
+    }
+
+    .totals-card-split {
+        flex-wrap: wrap;
+    }
+}

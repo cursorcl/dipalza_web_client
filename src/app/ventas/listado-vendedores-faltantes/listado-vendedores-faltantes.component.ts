@@ -1,7 +1,7 @@
-import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, inject } from '@angular/core';
 import { CommonModule, Location } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { VentasService } from '../ventas.service';
 import { FacturaFaltantesDTO } from '../models/model';
@@ -12,6 +12,8 @@ interface ProductoAgregado {
   cantidadFaltanteTotal: number;
   piezasFaltanteTotal: number;
 }
+
+const FORMATO_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
 @Component({
   selector: 'app-listado-vendedores-faltantes',
@@ -27,12 +29,38 @@ export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewIni
   vista: 'factura' | 'producto' = 'factura';
   loadingIndicator = true;
 
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+
   constructor(private ventaService: VentasService, private location: Location, private host: ElementRef<HTMLElement>) {
   }
 
   ngOnInit(): void {
+    // La fecha y la vista viajan en la URL (?fecha=2026-10-15&vista=producto) para poder
+    // recargar, volver atrás o compartir el enlace sin perder lo elegido.
+    const parametros = this.route.snapshot.queryParamMap;
+    const vista = parametros.get('vista');
+    if (vista === 'factura' || vista === 'producto') {
+      this.vista = vista;
+    }
+    const fecha = parametros.get('fecha');
     // Sin fecha: el backend resuelve la última fecha real con faltantes.
-    this.cargar(undefined);
+    this.cargar(fecha && FORMATO_FECHA.test(fecha) ? fecha : undefined);
+  }
+
+  cambiarVista(vista: 'factura' | 'producto'): void {
+    this.vista = vista;
+    this.actualizarUrl();
+  }
+
+  // replaceUrl: cambiar de día o de vista no agrega entradas al historial del navegador.
+  private actualizarUrl(): void {
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { fecha: this.fecha, vista: this.vista === 'factura' ? null : this.vista },
+      queryParamsHandling: 'merge',
+      replaceUrl: true,
+    });
   }
 
   // Mismo criterio que Hoja de Ruta: el navbar superior es position:fixed, así que la barra
@@ -48,6 +76,7 @@ export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewIni
     this.ventaService.obtenerFaltantes(fecha).subscribe({
       next: (resultado) => {
         this.fecha = resultado.fecha;
+        this.actualizarUrl();
         this.facturas = resultado.facturas;
         this.productosAgregados = this.calcularProductosAgregados(resultado.facturas);
         this.loadingIndicator = false;

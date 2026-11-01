@@ -5,7 +5,7 @@
 
 <div class="modal-body">
   @if (error) {
-    <div class="alert alert-danger">{{ error }}</div>
+    <div class="alert alert-danger" role="alert">{{ error }}</div>
   }
 
   <ngx-datatable class="material" [rows]="rows" [loadingIndicator]="loading"

@@ -36,11 +36,11 @@
                             <div class="col-sm-7 text-sm-end">
                                 <div class="btn-group me-2" role="group" aria-label="Agrupar faltantes">
                                     <button type="button" class="btn btn-sm" [attr.aria-pressed]="vista === 'factura'" [class.btn-primary]="vista === 'factura'"
-                                        [class.btn-outline-primary]="vista !== 'factura'" (click)="vista = 'factura'">
+                                        [class.btn-outline-primary]="vista !== 'factura'" (click)="cambiarVista('factura')">
                                         Por Factura
                                     </button>
                                     <button type="button" class="btn btn-sm" [attr.aria-pressed]="vista === 'producto'" [class.btn-primary]="vista === 'producto'"
-                                        [class.btn-outline-primary]="vista !== 'producto'" (click)="vista = 'producto'">
+                                        [class.btn-outline-primary]="vista !== 'producto'" (click)="cambiarVista('producto')">
                                         Por Producto
                                     </button>
                                 </div>

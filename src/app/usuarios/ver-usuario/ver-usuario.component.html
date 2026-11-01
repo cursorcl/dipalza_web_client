@@ -27,7 +27,7 @@
 
     @if (usuario.createdAt) {
       <dt class="col-sm-4">Creado el</dt>
-      <dd class="col-sm-8">{{ usuario.createdAt }}</dd>
+      <dd class="col-sm-8">{{ usuario.createdAt | date:'dd/MM/yyyy HH:mm' }}</dd>
     }
   </dl>
 </div>

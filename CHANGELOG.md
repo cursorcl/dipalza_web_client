@@ -1,3 +1,10 @@
+# [1.21.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.20.0...v1.21.0) (2026-11-03)
+
+
+### Features
+
+* faltantes muestra la factura de la venta y marca las líneas no facturadas ([#49](https://github.com/cursorcl/dipalza_web_client/issues/49)) ([be07c16](https://github.com/cursorcl/dipalza_web_client/commit/be07c16d4de41de0e5f746c54c123192947c9749))
+
 # [1.20.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.4...v1.20.0) (2026-11-03)
 
 

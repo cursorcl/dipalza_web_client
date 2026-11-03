@@ -23,6 +23,10 @@ export class ListadoNumeradosComponent implements OnInit {
   scrollBarHorizontal = window.innerWidth < 1200;
   // Orden por defecto: código de menor a mayor (el usuario puede cambiarlo desde los encabezados).
   readonly ordenInicial: SortPropDir[] = [{ prop: 'codigoProducto', dir: 'asc' }];
+  // Orden natural: los tramos numéricos se comparan como números y las letras alfabéticamente,
+  // así el orden es consistente aunque haya códigos con letras (1A < 9 < 10 < A9 < A10).
+  readonly compararCodigos = (a: string | null, b: string | null): number =>
+    (a ?? '').localeCompare(b ?? '', 'es', { numeric: true, sensitivity: 'base' });
 
   rows: NumeradoResumen[] = [];
   temp: NumeradoResumen[] = [];

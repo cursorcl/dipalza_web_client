@@ -55,4 +55,17 @@ describe('ListadoNumeradosComponent', () => {
       .map(r => r.querySelector('datatable-body-cell')!.textContent!.trim());
     expect(codigos).toEqual(['9', '10', '45', '120']);
   });
+
+  it('ordena de forma consistente códigos con letras y números (orden natural)', async () => {
+    const fila = (codigoProducto: string) => ({ codigoProducto, nombreProducto: 'P' + codigoProducto, peso: 1, piezas: 1 });
+    component.rows = ['A10', '10', '1A', 'a9', '120', '9'].map(fila);
+    component.loadingIndicator = false;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const codigos = Array.from(fixture.nativeElement.querySelectorAll('datatable-body-row') as NodeListOf<HTMLElement>)
+      .map(r => r.querySelector('datatable-body-cell')!.textContent!.trim());
+    expect(codigos).toEqual(['1A', '9', '10', '120', 'a9', 'A10']);
+  });
 });

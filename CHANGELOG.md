@@ -1,3 +1,10 @@
+# [1.22.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.21.0...v1.22.0) (2026-11-03)
+
+
+### Features
+
+* ordena Numerados Existentes por código de menor a mayor por defecto ([#50](https://github.com/cursorcl/dipalza_web_client/issues/50)) ([f4c4153](https://github.com/cursorcl/dipalza_web_client/commit/f4c41534ea8f53d6117617c7381bed0b002f62a3))
+
 # [1.21.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.20.0...v1.21.0) (2026-11-03)
 
 

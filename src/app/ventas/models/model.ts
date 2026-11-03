@@ -239,8 +239,12 @@ export interface ItemFaltanteDTO {
 
 // nroFactura es null solo cuando ninguna línea de ventaId se facturó -- en ese caso el grupo
 // se identifica por ventaId en su lugar.
+// nrosFactura: todas las facturas que generó la venta (de menor a mayor) -- la factura donde
+// "debería estar" cada faltante, aunque un faltante total nunca quedó grabado en ella. Vacío solo
+// si la venta no generó ninguna factura. nroFactura es el primero (compatibilidad).
 export interface FacturaFaltantesDTO {
     nroFactura: string | null;
+    nrosFactura?: string[];
     ventaId: number;
     rutCliente: string | null;
     codigoCliente: string | null;

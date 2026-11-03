@@ -88,6 +88,11 @@ export class ListadoVendedoresFaltantesComponent implements OnInit, AfterViewIni
     });
   }
 
+  /** Facturas de la venta; tolera un server anterior que solo envía nroFactura. */
+  nrosFactura(factura: FacturaFaltantesDTO): string[] {
+    return factura.nrosFactura ?? (factura.nroFactura ? [factura.nroFactura] : []);
+  }
+
   private calcularProductosAgregados(facturas: FacturaFaltantesDTO[]): ProductoAgregado[] {
     const totales = new Map<string, ProductoAgregado>();
     for (const factura of facturas) {

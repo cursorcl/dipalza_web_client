@@ -42,4 +42,17 @@ describe('ListadoNumeradosComponent', () => {
 
     expect(modalSpy.open).toHaveBeenCalledWith(GestionProductosNumeradosComponent, jasmine.any(Object));
   });
+
+  it('muestra el listado ordenado por código de menor a mayor por defecto', async () => {
+    const fila = (codigoProducto: string) => ({ codigoProducto, nombreProducto: 'P' + codigoProducto, peso: 1, piezas: 1 });
+    component.rows = [fila('120'), fila('9'), fila('45'), fila('10')];
+    component.loadingIndicator = false;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const codigos = Array.from(fixture.nativeElement.querySelectorAll('datatable-body-row') as NodeListOf<HTMLElement>)
+      .map(r => r.querySelector('datatable-body-cell')!.textContent!.trim());
+    expect(codigos).toEqual(['9', '10', '45', '120']);
+  });
 });

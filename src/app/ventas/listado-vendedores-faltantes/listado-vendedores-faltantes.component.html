@@ -16,7 +16,7 @@
                 <div class="card">
                     <div class="card-body">
                         <p class="text-muted no-print">
-                            Productos sin facturar por falta de stock en el día elegido, agrupados por factura.
+                            Productos sin facturar por falta de stock en el día elegido, agrupados por la factura de su venta. "No facturado" indica que la línea no quedó en esa factura.
                         </p>
                         <p class="d-none d-print-block"><strong>Fecha:</strong> {{ fecha }}</p>
 
@@ -63,8 +63,11 @@
                         <ng-container *ngIf="!loadingIndicator && vista === 'factura'">
                             <div class="mb-4" *ngFor="let factura of facturas">
                                 <h6 class="grupo-header p-2 mb-0">
-                                    <span *ngIf="factura.nroFactura">Factura {{ factura.nroFactura }}</span>
-                                    <span *ngIf="!factura.nroFactura">Venta #{{ factura.ventaId }} (sin factura)</span>
+                                    <ng-container *ngIf="nrosFactura(factura) as nros">
+                                        <span *ngIf="nros.length">{{ nros.length > 1 ? 'Facturas' : 'Factura' }} {{ nros.join(' / ') }}
+                                            <span class="fw-normal">(Venta #{{ factura.ventaId }})</span></span>
+                                        <span *ngIf="!nros.length">Venta #{{ factura.ventaId }} (sin factura)</span>
+                                    </ng-container>
                                     &mdash; {{ factura.nombreCliente }}
                                     <span *ngIf="factura.rutCliente" class="fw-normal">({{ factura.rutCliente }})</span>
                                     &mdash; {{ factura.nombreVendedor }}
@@ -78,7 +81,7 @@
                                             <th style="width: 11%;" class="text-end">Cant. Faltante</th>
                                             <th style="width: 12%;" class="text-end">Piezas Solicitadas</th>
                                             <th style="width: 12%;" class="text-end">Piezas Faltantes</th>
-                                            <th style="width: 22%;">Motivo</th>
+                                            <th style="width: 22%;">Estado / Motivo</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -89,7 +92,11 @@
                                             <td class="text-end">{{ item.cantidadFaltante ?? '—' }}</td>
                                             <td class="text-end">{{ item.piezasSolicitadas ?? '—' }}</td>
                                             <td class="text-end">{{ item.piezasFaltantes ?? '—' }}</td>
-                                            <td><span class="text-danger">{{ item.motivo ?? '—' }}</span></td>
+                                            <td>
+                                                <span *ngIf="!item.nroFactura" class="badge estado-no-facturado">No facturado</span>
+                                                <span *ngIf="item.nroFactura" class="badge estado-parcial">Facturado parcial en {{ item.nroFactura }}</span>
+                                                <span class="text-danger d-block">{{ item.motivo ?? '—' }}</span>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>

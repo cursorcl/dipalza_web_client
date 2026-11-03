@@ -33,9 +33,9 @@
                 </div>
                 <ngx-datatable #table class="material" [rows]="rows" [loadingIndicator]="loadingIndicator"
                     columnMode="force" [headerHeight]="50" [footerHeight]="50" rowHeight="auto" [limit]="10"
-                    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable">
+                    [scrollbarH]="scrollBarHorizontal" [reorderable]="reorderable" [sorts]="ordenInicial">
                     <ngx-datatable-column [width]="200" name="Código" headerClass="align-center-header"
-                        prop="codigoProducto">
+                        prop="codigoProducto" [comparator]="compararCodigos">
                         <ng-template let-row="row" let-value="value" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>
                             <div>{{row.codigoProducto}}</div>

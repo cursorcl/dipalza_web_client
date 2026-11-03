@@ -1,3 +1,10 @@
+# [1.20.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.4...v1.20.0) (2026-11-03)
+
+
+### Features
+
+* registrar el nombre de los usuarios y elegir si son vendedores al ingresarlos ([#48](https://github.com/cursorcl/dipalza_web_client/issues/48)) ([d85501b](https://github.com/cursorcl/dipalza_web_client/commit/d85501be1385e0bb0dc86101457a1c5df6e52172))
+
 ## [1.19.4](https://github.com/cursorcl/dipalza_web_client/compare/v1.19.3...v1.19.4) (2026-11-01)
 
 

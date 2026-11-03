@@ -55,6 +55,7 @@ export class ListadoUsuariosComponent implements OnInit {
     const val = input.value.toLowerCase();
     this.rows = this.temp.filter((u: Usuario) =>
       u.username.toLowerCase().indexOf(val) !== -1 ||
+      (u.nombre ?? '').toLowerCase().indexOf(val) !== -1 ||
       (u.email ?? '').toLowerCase().indexOf(val) !== -1 || !val);
   }
 

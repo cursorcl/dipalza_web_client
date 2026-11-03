@@ -76,3 +76,16 @@ td.text-end,
         scroll-behavior: auto !important;
     }
 }
+
+// El tema da 13px solo a los <a> de los menús desplegables; las acciones que son <button>
+// (p. ej. "Cerrar Sesión") deben verse igual.
+.dropdown-menu button.dropdown-item {
+    font-size: 13px;
+}
+
+// Menú del avatar: el ícono de cada opción es float: left, y al calcular el ancho mínimo del menú
+// el navegador no suma el flotante al texto (toma el mayor de los dos). El menú quedaba unos
+// píxeles más angosto que "Cambiar Contraseña" y el texto se salía del recuadro.
+.header-dropdown {
+    width: max-content;
+}

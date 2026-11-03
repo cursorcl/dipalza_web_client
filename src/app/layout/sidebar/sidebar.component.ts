@@ -104,10 +104,9 @@ export class SidebarComponent implements OnInit, OnDestroy {
           sidebarItem
           && (sidebarItem.path !== 'usuarios' || this.authService.isAdmin())
           && (sidebarItem.path !== 'ventas/lotes-facturacion' || auditoriaFacturacionHabilitada));
+        // El backend envía el nombre completo en firstName y lastName vacío; trim evita el espacio final.
         this.userFullName =
-          this.authService.currentUserValue.firstName +
-          ' ' +
-          this.authService.currentUserValue.lastName;
+          `${this.authService.currentUserValue.firstName ?? ''} ${this.authService.currentUserValue.lastName ?? ''}`.trim();
       });
     }
     this.initLeftSidebar();

@@ -17,7 +17,7 @@ describe('ModificarUsuarioComponent', () => {
   const vendedor: VendedorDTO = { codigo: '001', tipo: '0', nombre: 'Juan Perez' } as VendedorDTO;
   const usuario: Usuario = {
     id: 1, username: 'jperez', email: 'j@dipalza.cl', codigoVendedor: '001', tipoVendedor: '0',
-    nombreVendedor: 'Juan Perez', enabled: true, locked: false, createdAt: null
+    nombreVendedor: 'Juan Perez', enabled: true, locked: false, createdAt: null, nombre: null
   };
 
   beforeEach(async () => {
@@ -45,9 +45,25 @@ describe('ModificarUsuarioComponent', () => {
     expect(component.vendedorSeleccionado).toEqual(vendedor);
   });
 
-  it('quitarVendedor limpia la selección', () => {
-    component.quitarVendedor();
+  it('un usuario con vendedor parte como vendedor; elegir "No" quita el vendedor', () => {
+    expect(component.esVendedorControl.value).toBeTrue();
+
+    component.esVendedorControl.setValue(false);
+
     expect(component.vendedorSeleccionado).toBeNull();
+    expect(component.form.get('nombre')?.hasError('required')).toBeTrue();
+  });
+
+  it('no vendedor: envía el nombre ingresado y sin vendedor', () => {
+    component.esVendedorControl.setValue(false);
+    component.form.patchValue({ nombre: 'Juan Pérez Soto' });
+
+    component.submit();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/usuarios/1`);
+    expect(req.request.body.nombre).toBe('Juan Pérez Soto');
+    expect(req.request.body.codigoVendedor).toBeUndefined();
+    req.flush({ ...usuario, nombre: 'Juan Pérez Soto' });
   });
 
   it('guarda los cambios y cierra el modal con el usuario actualizado', () => {
@@ -59,6 +75,7 @@ describe('ModificarUsuarioComponent', () => {
     const req = httpMock.expectOne(`${environment.apiUrl}/usuarios/1`);
     expect(req.request.method).toBe('PUT');
     expect(req.request.body).toEqual({
+      nombre: 'Juan Perez',
       email: 'j@dipalza.cl',
       codigoVendedor: '001',
       tipoVendedor: '0',

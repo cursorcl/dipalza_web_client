@@ -58,10 +58,9 @@ export class HeaderComponent implements OnInit, AfterViewInit {
     this.config = this.configService.configData;
     this.docElement = document.documentElement;
     if (this.authService.currentUserValue) {
+      // El backend envía el nombre completo en firstName y lastName vacío; trim evita el espacio final.
       this.userFullName =
-        this.authService.currentUserValue.firstName +
-        ' ' +
-        this.authService.currentUserValue.lastName;
+        `${this.authService.currentUserValue.firstName ?? ''} ${this.authService.currentUserValue.lastName ?? ''}`.trim();
     }
   }
   ngAfterViewInit() {

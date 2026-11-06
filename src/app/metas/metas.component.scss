@@ -48,6 +48,11 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 0.5rem 1rem;
+  // Mismo fondo que la barra lateral (tema claro: blanco; tema oscuro: ver abajo).
+  padding: 1rem 1.25rem;
+  border-radius: 0.5rem;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 
   .encabezado-centro {
     text-align: center;
@@ -71,6 +76,32 @@
 
     .encabezado-derecha {
       justify-self: start;
+    }
+  }
+}
+
+// Barra lateral oscura (skins/_darksidebar.scss): el encabezado toma su mismo color.
+:host-context(.dark-sidebar) .encabezado-metas {
+  background-color: #16192a;
+  color: #fff;
+
+  .titulo-mes,
+  .titulo-graficos {
+    color: #fff;
+  }
+
+  .actualizado-texto {
+    color: #dadada !important;
+  }
+
+  .btn-outline-secondary {
+    color: #dadada;
+    border-color: #dadada;
+
+    &:hover,
+    &:focus-visible {
+      color: #16192a;
+      background-color: #dadada;
     }
   }
 }

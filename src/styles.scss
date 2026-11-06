@@ -14,6 +14,34 @@ a:focus-visible,
     outline-offset: 2px;
 }
 
+// Encabezado de cada página (título + migas): banda con el mismo color de la barra lateral.
+// Barra clara (por defecto): blanco. Barra oscura (skins/_darksidebar.scss): #16192a.
+.breadcrumb.breadcrumb-style {
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.5rem;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.dark-sidebar .breadcrumb.breadcrumb-style {
+    background-color: #16192a;
+    color: #fff;
+
+    .page-title {
+        color: #fff;
+    }
+
+    .breadcrumb-item a,
+    .breadcrumb-item + .breadcrumb-item::before {
+        color: #dadada;
+    }
+
+    .breadcrumb-item a:hover {
+        color: #fff;
+    }
+}
+
 // Al imprimir una pantalla (botón "Imprimir" de Hoja de Ruta/Faltantes), se oculta todo el
 // chrome del layout (navbar fijo, sidebars) y cualquier control marcado .no-print (selector
 // de fecha, botones de descarga) -- solo queda el contenido que realmente se quiere imprimir.

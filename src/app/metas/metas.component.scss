@@ -42,6 +42,39 @@
   }
 }
 
+.encabezado-metas {
+  // Tres zonas: mes + hora a la izquierda, equipo o vendedor al centro, botones a la derecha.
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem 1rem;
+
+  .encabezado-centro {
+    text-align: center;
+  }
+
+  .encabezado-derecha {
+    justify-self: end;
+  }
+
+  .titulo-mes,
+  .titulo-graficos {
+    font-weight: 600;
+  }
+
+  @media (max-width: 767.98px) {
+    grid-template-columns: 1fr;
+
+    .encabezado-centro {
+      text-align: left;
+    }
+
+    .encabezado-derecha {
+      justify-self: start;
+    }
+  }
+}
+
 .periodo-texto {
   text-transform: capitalize;
 }

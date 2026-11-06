@@ -239,7 +239,7 @@ describe('MetasComponent', () => {
       expect(botonFila(1).getAttribute('aria-pressed')).toBe('false');
     });
 
-    it('encabezado_mesVendedorYHora_yVerEquipoJuntoAActualizar', () => {
+    it('encabezado_mesYHoraIzquierda_vendedorAlCentro_botonesDerecha', () => {
       crear();
       responder(tablero);
       clicFila(0);
@@ -247,10 +247,11 @@ describe('MetasComponent', () => {
       httpMock.expectOne(urlVendedor).flush(tableroVendedor);
       fixture.detectChanges();
       const encabezado = el().querySelector('.encabezado-metas') as HTMLElement;
-      const titulo = encabezado.querySelector('.titulo-graficos')?.textContent ?? '';
-      expect(titulo).toContain(fixture.componentInstance.periodoTexto);
-      expect(titulo).toContain('Ana Sobremeta');
-      expect(titulo).toMatch(/Actualizado a las \d{2}:\d{2}/);
+      const izquierda = encabezado.querySelector('.encabezado-izquierda') as HTMLElement;
+      expect(izquierda.querySelector('h3')?.textContent?.trim()).toBe(fixture.componentInstance.periodoTexto);
+      expect(izquierda.querySelector('small')?.textContent).toMatch(/^Actualizado a las \d{2}:\d{2}$/);
+      // Al centro va solo el nombre del vendedor, sin más texto.
+      expect(encabezado.querySelector('.encabezado-centro h3')?.textContent?.trim()).toBe('Ana Sobremeta');
       const botones = Array.from(encabezado.querySelectorAll('button')).map(b => b.textContent?.trim());
       expect(botones).toEqual(['Ver equipo', 'Actualizar']);
     });
@@ -290,6 +291,12 @@ describe('MetasComponent', () => {
       fixture.detectChanges();
       await new Promise(r => setTimeout(r, 100));
       expect(document.activeElement).toBe(botonFila(1));
+    });
+
+    it('encabezado_sinSeleccion_muestraTodoElEquipo', () => {
+      crear();
+      responder(tablero);
+      expect(el().querySelector('.encabezado-centro h3')?.textContent?.trim()).toBe('Todo el Equipo');
     });
 
     it('graficos_tituloEsRegionAriaLive', () => {

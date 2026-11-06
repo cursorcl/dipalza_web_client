@@ -100,7 +100,46 @@ describe('MetasComponent', () => {
     expect(fila.textContent).toContain('Sin meta');
     expect(fila.textContent).not.toContain('NaN');
     expect(fila.textContent).not.toContain('Infinity');
-    expect(fila.textContent).toContain('—');
+    expect(fila.querySelectorAll('td')[1].textContent?.trim()).toBe('Sin meta');
+    const barra = fila.querySelector('.progress-bar') as HTMLElement;
+    expect(barra.style.width).toBe('0%');
+  });
+
+  it('tabla_metaCero_muestraSinMetaEnColumnaMeta', () => {
+    crear();
+    const conCero: TableroEquipo = {
+      equipo: { ...tablero.equipo, meta: 0 },
+      vendedores: [{ codigo: '040', tipo: '0', nombre: 'Dani Cero', meta: 0, vendido: 100, avance: null, cantidadVentas: 1 }]
+    };
+    responder(conCero);
+    const celdaMeta = filas()[0].querySelectorAll('td')[1];
+    expect(celdaMeta.textContent?.trim()).toBe('Sin meta');
+    const tarjeta = Array.from(el().querySelectorAll('.tarjeta-cifra'))
+      .find(t => t.textContent?.includes('Meta del equipo'));
+    expect(tarjeta?.querySelector('.cifra-valor')?.textContent?.trim()).toBe('Sin meta');
+  });
+
+  it('tabla_nombreNull_muestraCodigo', () => {
+    crear();
+    responder({
+      ...tablero,
+      vendedores: [{ codigo: '099', tipo: '0', nombre: null, meta: 100, vendido: 50, avance: 50, cantidadVentas: 1 }]
+    });
+    expect(filas()[0].querySelector('td')?.textContent?.trim()).toBe('099');
+    (filas()[0] as HTMLElement).click();
+    fixture.detectChanges();
+    expect(el().querySelector('.vendedor-seleccionado')?.textContent).toContain('099');
+    expect(el().textContent).not.toContain('null');
+    httpMock.expectOne(`${environment.apiUrl}/admin/metas/vendedor/099/0`).flush(tableroVendedor);
+    fixture.detectChanges();
+    const aria = Array.from(el().querySelectorAll('canvas')).map(c => c.getAttribute('aria-label'));
+    aria.forEach(a => expect(a).toContain('099'));
+  });
+
+  it('carga_calculadoEnReal_muestraHoraSinError', () => {
+    crear();
+    responder({ ...tablero, equipo: { ...tablero.equipo, calculadoEn: '2026-11-06T15:30:00.123456-03:00' } });
+    expect(el().textContent).toMatch(/Actualizado a las \d{2}:\d{2}/);
   });
 
   it('tabla_avanceSobreCien_muestraRealYBarraAl100', () => {
@@ -186,6 +225,36 @@ describe('MetasComponent', () => {
       fixture.detectChanges();
       httpMock.expectOne(urlVendedor).flush(tableroVendedor);
       expect(fixture.componentInstance.seleccionado?.codigo).toBe('010');
+    });
+
+    it('seleccion_mismaFila_noRecarga', () => {
+      crear();
+      responder(tablero);
+      (filas()[0] as HTMLElement).click();
+      httpMock.expectOne(urlVendedor).flush(tableroVendedor);
+      fixture.detectChanges();
+      (filas()[0] as HTMLElement).click();
+      fixture.detectChanges();
+      httpMock.expectNone(urlVendedor);
+      expect(fixture.componentInstance.tableroGraficos).toBe(tableroVendedor);
+      expect(fixture.componentInstance.cargandoGraficos).toBeFalse();
+    });
+
+    it('verEquipo_devuelveElFocoALaFila', () => {
+      crear();
+      responder(tablero);
+      (filas()[1] as HTMLElement).click();
+      httpMock.expectOne(`${environment.apiUrl}/admin/metas/vendedor/020/0`).flush(tableroVendedor);
+      fixture.detectChanges();
+      verEquipoBtn()!.click();
+      fixture.detectChanges();
+      expect(document.activeElement).toBe(filas()[1]);
+    });
+
+    it('graficos_tituloEsRegionAriaLive', () => {
+      crear();
+      responder(tablero);
+      expect(el().querySelector('.titulo-graficos')?.getAttribute('aria-live')).toBe('polite');
     });
 
     it('verEquipo_vuelveAlTableroDelEquipo', () => {

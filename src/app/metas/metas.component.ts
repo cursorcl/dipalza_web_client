@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { formatDate } from '@angular/common';
-import { Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
+import { afterNextRender, Component, DestroyRef, Injector, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { catchError, EMPTY, interval, map, of, Subject, switchMap, tap } from 'rxjs';
@@ -40,6 +40,7 @@ export class MetasComponent implements OnInit {
   private metaService = inject(MetaService);
   private destroyRef = inject(DestroyRef);
   private locale = inject(LOCALE_ID);
+  private injector = inject(Injector);
 
   private tableroVendedor: TableroMeta | null = null;
   // switchMap descarta la respuesta anterior si llega una carga nueva (refresco, botón o selección).
@@ -117,6 +118,9 @@ export class MetasComponent implements OnInit {
   }
 
   seleccionar(fila: MetaVendedorFila): void {
+    if (this.esSeleccionada(fila)) {
+      return;
+    }
     this.seleccionado = fila;
     this.tableroVendedor = null;
     this.errorGraficos = null;
@@ -126,12 +130,21 @@ export class MetasComponent implements OnInit {
   }
 
   verEquipo(): void {
+    const anterior = this.seleccionado;
     this.seleccionado = null;
     this.tableroVendedor = null;
     this.errorGraficos = null;
     this.cargandoGraficos = false;
     this.cargaVendedor$.next(null);
     this.actualizarGraficos();
+    if (anterior) {
+      // El botón "Ver equipo" desaparece: el foco vuelve a la fila que estaba seleccionada.
+      afterNextRender(() => document.getElementById(this.idFila(anterior))?.focus(), { injector: this.injector });
+    }
+  }
+
+  idFila(fila: MetaVendedorFila): string {
+    return `fila-meta-${fila.codigo}-${fila.tipo}`;
   }
 
   esSeleccionada(fila: MetaVendedorFila): boolean {

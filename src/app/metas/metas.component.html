@@ -39,7 +39,7 @@
                             <div class="card tarjeta-cifra">
                                 <div class="body">
                                     <div class="cifra-titulo">Meta del equipo</div>
-                                    <div class="cifra-valor">{{ formatearPesos(tablero.equipo.meta) }}</div>
+                                    <div class="cifra-valor">{{ tieneMeta(tablero.equipo.meta) ? formatearPesos(tablero.equipo.meta) : 'Sin meta' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -64,9 +64,9 @@
                     <div class="card">
                         <div class="body">
                             <div class="d-flex align-items-center justify-content-between mb-2">
-                                <h6 class="m-b-0">
+                                <h6 class="m-b-0 titulo-graficos" aria-live="polite">
                                     Ventas de
-                                    <strong class="vendedor-seleccionado">{{ seleccionado ? seleccionado.nombre : 'todo el equipo' }}</strong>
+                                    <strong class="vendedor-seleccionado">{{ seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo' }}</strong>
                                 </h6>
                                 @if (seleccionado) {
                                     <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verEquipo()">Ver equipo</button>
@@ -83,14 +83,14 @@
                                     <div class="col-lg-6">
                                         <div class="contenedor-grafico">
                                             <canvas baseChart [data]="configDiario.data" [options]="configDiario.options" [type]="'bar'"
-                                                [attr.aria-label]="'Ventas diarias y acumulado del mes de ' + (seleccionado ? seleccionado.nombre : 'todo el equipo')"
+                                                [attr.aria-label]="'Ventas diarias y acumulado del mes de ' + (seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo')"
                                                 role="img"></canvas>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <div class="contenedor-grafico">
                                             <canvas baseChart [data]="configMensual.data" [options]="configMensual.options" [type]="'bar'"
-                                                [attr.aria-label]="'Ventas y meta de los últimos 12 meses de ' + (seleccionado ? seleccionado.nombre : 'todo el equipo')"
+                                                [attr.aria-label]="'Ventas y meta de los últimos 12 meses de ' + (seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo')"
                                                 role="img"></canvas>
                                         </div>
                                     </div>
@@ -117,13 +117,14 @@
                                     <tbody>
                                         @for (v of tablero.vendedores; track v.codigo + '/' + v.tipo) {
                                             <tr class="fila-seleccionable" tabindex="0"
+                                                [attr.id]="idFila(v)"
                                                 [class.table-active]="esSeleccionada(v)"
                                                 [attr.aria-selected]="esSeleccionada(v)"
                                                 (click)="seleccionar(v)"
                                                 (keydown.enter)="seleccionar(v)"
                                                 (keydown.space)="$event.preventDefault(); seleccionar(v)">
-                                                <td>{{ v.nombre }}</td>
-                                                <td class="col-numerica">{{ formatearPesos(v.meta) }}</td>
+                                                <td>{{ v.nombre ?? v.codigo }}</td>
+                                                <td class="col-numerica">{{ tieneMeta(v.meta) ? formatearPesos(v.meta) : 'Sin meta' }}</td>
                                                 <td class="col-numerica">{{ formatearPesos(v.vendido) }}</td>
                                                 <td class="celda-avance">
                                                     <div class="progress" aria-hidden="true">

@@ -44,11 +44,12 @@ describe('graficos-metas', () => {
       mensual: [
         { periodo: '2026-09', vendido: 10, meta: 100 },
         { periodo: '2026-10', vendido: 20, meta: null },
-        { periodo: '2026-11', vendido: 30, meta: 100 }
+        { periodo: '2026-11', vendido: 30, meta: 100 },
+        { periodo: '2026-12', vendido: 0, meta: 0 }
       ]
     }));
     const meta = config.data.datasets[1];
-    expect(meta.data).toEqual([100, null, 100]);
+    expect(meta.data).toEqual([100, null, 100, null]);
     expect((meta as { spanGaps?: boolean }).spanGaps).toBe(false);
   });
 

@@ -74,7 +74,7 @@ export function graficoMensual(t: TableroMeta): ChartConfiguration<'bar' | 'line
       datasets: [
         { type: 'bar', label: 'Vendido', data: t.mensual.map(m => m.vendido), backgroundColor: COLOR_VENDIDO },
         {
-          type: 'line', label: 'Meta', data: t.mensual.map(m => m.meta),
+          type: 'line', label: 'Meta', data: t.mensual.map(m => (tieneMeta(m.meta) ? m.meta : null)),
           borderColor: COLOR_META, backgroundColor: COLOR_META, spanGaps: false, pointRadius: 3
         }
       ]

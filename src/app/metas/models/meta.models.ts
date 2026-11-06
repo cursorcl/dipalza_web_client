@@ -23,7 +23,7 @@ export interface TableroMeta {
 export interface MetaVendedorFila {
   codigo: string;
   tipo: string;
-  nombre: string;
+  nombre: string | null;
   meta: number | null;
   vendido: number;
   avance: number | null;

@@ -14,6 +14,40 @@ a:focus-visible,
     outline-offset: 2px;
 }
 
+// Barra superior del tema (botón que recoge el menú, pantalla completa, usuario): mismo color que la
+// barra lateral. override/_navbar.scss la deja transparente (se veía el gris del fondo) y el blanco de
+// skins/_white.scss nunca aplica porque el body no lleva la clase theme-white. Barra clara: blanco con
+// íconos gris oscuro (antes blancos, casi invisibles). Barra oscura (skins/_darksidebar.scss): #16192a.
+.navbar.main-navbar {
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+
+    .nav-link .feather,
+    .nav-link {
+        color: #555556;
+    }
+
+    .nav-link:hover .feather,
+    .nav-link:hover {
+        color: #000;
+    }
+}
+
+.dark-sidebar .navbar.main-navbar,
+.dark-sidebar .navbar.main-navbar.active {
+    background-color: #16192a;
+
+    .nav-link .feather,
+    .nav-link {
+        color: #dadada;
+    }
+
+    .nav-link:hover .feather,
+    .nav-link:hover {
+        color: #fff;
+    }
+}
+
 // Al imprimir una pantalla (botón "Imprimir" de Hoja de Ruta/Faltantes), se oculta todo el
 // chrome del layout (navbar fijo, sidebars) y cualquier control marcado .no-print (selector
 // de fecha, botones de descarga) -- solo queda el contenido que realmente se quiere imprimir.

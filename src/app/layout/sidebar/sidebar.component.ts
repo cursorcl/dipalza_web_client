@@ -102,7 +102,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       }).subscribe(({ routes, auditoriaFacturacionHabilitada }) => {
         this.sidebarItems = routes.filter((sidebarItem) =>
           sidebarItem
-          && (sidebarItem.path !== 'usuarios' || this.authService.isAdmin())
+          && (!['usuarios', 'metas'].includes(sidebarItem.path) || this.authService.isAdmin())
           && (sidebarItem.path !== 'ventas/lotes-facturacion' || auditoriaFacturacionHabilitada));
         // El backend envía el nombre completo en firstName y lastName vacío; trim evita el espacio final.
         this.userFullName =

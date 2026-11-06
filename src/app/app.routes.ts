@@ -39,6 +39,12 @@ export const APP_ROUTE: Route[] = [
                     import('./listas-precio/listas-precio.component').then((m) => m.ListasPrecioComponent)
             },
             {
+                path: 'metas',
+                canActivate: [AdminGuard],
+                loadComponent: () =>
+                    import('./metas/metas.component').then((m) => m.MetasComponent)
+            },
+            {
                 path: 'usuarios',
                 canActivate: [AdminGuard],
                 loadChildren: () =>

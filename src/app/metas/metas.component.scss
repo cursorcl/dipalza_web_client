@@ -1,0 +1,141 @@
+.tarjeta-cifra {
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 120px;
+  padding: 1.25rem 1rem;
+  margin-bottom: 0;
+  border: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+
+  .cifra-icono {
+    position: absolute;
+    top: 0.75rem;
+    right: 1rem;
+    font-size: 1.4rem;
+    opacity: 0.35;
+  }
+
+  .cifra-titulo {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .cifra-valor {
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+}
+
+.tarjeta-grafico {
+  padding: 1rem;
+  margin-bottom: 0;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 0.5rem;
+
+  .tarjeta-grafico-titulo {
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+  }
+}
+
+.encabezado-metas {
+  // Tres zonas: mes + hora a la izquierda, equipo o vendedor al centro, botones a la derecha.
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem 1rem;
+
+  .encabezado-centro {
+    text-align: center;
+  }
+
+  .encabezado-derecha {
+    justify-self: end;
+  }
+
+  .titulo-mes,
+  .titulo-graficos {
+    font-weight: 600;
+  }
+
+  @media (max-width: 767.98px) {
+    grid-template-columns: 1fr;
+
+    .encabezado-centro {
+      text-align: left;
+    }
+
+    .encabezado-derecha {
+      justify-self: start;
+    }
+  }
+}
+
+.periodo-texto {
+  text-transform: capitalize;
+}
+
+.celda-avance {
+  width: 100%;
+
+  .progress {
+    height: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+.contenedor-grafico {
+  position: relative;
+  height: 320px;
+}
+
+.btn-vendedor {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--bs-primary, #0d6efd);
+    outline-offset: 2px;
+  }
+}
+
+// Bordes internos (verticales y horizontales) de la tabla, encapsulados en este componente.
+:host ::ng-deep .tabla-metas {
+  .datatable-header-cell,
+  .datatable-body-cell {
+    border-right: 1px solid var(--bs-border-color, #dee2e6) !important;
+  }
+
+  .datatable-header-cell:last-child,
+  .datatable-body-cell:last-child {
+    border-right: none !important;
+  }
+
+  .datatable-header {
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+  }
+
+  .datatable-body-row {
+    border-bottom: 1px solid var(--bs-border-color, #dee2e6);
+    cursor: pointer;
+  }
+
+  .datatable-body-row.active,
+  .datatable-body-row.active .datatable-row-group {
+    background-color: rgba(13, 110, 253, 0.12) !important;
+  }
+
+  .datatable-body-row.active .datatable-body-cell {
+    color: inherit !important;
+  }
+}

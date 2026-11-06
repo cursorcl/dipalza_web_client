@@ -12,8 +12,19 @@
     <div class="section-body">
         <div class="row">
             <div class="col-sm-12">
-                <div class="form-group row">
-                    <div class="col-sm-auto ms-auto d-flex gap-2">
+                <div class="encabezado-metas d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    @if (tablero) {
+                        <h6 class="m-b-0 titulo-graficos" aria-live="polite">
+                            <span class="periodo-texto">{{ periodoTexto }}</span>
+                            · Ventas de
+                            <strong class="vendedor-seleccionado">{{ seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo' }}</strong>
+                            <span class="text-muted actualizado-texto">· Actualizado a las {{ actualizadoA }}</span>
+                        </h6>
+                    }
+                    <div class="ms-auto d-flex gap-2">
+                        @if (seleccionado) {
+                            <button type="button" class="btn btn-outline-secondary" (click)="verEquipo()">Ver equipo</button>
+                        }
                         <button type="button" class="btn btn-primary" [disabled]="cargando" (click)="cargar()">Actualizar</button>
                     </div>
                 </div>
@@ -30,10 +41,6 @@
                 }
 
                 @if (tablero) {
-                    <p class="text-muted">
-                        <span class="periodo-texto">{{ periodoTexto }}</span>
-                        · Actualizado a las {{ actualizadoA }}
-                    </p>
                     <div class="row g-3 mb-4">
                         <div class="col-md-4">
                             <div class="card tarjeta-cifra l-bg-cyan">
@@ -58,15 +65,6 @@
                         </div>
                     </div>
 
-                    <div class="d-flex align-items-center justify-content-between mb-3">
-                        <h6 class="m-b-0 titulo-graficos" aria-live="polite">
-                            Ventas de
-                            <strong class="vendedor-seleccionado">{{ seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo' }}</strong>
-                        </h6>
-                        @if (seleccionado) {
-                            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verEquipo()">Ver equipo</button>
-                        }
-                    </div>
                     @if (errorGraficos) {
                         <div class="alert alert-danger" role="alert">{{ errorGraficos }}</div>
                     }

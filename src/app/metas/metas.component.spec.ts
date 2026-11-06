@@ -239,6 +239,22 @@ describe('MetasComponent', () => {
       expect(botonFila(1).getAttribute('aria-pressed')).toBe('false');
     });
 
+    it('encabezado_mesVendedorYHora_yVerEquipoJuntoAActualizar', () => {
+      crear();
+      responder(tablero);
+      clicFila(0);
+      fixture.detectChanges();
+      httpMock.expectOne(urlVendedor).flush(tableroVendedor);
+      fixture.detectChanges();
+      const encabezado = el().querySelector('.encabezado-metas') as HTMLElement;
+      const titulo = encabezado.querySelector('.titulo-graficos')?.textContent ?? '';
+      expect(titulo).toContain(fixture.componentInstance.periodoTexto);
+      expect(titulo).toContain('Ana Sobremeta');
+      expect(titulo).toMatch(/Actualizado a las \d{2}:\d{2}/);
+      const botones = Array.from(encabezado.querySelectorAll('button')).map(b => b.textContent?.trim());
+      expect(botones).toEqual(['Ver equipo', 'Actualizar']);
+    });
+
     it('seleccion_conTeclado', () => {
       // La fila de ngx-datatable no es tabulable: el botón del vendedor es la vía accesible (Enter/Espacio lo activan).
       crear();

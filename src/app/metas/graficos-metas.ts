@@ -7,6 +7,7 @@ const LOCALE = 'es-CL';
 const COLOR_VENDIDO = 'rgba(13, 110, 253, 0.55)';
 const COLOR_LINEA = '#198754';
 const COLOR_META = '#dc3545';
+export const COLOR_MARCA_EJE = '#6c757d';
 const COLOR_META_BARRA = 'rgba(220, 53, 69, 0.45)';
 
 /** "2026-11" -> "nov 2026" (sin el punto final que es-CL pueda agregar a la abreviatura). */
@@ -27,6 +28,10 @@ function opciones(): ChartConfiguration<'bar' | 'line'>['options'] {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
+      x: {
+        // Marca de cada mes/día (la rayita que va del eje a la etiqueta) más oscura que la grilla.
+        grid: { tickColor: COLOR_MARCA_EJE }
+      },
       y: {
         beginAtZero: true,
         ticks: { callback: (valor) => formatearPesos(Number(valor)) }

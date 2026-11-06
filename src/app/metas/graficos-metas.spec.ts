@@ -1,4 +1,4 @@
-import { estiloLeyenda, graficoDiario, graficoMensual } from './graficos-metas';
+import { COLOR_MARCA_EJE, estiloLeyenda, graficoDiario, graficoMensual } from './graficos-metas';
 import { TableroMeta } from './models/meta.models';
 
 function tablero(parcial: Partial<TableroMeta> = {}): TableroMeta {
@@ -43,6 +43,13 @@ describe('graficos-metas', () => {
     const item = { text: 'Meta del mes', datasetIndex: 2 };
     expect(estiloLeyenda(item, 'line').pointStyle).toBe('line');
     expect(estiloLeyenda(item, 'bar').pointStyle).toBe('rect');
+  });
+
+  it('ejeX_marcaDelMesMasOscura', () => {
+    for (const config of [graficoDiario(tablero({})), graficoMensual(tablero({}))]) {
+      const ejeX = config.options?.scales?.['x'] as { grid?: { tickColor?: string } } | undefined;
+      expect(ejeX?.grid?.tickColor).toBe(COLOR_MARCA_EJE);
+    }
   });
 
   it('leyenda_usaPointStyle', () => {

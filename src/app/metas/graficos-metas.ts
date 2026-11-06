@@ -22,27 +22,11 @@ export function estiloLeyenda(item: LegendItem, tipo: string | undefined): Legen
     : { ...item, pointStyle: 'rect' };
 }
 
-/** Etiqueta del eje X en dos filas: las de índice par arriba y las impares abajo. */
-export function etiquetaIntercalada(etiqueta: string, indice: number): string[] {
-  return indice % 2 === 0 ? [etiqueta, ''] : ['', etiqueta];
-}
-
 function opciones(): ChartConfiguration<'bar' | 'line'>['options'] {
   return {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-      x: {
-        // Etiquetas intercaladas en dos filas (una arriba, la siguiente abajo) para que
-        // quepan todas sin rotarlas ni saltarse ninguna.
-        ticks: {
-          autoSkip: false,
-          maxRotation: 0,
-          callback: function (valor, indice) {
-            return etiquetaIntercalada(this.getLabelForValue(Number(valor)), indice);
-          }
-        }
-      },
       y: {
         beginAtZero: true,
         ticks: { callback: (valor) => formatearPesos(Number(valor)) }

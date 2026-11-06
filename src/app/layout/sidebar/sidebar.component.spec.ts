@@ -19,6 +19,7 @@ describe('SidebarComponent', () => {
   const routes: RouteInfo[] = [
     { path: 'ventas', title: 'Ventas', iconType: 'feather', icon: 'home', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] },
     { path: 'usuarios', title: 'Gestionar Usuarios', iconType: 'feather', icon: 'users', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] },
+    { path: 'metas', title: 'Metas de Venta', iconType: 'feather', icon: 'target', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] },
     { path: 'ventas/lotes-facturacion', title: 'Corridas de Facturación', iconType: 'feather', icon: 'list', class: '', groupTitle: false, badge: '', badgeClass: '', submenu: [] }
   ];
 
@@ -67,6 +68,16 @@ describe('SidebarComponent', () => {
     setup(false);
     expect(component.sidebarItems.some(r => r.path === 'usuarios')).toBeFalse();
     expect(component.sidebarItems.some(r => r.path === 'ventas')).toBeTrue();
+  });
+
+  it('incluye "Metas de Venta" cuando el usuario es admin', () => {
+    setup(true);
+    expect(component.sidebarItems.some(r => r.path === 'metas')).toBeTrue();
+  });
+
+  it('excluye "Metas de Venta" cuando el usuario no es admin', () => {
+    setup(false);
+    expect(component.sidebarItems.some(r => r.path === 'metas')).toBeFalse();
   });
 
   it('incluye "Corridas de Facturación" cuando la auditoría está habilitada', () => {

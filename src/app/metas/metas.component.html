@@ -1,0 +1,105 @@
+<section class="main-content">
+    <ul class="breadcrumb breadcrumb-style">
+        <li class="breadcrumb-item">
+            <h5 class="page-title m-b-0">Metas de Venta</h5>
+        </li>
+        <li class="breadcrumb-item bcrumb-1">
+            <a routerLink="/" class="d-flex align-items-center" aria-label="Inicio">
+                <i class="fas fa-home font-20" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+    <div class="section-body">
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group row">
+                    <div class="col-sm-auto ms-auto d-flex gap-2">
+                        <button type="button" class="btn btn-primary" (click)="cargar()">Actualizar</button>
+                    </div>
+                </div>
+
+                @if (error) {
+                    <div class="alert alert-danger d-flex align-items-center justify-content-between" role="alert">
+                        <span>{{ error }}</span>
+                        <button type="button" class="btn btn-outline-danger btn-sm" (click)="cargar()">Reintentar</button>
+                    </div>
+                }
+
+                @if (cargando && !tablero) {
+                    <p class="text-center my-4" role="status">Cargando metas...</p>
+                }
+
+                @if (tablero) {
+                    <p class="text-muted">
+                        <span class="periodo-texto">{{ periodoTexto }}</span>
+                        · Actualizado a las {{ actualizadoA }}
+                    </p>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="card tarjeta-cifra">
+                                <div class="body">
+                                    <div class="cifra-titulo">Meta del equipo</div>
+                                    <div class="cifra-valor">{{ formatearPesos(tablero.equipo.meta) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card tarjeta-cifra">
+                                <div class="body">
+                                    <div class="cifra-titulo">Vendido</div>
+                                    <div class="cifra-valor">{{ formatearPesos(tablero.equipo.vendido) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card tarjeta-cifra">
+                                <div class="body">
+                                    <div class="cifra-titulo">Avance</div>
+                                    <div class="cifra-valor">{{ formatearAvance(tablero.equipo.avance) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (tablero.vendedores.length === 0) {
+                        <p class="text-center my-4">No hay vendedores con meta o ventas este mes.</p>
+                    } @else {
+                        <div class="card">
+                            <div class="body table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Vendedor</th>
+                                            <th class="col-numerica">Meta</th>
+                                            <th class="col-numerica">Vendido</th>
+                                            <th>Avance</th>
+                                            <th class="col-numerica">Ventas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @for (v of tablero.vendedores; track v.codigo + '/' + v.tipo) {
+                                            <tr>
+                                                <td>{{ v.nombre }}</td>
+                                                <td class="col-numerica">{{ formatearPesos(v.meta) }}</td>
+                                                <td class="col-numerica">{{ formatearPesos(v.vendido) }}</td>
+                                                <td class="celda-avance">
+                                                    <div class="progress" aria-hidden="true">
+                                                        <div class="progress-bar" [style.width.%]="anchoBarraAvance(v.avance)"></div>
+                                                    </div>
+                                                    <span>{{ formatearAvance(v.avance) }}</span>
+                                                </td>
+                                                <td class="col-numerica">{{ v.cantidadVentas }}</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    }
+
+                    <p class="text-muted small">Se cuentan las ventas transferidas, sin flete, según su fecha de facturación.</p>
+                }
+            </div>
+        </div>
+    </div>
+</section>

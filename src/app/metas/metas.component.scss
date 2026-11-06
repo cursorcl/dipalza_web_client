@@ -1,0 +1,29 @@
+.tarjeta-cifra {
+  .cifra-titulo {
+    color: var(--bs-secondary-color, #6c757d);
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .cifra-valor {
+    font-size: 1.8rem;
+    font-weight: 600;
+  }
+}
+
+.periodo-texto {
+  text-transform: capitalize;
+}
+
+.celda-avance {
+  min-width: 180px;
+
+  .progress {
+    height: 8px;
+    margin-bottom: 4px;
+  }
+}
+
+.col-numerica {
+  text-align: right;
+}

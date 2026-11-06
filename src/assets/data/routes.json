@@ -120,6 +120,17 @@
       "badge": "",
       "badgeClass": "",
       "submenu": []
+    },
+    {
+      "path": "metas",
+      "title": "Metas de Venta",
+      "iconType": "feather",
+      "icon": "target",
+      "class": "",
+      "groupTitle": false,
+      "badge": "",
+      "badgeClass": "",
+      "submenu": []
     }
   ]
 }

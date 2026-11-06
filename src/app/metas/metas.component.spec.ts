@@ -177,10 +177,10 @@ describe('MetasComponent', () => {
     expect(filas().length).toBe(3);
   });
 
-  it('muestraNotaDeVentasContadas', () => {
+  it('noMuestraNotaDeVentasContadas', () => {
     crear();
     responder(tablero);
-    expect(el().textContent).toContain('Se cuentan las ventas transferidas, sin flete, según su fecha de facturación.');
+    expect(el().textContent).not.toContain('Se cuentan las ventas transferidas');
   });
 
   it('indicadores_tienenColores', () => {

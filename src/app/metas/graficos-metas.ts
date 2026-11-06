@@ -7,6 +7,7 @@ const LOCALE = 'es-CL';
 const COLOR_VENDIDO = 'rgba(13, 110, 253, 0.55)';
 const COLOR_LINEA = '#198754';
 const COLOR_META = '#dc3545';
+const COLOR_META_BARRA = 'rgba(220, 53, 69, 0.45)';
 
 /** "2026-11" -> "nov 2026" (sin el punto final que es-CL pueda agregar a la abreviatura). */
 function etiquetaMes(periodo: string): string {
@@ -71,12 +72,13 @@ export function graficoMensual(t: TableroMeta): ChartConfiguration<'bar' | 'line
     type: 'bar',
     data: {
       labels: etiquetas,
+      // Dos barras por mes, lado a lado: la meta del mes (sin barra si no hay meta) y lo vendido.
       datasets: [
-        { type: 'bar', label: 'Vendido', data: t.mensual.map(m => m.vendido), backgroundColor: COLOR_VENDIDO },
         {
-          type: 'line', label: 'Meta', data: t.mensual.map(m => (tieneMeta(m.meta) ? m.meta : null)),
-          borderColor: COLOR_META, backgroundColor: COLOR_META, spanGaps: false, pointRadius: 3
-        }
+          type: 'bar', label: 'Meta', data: t.mensual.map(m => (tieneMeta(m.meta) ? m.meta : null)),
+          backgroundColor: COLOR_META_BARRA
+        },
+        { type: 'bar', label: 'Vendido', data: t.mensual.map(m => m.vendido), backgroundColor: COLOR_VENDIDO }
       ]
     },
     options: opciones()

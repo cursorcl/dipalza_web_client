@@ -39,7 +39,7 @@ describe('graficos-metas', () => {
     expect(config.data.datasets[2].data).toEqual([3000, 3000, 3000]);
   });
 
-  it('graficoMensual_metaNull_dejaHueco', () => {
+  it('graficoMensual_dosBarrasMetaYVenta_metaNullSinBarra', () => {
     const config = graficoMensual(tablero({
       mensual: [
         { periodo: '2026-09', vendido: 10, meta: 100 },
@@ -48,9 +48,13 @@ describe('graficos-metas', () => {
         { periodo: '2026-12', vendido: 0, meta: 0 }
       ]
     }));
-    const meta = config.data.datasets[1];
+    const [meta, vendido] = config.data.datasets;
+    expect(meta.type).toBe('bar');
+    expect(meta.label).toBe('Meta');
     expect(meta.data).toEqual([100, null, 100, null]);
-    expect((meta as { spanGaps?: boolean }).spanGaps).toBe(false);
+    expect(vendido.type).toBe('bar');
+    expect(vendido.label).toBe('Vendido');
+    expect(vendido.data).toEqual([10, 20, 30, 0]);
   });
 
   it('graficoMensual_ultimaEtiquetaMarcaEnCurso', () => {

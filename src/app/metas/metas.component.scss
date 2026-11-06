@@ -27,3 +27,13 @@
 .col-numerica {
   text-align: right;
 }
+
+.contenedor-grafico {
+  position: relative;
+  height: 320px;
+  margin-bottom: 1rem;
+}
+
+.fila-seleccionable {
+  cursor: pointer;
+}

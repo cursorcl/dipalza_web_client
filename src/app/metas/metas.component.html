@@ -14,7 +14,7 @@
             <div class="col-sm-12">
                 <div class="form-group row">
                     <div class="col-sm-auto ms-auto d-flex gap-2">
-                        <button type="button" class="btn btn-primary" (click)="cargar()">Actualizar</button>
+                        <button type="button" class="btn btn-primary" [disabled]="cargando" (click)="cargar()">Actualizar</button>
                     </div>
                 </div>
 
@@ -61,6 +61,44 @@
                         </div>
                     </div>
 
+                    <div class="card">
+                        <div class="body">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <h6 class="m-b-0">
+                                    Ventas de
+                                    <strong class="vendedor-seleccionado">{{ seleccionado ? seleccionado.nombre : 'todo el equipo' }}</strong>
+                                </h6>
+                                @if (seleccionado) {
+                                    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verEquipo()">Ver equipo</button>
+                                }
+                            </div>
+                            @if (errorGraficos) {
+                                <div class="alert alert-danger" role="alert">{{ errorGraficos }}</div>
+                            }
+                            @if (cargandoGraficos && !tableroGraficos) {
+                                <p class="text-center my-4" role="status">Cargando vendedor...</p>
+                            }
+                            @if (configDiario && configMensual) {
+                                <div class="row">
+                                    <div class="col-lg-6">
+                                        <div class="contenedor-grafico">
+                                            <canvas baseChart [data]="configDiario.data" [options]="configDiario.options" [type]="'bar'"
+                                                [attr.aria-label]="'Ventas diarias y acumulado del mes de ' + (seleccionado ? seleccionado.nombre : 'todo el equipo')"
+                                                role="img"></canvas>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-6">
+                                        <div class="contenedor-grafico">
+                                            <canvas baseChart [data]="configMensual.data" [options]="configMensual.options" [type]="'bar'"
+                                                [attr.aria-label]="'Ventas y meta de los últimos 12 meses de ' + (seleccionado ? seleccionado.nombre : 'todo el equipo')"
+                                                role="img"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+
                     @if (tablero.vendedores.length === 0) {
                         <p class="text-center my-4">No hay vendedores con meta o ventas este mes.</p>
                     } @else {
@@ -78,7 +116,12 @@
                                     </thead>
                                     <tbody>
                                         @for (v of tablero.vendedores; track v.codigo + '/' + v.tipo) {
-                                            <tr>
+                                            <tr class="fila-seleccionable" tabindex="0"
+                                                [class.table-active]="esSeleccionada(v)"
+                                                [attr.aria-selected]="esSeleccionada(v)"
+                                                (click)="seleccionar(v)"
+                                                (keydown.enter)="seleccionar(v)"
+                                                (keydown.space)="$event.preventDefault(); seleccionar(v)">
                                                 <td>{{ v.nombre }}</td>
                                                 <td class="col-numerica">{{ formatearPesos(v.meta) }}</td>
                                                 <td class="col-numerica">{{ formatearPesos(v.vendido) }}</td>

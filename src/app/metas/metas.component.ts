@@ -1,15 +1,21 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { formatDate } from '@angular/common';
 import { Component, DestroyRef, inject, LOCALE_ID, OnInit } from '@angular/core';
+import { ChartConfiguration } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+import { catchError, EMPTY, interval, map, of, Subject, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { MetaService } from './meta.service';
-import { MetaVendedorFila, TableroEquipo } from './models/meta.models';
+import { MetaVendedorFila, TableroEquipo, TableroMeta } from './models/meta.models';
+import { graficoDiario, graficoMensual } from './graficos-metas';
 import { anchoBarraAvance, formatearAvance, formatearPesos, tieneMeta } from './formato-metas';
+
+const REFRESCO_MS = 300_000;
 
 @Component({
   selector: 'app-metas',
-  imports: [RouterLink],
+  imports: [RouterLink, BaseChartDirective],
   templateUrl: './metas.component.html',
   styleUrl: './metas.component.scss'
 })
@@ -18,8 +24,13 @@ export class MetasComponent implements OnInit {
   tablero: TableroEquipo | null = null;
   cargando = true;
   error: string | null = null;
-  // Se completa en la Task 3 (selección de vendedor para los gráficos).
   seleccionado: MetaVendedorFila | null = null;
+  /** Tablero que alimenta los gráficos: el del vendedor seleccionado o, por defecto, el del equipo. */
+  tableroGraficos: TableroMeta | null = null;
+  errorGraficos: string | null = null;
+  cargandoGraficos = false;
+  configDiario: ChartConfiguration<'bar' | 'line'> | null = null;
+  configMensual: ChartConfiguration<'bar' | 'line'> | null = null;
 
   readonly formatearPesos = formatearPesos;
   readonly formatearAvance = formatearAvance;
@@ -30,26 +41,111 @@ export class MetasComponent implements OnInit {
   private destroyRef = inject(DestroyRef);
   private locale = inject(LOCALE_ID);
 
+  private tableroVendedor: TableroMeta | null = null;
+  // switchMap descarta la respuesta anterior si llega una carga nueva (refresco, botón o selección).
+  private cargaEquipo$ = new Subject<void>();
+  private cargaVendedor$ = new Subject<MetaVendedorFila | null>();
+
+  constructor() {
+    this.cargaEquipo$
+      .pipe(
+        tap(() => {
+          this.cargando = true;
+          this.error = null;
+        }),
+        switchMap(() => this.metaService.tableroEquipo().pipe(
+          map((tablero): TableroEquipo | null => tablero),
+          catchError((error: HttpErrorResponse) => {
+            console.error('Error al obtener las metas:', error);
+            return of(null);
+          })
+        )),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(tablero => {
+        if (tablero) {
+          this.tablero = tablero;
+          this.actualizarGraficos();
+        } else {
+          this.error = 'No se pudieron cargar las metas.';
+        }
+        this.cargando = false;
+      });
+
+    this.cargaVendedor$
+      .pipe(
+        switchMap(fila => {
+          if (!fila) {
+            return EMPTY;
+          }
+          return this.metaService.tableroVendedor(fila.codigo, fila.tipo).pipe(
+            map((tablero): TableroMeta | null => tablero),
+            catchError((error: HttpErrorResponse) => {
+              console.error('Error al obtener el tablero del vendedor:', error);
+              return of(null);
+            })
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef)
+      )
+      .subscribe(tablero => {
+        if (tablero) {
+          this.tableroVendedor = tablero;
+          this.errorGraficos = null;
+          this.actualizarGraficos();
+        } else {
+          this.errorGraficos = 'No se pudo cargar el vendedor.';
+        }
+        this.cargandoGraficos = false;
+      });
+
+    interval(REFRESCO_MS)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.cargar());
+  }
+
   ngOnInit(): void {
     this.cargar();
   }
 
+  /** Recarga el equipo y, si hay un vendedor seleccionado, también su tablero. */
   cargar(): void {
-    this.cargando = true;
-    this.error = null;
-    this.metaService.tableroEquipo()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (tablero: TableroEquipo) => {
-          this.tablero = tablero;
-          this.cargando = false;
-        },
-        error: (error: HttpErrorResponse) => {
-          console.error('Error al obtener las metas:', error);
-          this.error = 'No se pudieron cargar las metas.';
-          this.cargando = false;
-        }
-      });
+    this.cargaEquipo$.next();
+    if (this.seleccionado) {
+      this.cargaVendedor$.next(this.seleccionado);
+    }
+  }
+
+  seleccionar(fila: MetaVendedorFila): void {
+    this.seleccionado = fila;
+    this.tableroVendedor = null;
+    this.errorGraficos = null;
+    this.cargandoGraficos = true;
+    this.actualizarGraficos();
+    this.cargaVendedor$.next(fila);
+  }
+
+  verEquipo(): void {
+    this.seleccionado = null;
+    this.tableroVendedor = null;
+    this.errorGraficos = null;
+    this.cargandoGraficos = false;
+    this.cargaVendedor$.next(null);
+    this.actualizarGraficos();
+  }
+
+  esSeleccionada(fila: MetaVendedorFila): boolean {
+    return this.seleccionado?.codigo === fila.codigo && this.seleccionado?.tipo === fila.tipo;
+  }
+
+  private actualizarGraficos(): void {
+    const nuevo = this.seleccionado ? this.tableroVendedor : (this.tablero?.equipo ?? null);
+    if (nuevo === this.tableroGraficos) {
+      return;
+    }
+    this.tableroGraficos = nuevo;
+    this.configDiario = nuevo ? graficoDiario(nuevo) : null;
+    this.configMensual = nuevo ? graficoMensual(nuevo) : null;
   }
 
   /** "2026-11" -> "noviembre 2026". */

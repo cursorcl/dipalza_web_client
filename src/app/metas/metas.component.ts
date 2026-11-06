@@ -3,6 +3,7 @@ import { formatDate } from '@angular/common';
 import { afterNextRender, Component, DestroyRef, Injector, inject, LOCALE_ID, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { NgxDatatableModule, SelectionType } from '@swimlane/ngx-datatable';
 import { catchError, EMPTY, interval, map, of, Subject, switchMap, tap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -15,7 +16,7 @@ const REFRESCO_MS = 300_000;
 
 @Component({
   selector: 'app-metas',
-  imports: [RouterLink, BaseChartDirective],
+  imports: [RouterLink, BaseChartDirective, NgxDatatableModule],
   templateUrl: './metas.component.html',
   styleUrl: './metas.component.scss'
 })
@@ -25,12 +26,19 @@ export class MetasComponent implements OnInit {
   cargando = true;
   error: string | null = null;
   seleccionado: MetaVendedorFila | null = null;
+  /** Selección que se le pasa a la tabla (arreglo estable, no se recrea en cada ciclo). */
+  filasSeleccionadas: MetaVendedorFila[] = [];
+  scrollBarHorizontal = window.innerWidth < 1200;
   /** Tablero que alimenta los gráficos: el del vendedor seleccionado o, por defecto, el del equipo. */
   tableroGraficos: TableroMeta | null = null;
   errorGraficos: string | null = null;
   cargandoGraficos = false;
   configDiario: ChartConfiguration<'bar' | 'line'> | null = null;
   configMensual: ChartConfiguration<'bar' | 'line'> | null = null;
+
+  readonly tipoSeleccion = SelectionType.single;
+  /** Identidad de fila para ngx-datatable (acepta también grupos, que aquí no existen). */
+  readonly identidadFila = (x: unknown): string => this.idFila(x as MetaVendedorFila);
 
   readonly formatearPesos = formatearPesos;
   readonly formatearAvance = formatearAvance;
@@ -122,6 +130,7 @@ export class MetasComponent implements OnInit {
       return;
     }
     this.seleccionado = fila;
+    this.filasSeleccionadas = [fila];
     this.tableroVendedor = null;
     this.errorGraficos = null;
     this.cargandoGraficos = true;
@@ -132,20 +141,37 @@ export class MetasComponent implements OnInit {
   verEquipo(): void {
     const anterior = this.seleccionado;
     this.seleccionado = null;
+    this.filasSeleccionadas = [];
     this.tableroVendedor = null;
     this.errorGraficos = null;
     this.cargandoGraficos = false;
     this.cargaVendedor$.next(null);
     this.actualizarGraficos();
     if (anterior) {
-      // El botón "Ver equipo" desaparece: el foco vuelve a la fila que estaba seleccionada.
-      afterNextRender(() => document.getElementById(this.idFila(anterior))?.focus(), { injector: this.injector });
+      // El botón "Ver equipo" desaparece: el foco vuelve al botón del vendedor que estaba seleccionado.
+      // ngx-datatable recrea las celdas de forma diferida: se reintenta hasta que el botón exista.
+      afterNextRender(() => this.enfocarFila(anterior), { injector: this.injector });
     }
   }
 
-  idFila(fila: MetaVendedorFila): string {
-    return `fila-meta-${fila.codigo}-${fila.tipo}`;
+  private enfocarFila(fila: MetaVendedorFila, intentos = 10): void {
+    const boton = document.getElementById(this.idFila(fila));
+    if (boton) {
+      boton.focus();
+    } else if (intentos > 0) {
+      setTimeout(() => this.enfocarFila(fila, intentos - 1), 20);
+    }
   }
+
+  /** Evento (select) de ngx-datatable: un clic en la fila. */
+  alSeleccionar(evento: { selected: MetaVendedorFila[] }): void {
+    const fila = evento.selected[0];
+    if (fila) {
+      this.seleccionar(fila);
+    }
+  }
+
+  idFila = (fila: MetaVendedorFila): string => `fila-meta-${fila.codigo}-${fila.tipo}`;
 
   esSeleccionada(fila: MetaVendedorFila): boolean {
     return this.seleccionado?.codigo === fila.codigo && this.seleccionado?.tipo === fila.tipo;

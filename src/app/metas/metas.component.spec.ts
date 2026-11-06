@@ -57,7 +57,11 @@ describe('MetasComponent', () => {
   }
 
   const el = () => fixture.nativeElement as HTMLElement;
-  const filas = () => Array.from(el().querySelectorAll('tbody tr'));
+  const celdas = (f: Element) => Array.from(f.querySelectorAll('datatable-body-cell'));
+  const botonFila = (i: number) => filas()[i].querySelector('button.btn-vendedor') as HTMLButtonElement;
+  // Un clic en una celda cualquiera de la fila (no en el botón) activa la selección de ngx-datatable.
+  const clicFila = (i: number) => (celdas(filas()[i])[1] as HTMLElement).click();
+  const filas = () => Array.from(el().querySelectorAll('datatable-body-row'));
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -89,7 +93,7 @@ describe('MetasComponent', () => {
   it('tabla_muestraVendedoresEnElOrdenRecibido', () => {
     crear();
     responder(tablero);
-    const nombres = filas().map(f => f.querySelector('td')?.textContent?.trim());
+    const nombres = filas().map(f => f.querySelector('datatable-body-cell')?.textContent?.trim());
     expect(nombres).toEqual(['Ana Sobremeta', 'Beto Normal', 'Carla Sinmeta']);
   });
 
@@ -100,7 +104,7 @@ describe('MetasComponent', () => {
     expect(fila.textContent).toContain('Sin meta');
     expect(fila.textContent).not.toContain('NaN');
     expect(fila.textContent).not.toContain('Infinity');
-    expect(fila.querySelectorAll('td')[1].textContent?.trim()).toBe('Sin meta');
+    expect(celdas(fila)[1].textContent?.trim()).toBe('Sin meta');
     const barra = fila.querySelector('.progress-bar') as HTMLElement;
     expect(barra.style.width).toBe('0%');
   });
@@ -112,7 +116,7 @@ describe('MetasComponent', () => {
       vendedores: [{ codigo: '040', tipo: '0', nombre: 'Dani Cero', meta: 0, vendido: 100, avance: null, cantidadVentas: 1 }]
     };
     responder(conCero);
-    const celdaMeta = filas()[0].querySelectorAll('td')[1];
+    const celdaMeta = celdas(filas()[0])[1];
     expect(celdaMeta.textContent?.trim()).toBe('Sin meta');
     const tarjeta = Array.from(el().querySelectorAll('.tarjeta-cifra'))
       .find(t => t.textContent?.includes('Meta del equipo'));
@@ -125,8 +129,8 @@ describe('MetasComponent', () => {
       ...tablero,
       vendedores: [{ codigo: '099', tipo: '0', nombre: null, meta: 100, vendido: 50, avance: 50, cantidadVentas: 1 }]
     });
-    expect(filas()[0].querySelector('td')?.textContent?.trim()).toBe('099');
-    (filas()[0] as HTMLElement).click();
+    expect(filas()[0].querySelector('datatable-body-cell')?.textContent?.trim()).toBe('099');
+    clicFila(0);
     fixture.detectChanges();
     expect(el().querySelector('.vendedor-seleccionado')?.textContent).toContain('099');
     expect(el().textContent).not.toContain('null');
@@ -179,6 +183,31 @@ describe('MetasComponent', () => {
     expect(el().textContent).toContain('Se cuentan las ventas transferidas, sin flete, según su fecha de facturación.');
   });
 
+  it('indicadores_tienenColores', () => {
+    crear();
+    responder(tablero);
+    const tarjetas = Array.from(el().querySelectorAll('.tarjeta-cifra'));
+    expect(tarjetas.length).toBe(3);
+    const clase = (titulo: string) => tarjetas.find(t => t.textContent?.includes(titulo));
+    expect(clase('Meta del equipo')?.classList).toContain('l-bg-cyan');
+    expect(clase('Vendido')?.classList).toContain('l-bg-green');
+    expect(clase('Avance')?.classList).toContain('l-bg-orange');
+  });
+
+  it('graficos_cadaUnoEnCardConBorde', () => {
+    crear();
+    responder(tablero);
+    const cards = Array.from(el().querySelectorAll('.tarjeta-grafico'));
+    expect(cards.length).toBe(2);
+    expect(cards.map(c => c.querySelector('.tarjeta-grafico-titulo')?.textContent?.trim()))
+      .toEqual(['Ventas del mes por día', 'Últimos 12 meses']);
+    cards.forEach(c => {
+      expect(c.classList).toContain('card');
+      expect(c.querySelector('canvas')).not.toBeNull();
+      expect(getComputedStyle(c).borderTopWidth).toBe('1px');
+    });
+  });
+
   describe('gráficos y selección', () => {
     const lienzos = () => Array.from(el().querySelectorAll('canvas'));
     const verEquipoBtn = () => Array.from(el().querySelectorAll('button'))
@@ -197,58 +226,54 @@ describe('MetasComponent', () => {
     it('seleccion_cargaTableroDelVendedorYMuestraNombre', () => {
       crear();
       responder(tablero);
-      (filas()[0] as HTMLElement).click();
+      clicFila(0);
       fixture.detectChanges();
       httpMock.expectOne(urlVendedor).flush(tableroVendedor);
       fixture.detectChanges();
       expect(fixture.componentInstance.tableroGraficos).toBe(tableroVendedor);
       expect(el().querySelector('.vendedor-seleccionado')?.textContent).toContain('Ana Sobremeta');
       expect(verEquipoBtn()).toBeDefined();
-      expect(filas()[0].getAttribute('aria-selected')).toBe('true');
-      expect(filas()[1].getAttribute('aria-selected')).toBe('false');
+      expect(filas()[0].classList).toContain('active');
+      expect(filas()[1].classList).not.toContain('active');
+      expect(botonFila(0).getAttribute('aria-pressed')).toBe('true');
+      expect(botonFila(1).getAttribute('aria-pressed')).toBe('false');
     });
 
     it('seleccion_conTeclado', () => {
+      // La fila de ngx-datatable no es tabulable: el botón del vendedor es la vía accesible (Enter/Espacio lo activan).
       crear();
       responder(tablero);
-      filas()[0].dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(botonFila(0).tabIndex).toBe(0);
+      botonFila(0).click();
       fixture.detectChanges();
       httpMock.expectOne(urlVendedor).flush(tableroVendedor);
       fixture.detectChanges();
-      expect(fixture.componentInstance.seleccionado?.codigo).toBe('010');
-    });
-
-    it('seleccion_conEspacio', () => {
-      crear();
-      responder(tablero);
-      filas()[0].dispatchEvent(new KeyboardEvent('keydown', { key: ' ' }));
-      fixture.detectChanges();
-      httpMock.expectOne(urlVendedor).flush(tableroVendedor);
       expect(fixture.componentInstance.seleccionado?.codigo).toBe('010');
     });
 
     it('seleccion_mismaFila_noRecarga', () => {
       crear();
       responder(tablero);
-      (filas()[0] as HTMLElement).click();
+      clicFila(0);
       httpMock.expectOne(urlVendedor).flush(tableroVendedor);
       fixture.detectChanges();
-      (filas()[0] as HTMLElement).click();
+      clicFila(0);
       fixture.detectChanges();
       httpMock.expectNone(urlVendedor);
       expect(fixture.componentInstance.tableroGraficos).toBe(tableroVendedor);
       expect(fixture.componentInstance.cargandoGraficos).toBeFalse();
     });
 
-    it('verEquipo_devuelveElFocoALaFila', () => {
+    it('verEquipo_devuelveElFocoAlBotonDelVendedor', async () => {
       crear();
       responder(tablero);
-      (filas()[1] as HTMLElement).click();
+      clicFila(1);
       httpMock.expectOne(`${environment.apiUrl}/admin/metas/vendedor/020/0`).flush(tableroVendedor);
       fixture.detectChanges();
       verEquipoBtn()!.click();
       fixture.detectChanges();
-      expect(document.activeElement).toBe(filas()[1]);
+      await new Promise(r => setTimeout(r, 100));
+      expect(document.activeElement).toBe(botonFila(1));
     });
 
     it('graficos_tituloEsRegionAriaLive', () => {
@@ -260,7 +285,7 @@ describe('MetasComponent', () => {
     it('verEquipo_vuelveAlTableroDelEquipo', () => {
       crear();
       responder(tablero);
-      (filas()[0] as HTMLElement).click();
+      clicFila(0);
       httpMock.expectOne(urlVendedor).flush(tableroVendedor);
       fixture.detectChanges();
       verEquipoBtn()!.click();
@@ -274,7 +299,7 @@ describe('MetasComponent', () => {
     it('seleccion_errorDelVendedor_muestraErrorSinPerderTabla', () => {
       crear();
       responder(tablero);
-      (filas()[0] as HTMLElement).click();
+      clicFila(0);
       httpMock.expectOne(urlVendedor).flush('error', { status: 500, statusText: 'Server Error' });
       fixture.detectChanges();
       expect(el().textContent).toContain('No se pudo cargar el vendedor.');
@@ -286,9 +311,9 @@ describe('MetasComponent', () => {
     it('seleccion_respuestaVieja_noPisaALaNueva', () => {
       crear();
       responder(tablero);
-      (filas()[0] as HTMLElement).click();
+      clicFila(0);
       const primera = httpMock.expectOne(urlVendedor);
-      (filas()[1] as HTMLElement).click();
+      clicFila(1);
       const segunda = httpMock.expectOne(`${environment.apiUrl}/admin/metas/vendedor/020/0`);
       expect(primera.cancelled).toBeTrue();
       segunda.flush({ ...tableroVendedor, vendido: 5 });

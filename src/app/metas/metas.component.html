@@ -34,111 +34,109 @@
                         <span class="periodo-texto">{{ periodoTexto }}</span>
                         · Actualizado a las {{ actualizadoA }}
                     </p>
-                    <div class="row">
+                    <div class="row g-3 mb-4">
                         <div class="col-md-4">
-                            <div class="card tarjeta-cifra">
-                                <div class="body">
-                                    <div class="cifra-titulo">Meta del equipo</div>
-                                    <div class="cifra-valor">{{ tieneMeta(tablero.equipo.meta) ? formatearPesos(tablero.equipo.meta) : 'Sin meta' }}</div>
-                                </div>
+                            <div class="card tarjeta-cifra l-bg-cyan">
+                                <i class="fas fa-bullseye cifra-icono" aria-hidden="true"></i>
+                                <div class="cifra-titulo">Meta del equipo</div>
+                                <div class="cifra-valor">{{ tieneMeta(tablero.equipo.meta) ? formatearPesos(tablero.equipo.meta) : 'Sin meta' }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="card tarjeta-cifra">
-                                <div class="body">
-                                    <div class="cifra-titulo">Vendido</div>
-                                    <div class="cifra-valor">{{ formatearPesos(tablero.equipo.vendido) }}</div>
-                                </div>
+                            <div class="card tarjeta-cifra l-bg-green">
+                                <i class="fas fa-dollar-sign cifra-icono" aria-hidden="true"></i>
+                                <div class="cifra-titulo">Vendido</div>
+                                <div class="cifra-valor">{{ formatearPesos(tablero.equipo.vendido) }}</div>
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <div class="card tarjeta-cifra">
-                                <div class="body">
-                                    <div class="cifra-titulo">Avance</div>
-                                    <div class="cifra-valor">{{ formatearAvance(tablero.equipo.avance) }}</div>
-                                </div>
+                            <div class="card tarjeta-cifra l-bg-orange">
+                                <i class="fas fa-chart-line cifra-icono" aria-hidden="true"></i>
+                                <div class="cifra-titulo">Avance</div>
+                                <div class="cifra-valor">{{ formatearAvance(tablero.equipo.avance) }}</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="card">
-                        <div class="body">
-                            <div class="d-flex align-items-center justify-content-between mb-2">
-                                <h6 class="m-b-0 titulo-graficos" aria-live="polite">
-                                    Ventas de
-                                    <strong class="vendedor-seleccionado">{{ seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo' }}</strong>
-                                </h6>
-                                @if (seleccionado) {
-                                    <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verEquipo()">Ver equipo</button>
-                                }
-                            </div>
-                            @if (errorGraficos) {
-                                <div class="alert alert-danger" role="alert">{{ errorGraficos }}</div>
-                            }
-                            @if (cargandoGraficos && !tableroGraficos) {
-                                <p class="text-center my-4" role="status">Cargando vendedor...</p>
-                            }
-                            @if (configDiario && configMensual) {
-                                <div class="row">
-                                    <div class="col-lg-6">
-                                        <div class="contenedor-grafico">
-                                            <canvas baseChart [data]="configDiario.data" [options]="configDiario.options" [type]="'bar'"
-                                                [attr.aria-label]="'Ventas diarias y acumulado del mes de ' + (seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo')"
-                                                role="img"></canvas>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <div class="contenedor-grafico">
-                                            <canvas baseChart [data]="configMensual.data" [options]="configMensual.options" [type]="'bar'"
-                                                [attr.aria-label]="'Ventas y meta de los últimos 12 meses de ' + (seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo')"
-                                                role="img"></canvas>
-                                        </div>
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h6 class="m-b-0 titulo-graficos" aria-live="polite">
+                            Ventas de
+                            <strong class="vendedor-seleccionado">{{ seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo' }}</strong>
+                        </h6>
+                        @if (seleccionado) {
+                            <button type="button" class="btn btn-outline-secondary btn-sm" (click)="verEquipo()">Ver equipo</button>
+                        }
+                    </div>
+                    @if (errorGraficos) {
+                        <div class="alert alert-danger" role="alert">{{ errorGraficos }}</div>
+                    }
+                    @if (cargandoGraficos && !tableroGraficos) {
+                        <p class="text-center my-4" role="status">Cargando vendedor...</p>
+                    }
+                    @if (configDiario && configMensual) {
+                        <div class="row g-3 mb-4">
+                            <div class="col-lg-6">
+                                <div class="card tarjeta-grafico">
+                                    <h6 class="tarjeta-grafico-titulo">Ventas del mes por día</h6>
+                                    <div class="contenedor-grafico">
+                                        <canvas baseChart [data]="configDiario.data" [options]="configDiario.options" [type]="'bar'"
+                                            [attr.aria-label]="'Ventas diarias y acumulado del mes de ' + (seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo')"
+                                            role="img"></canvas>
                                     </div>
                                 </div>
-                            }
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card tarjeta-grafico">
+                                    <h6 class="tarjeta-grafico-titulo">Últimos 12 meses</h6>
+                                    <div class="contenedor-grafico">
+                                        <canvas baseChart [data]="configMensual.data" [options]="configMensual.options" [type]="'bar'"
+                                            [attr.aria-label]="'Ventas y meta de los últimos 12 meses de ' + (seleccionado ? (seleccionado.nombre ?? seleccionado.codigo) : 'todo el equipo')"
+                                            role="img"></canvas>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    }
 
                     @if (tablero.vendedores.length === 0) {
                         <p class="text-center my-4">No hay vendedores con meta o ventas este mes.</p>
                     } @else {
-                        <div class="card">
-                            <div class="body table-responsive">
-                                <table class="table table-hover">
-                                    <thead>
-                                        <tr>
-                                            <th>Vendedor</th>
-                                            <th class="col-numerica">Meta</th>
-                                            <th class="col-numerica">Vendido</th>
-                                            <th>Avance</th>
-                                            <th class="col-numerica">Ventas</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @for (v of tablero.vendedores; track v.codigo + '/' + v.tipo) {
-                                            <tr class="fila-seleccionable" tabindex="0"
-                                                [attr.id]="idFila(v)"
-                                                [class.table-active]="esSeleccionada(v)"
-                                                [attr.aria-selected]="esSeleccionada(v)"
-                                                (click)="seleccionar(v)"
-                                                (keydown.enter)="seleccionar(v)"
-                                                (keydown.space)="$event.preventDefault(); seleccionar(v)">
-                                                <td>{{ v.nombre ?? v.codigo }}</td>
-                                                <td class="col-numerica">{{ tieneMeta(v.meta) ? formatearPesos(v.meta) : 'Sin meta' }}</td>
-                                                <td class="col-numerica">{{ formatearPesos(v.vendido) }}</td>
-                                                <td class="celda-avance">
-                                                    <div class="progress" aria-hidden="true">
-                                                        <div class="progress-bar" [style.width.%]="anchoBarraAvance(v.avance)"></div>
-                                                    </div>
-                                                    <span>{{ formatearAvance(v.avance) }}</span>
-                                                </td>
-                                                <td class="col-numerica">{{ v.cantidadVentas }}</td>
-                                            </tr>
-                                        }
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        <ngx-datatable #tabla class="material tabla-metas" [rows]="tablero.vendedores" columnMode="force"
+                            [headerHeight]="50" [footerHeight]="0" rowHeight="auto" [scrollbarH]="scrollBarHorizontal"
+                            [selectionType]="tipoSeleccion" [selected]="filasSeleccionadas" [rowIdentity]="identidadFila"
+                            (select)="alSeleccionar($event)">
+                            <ngx-datatable-column name="Vendedor" prop="nombre" [sortable]="false" headerClass="align-center-header">
+                                <ng-template let-row="row" ngx-datatable-cell-template>
+                                    <button type="button" class="btn-vendedor" [attr.id]="idFila(row)"
+                                        [attr.aria-pressed]="esSeleccionada(row)" (click)="seleccionar(row)">{{ row.nombre ?? row.codigo }}</button>
+                                </ng-template>
+                            </ngx-datatable-column>
+                            <ngx-datatable-column name="Meta" prop="meta" [sortable]="false" headerClass="align-center-header" cellClass="align-right-cell">
+                                <ng-template let-row="row" ngx-datatable-cell-template>
+                                    {{ tieneMeta(row.meta) ? formatearPesos(row.meta) : 'Sin meta' }}
+                                </ng-template>
+                            </ngx-datatable-column>
+                            <ngx-datatable-column name="Vendido" prop="vendido" [sortable]="false" headerClass="align-center-header" cellClass="align-right-cell">
+                                <ng-template let-row="row" ngx-datatable-cell-template>
+                                    {{ formatearPesos(row.vendido) }}
+                                </ng-template>
+                            </ngx-datatable-column>
+                            <ngx-datatable-column name="Avance" prop="avance" [sortable]="false" [minWidth]="180" headerClass="align-center-header">
+                                <ng-template let-row="row" ngx-datatable-cell-template>
+                                    <div class="celda-avance">
+                                        <div class="progress" aria-hidden="true">
+                                            <div class="progress-bar" [style.width.%]="anchoBarraAvance(row.avance)"></div>
+                                        </div>
+                                        <span>{{ formatearAvance(row.avance) }}</span>
+                                    </div>
+                                </ng-template>
+                            </ngx-datatable-column>
+                            <ngx-datatable-column name="Ventas" prop="cantidadVentas" [sortable]="false" headerClass="align-center-header" cellClass="align-right-cell">
+                                <ng-template let-row="row" ngx-datatable-cell-template>
+                                    {{ row.cantidadVentas }}
+                                </ng-template>
+                            </ngx-datatable-column>
+                        </ngx-datatable>
                     }
 
                     <p class="text-muted small">Se cuentan las ventas transferidas, sin flete, según su fecha de facturación.</p>

@@ -81,8 +81,7 @@ export function graficoDiario(t: TableroMeta): ChartConfiguration<'bar' | 'line'
 }
 
 export function graficoMensual(t: TableroMeta): ChartConfiguration<'bar' | 'line'> {
-  const ultimo = t.mensual.length - 1;
-  const etiquetas = t.mensual.map((m, i) => etiquetaMes(m.periodo) + (i === ultimo ? ' (en curso)' : ''));
+  const etiquetas = t.mensual.map(m => etiquetaMes(m.periodo));
 
   return {
     type: 'bar',

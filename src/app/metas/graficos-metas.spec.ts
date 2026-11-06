@@ -69,7 +69,7 @@ describe('graficos-metas', () => {
     expect(vendido.data).toEqual([10, 20, 30, 0]);
   });
 
-  it('graficoMensual_ultimaEtiquetaMarcaEnCurso', () => {
+  it('graficoMensual_etiquetasSinTextoEnCurso', () => {
     const config = graficoMensual(tablero({
       mensual: [
         { periodo: '2025-12', vendido: 10, meta: 100 },
@@ -78,6 +78,6 @@ describe('graficos-metas', () => {
     }));
     const etiquetas = config.data.labels as string[];
     expect(etiquetas[0]).toBe('dic 2025');
-    expect(etiquetas[1]).toBe('nov 2026 (en curso)');
+    expect(etiquetas[1]).toBe('nov 2026');
   });
 });

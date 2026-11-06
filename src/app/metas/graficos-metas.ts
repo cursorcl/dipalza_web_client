@@ -1,5 +1,5 @@
 import { formatDate } from '@angular/common';
-import { ChartConfiguration } from 'chart.js';
+import { Chart, ChartConfiguration, LegendItem } from 'chart.js';
 import { formatearPesos, tieneMeta } from './formato-metas';
 import { TableroMeta } from './models/meta.models';
 
@@ -15,6 +15,13 @@ function etiquetaMes(periodo: string): string {
   return formatDate(new Date(anio, mes - 1, 1), 'MMM y', LOCALE).replace('.', '');
 }
 
+/** Ícono de la leyenda según el tipo de serie: línea para 'line', rectángulo para 'bar'. */
+export function estiloLeyenda(item: LegendItem, tipo: string | undefined): LegendItem {
+  return tipo === 'line'
+    ? { ...item, pointStyle: 'line', lineWidth: 3 }
+    : { ...item, pointStyle: 'rect' };
+}
+
 function opciones(): ChartConfiguration<'bar' | 'line'>['options'] {
   return {
     responsive: true,
@@ -26,6 +33,15 @@ function opciones(): ChartConfiguration<'bar' | 'line'>['options'] {
       }
     },
     plugins: {
+      legend: {
+        labels: {
+          // En la leyenda, las series de línea (acumulado y meta del mes) se muestran como
+          // una línea, con su trazo punteado si lo tienen; las de barra, como rectángulo.
+          usePointStyle: true,
+          generateLabels: (chart) => Chart.defaults.plugins.legend.labels.generateLabels(chart)
+            .map(item => estiloLeyenda(item, chart.data.datasets[item.datasetIndex ?? 0]?.type))
+        }
+      },
       tooltip: {
         callbacks: {
           label: (contexto) => {

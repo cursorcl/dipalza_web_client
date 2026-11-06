@@ -1,4 +1,4 @@
-import { graficoDiario, graficoMensual } from './graficos-metas';
+import { estiloLeyenda, graficoDiario, graficoMensual } from './graficos-metas';
 import { TableroMeta } from './models/meta.models';
 
 function tablero(parcial: Partial<TableroMeta> = {}): TableroMeta {
@@ -37,6 +37,18 @@ describe('graficos-metas', () => {
     const config = graficoDiario(tablero({ meta: 3000 }));
     expect(config.data.datasets.length).toBe(3);
     expect(config.data.datasets[2].data).toEqual([3000, 3000, 3000]);
+  });
+
+  it('leyenda_lineaParaSeriesDeLineaYRectanguloParaBarras', () => {
+    const item = { text: 'Meta del mes', datasetIndex: 2 };
+    expect(estiloLeyenda(item, 'line').pointStyle).toBe('line');
+    expect(estiloLeyenda(item, 'bar').pointStyle).toBe('rect');
+  });
+
+  it('leyenda_usaPointStyle', () => {
+    const config = graficoDiario(tablero({}));
+    const leyenda = config.options?.plugins?.legend?.labels;
+    expect(leyenda?.usePointStyle).toBeTrue();
   });
 
   it('graficoMensual_dosBarrasMetaYVenta_metaNullSinBarra', () => {

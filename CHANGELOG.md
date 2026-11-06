@@ -1,3 +1,10 @@
+# [1.23.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.22.0...v1.23.0) (2026-11-06)
+
+
+### Features
+
+* dashboard de metas de venta por vendedor ([#51](https://github.com/cursorcl/dipalza_web_client/issues/51)) ([789ad8c](https://github.com/cursorcl/dipalza_web_client/commit/789ad8c147834299ffeca08db1e877a32c27220c))
+
 # [1.22.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.21.0...v1.22.0) (2026-11-03)
 
 

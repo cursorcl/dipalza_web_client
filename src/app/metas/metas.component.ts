@@ -148,7 +148,7 @@ export class MetasComponent implements OnInit {
     this.cargaVendedor$.next(null);
     this.actualizarGraficos();
     if (anterior) {
-      // El botón "Ver equipo" desaparece: el foco vuelve al botón del vendedor que estaba seleccionado.
+      // El botón "Ver todos" desaparece: el foco vuelve al botón del vendedor que estaba seleccionado.
       // ngx-datatable recrea las celdas de forma diferida: se reintenta hasta que el botón exista.
       afterNextRender(() => this.enfocarFila(anterior), { injector: this.injector });
     }

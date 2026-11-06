@@ -211,7 +211,7 @@ describe('MetasComponent', () => {
   describe('gráficos y selección', () => {
     const lienzos = () => Array.from(el().querySelectorAll('canvas'));
     const verEquipoBtn = () => Array.from(el().querySelectorAll('button'))
-      .find(b => b.textContent?.includes('Ver equipo')) as HTMLButtonElement | undefined;
+      .find(b => b.textContent?.includes('Ver todos')) as HTMLButtonElement | undefined;
 
     it('graficos_porDefectoMuestranEquipo', () => {
       crear();
@@ -253,7 +253,7 @@ describe('MetasComponent', () => {
       // Al centro va solo el nombre del vendedor, sin más texto.
       expect(encabezado.querySelector('.encabezado-centro h3')?.textContent?.trim()).toBe('Ana Sobremeta');
       const botones = Array.from(encabezado.querySelectorAll('button')).map(b => b.textContent?.trim());
-      expect(botones).toEqual(['Ver equipo', 'Actualizar']);
+      expect(botones).toEqual(['Ver todos', 'Actualizar']);
     });
 
     it('seleccion_conTeclado', () => {

@@ -1,4 +1,4 @@
-import { estiloLeyenda, graficoDiario, graficoMensual } from './graficos-metas';
+import { estiloLeyenda, etiquetaIntercalada, graficoDiario, graficoMensual } from './graficos-metas';
 import { TableroMeta } from './models/meta.models';
 
 function tablero(parcial: Partial<TableroMeta> = {}): TableroMeta {
@@ -43,6 +43,13 @@ describe('graficos-metas', () => {
     const item = { text: 'Meta del mes', datasetIndex: 2 };
     expect(estiloLeyenda(item, 'line').pointStyle).toBe('line');
     expect(estiloLeyenda(item, 'bar').pointStyle).toBe('rect');
+  });
+
+  it('ejeX_etiquetasIntercaladasArribaYAbajo', () => {
+    expect(etiquetaIntercalada('dic 2025', 0)).toEqual(['dic 2025', '']);
+    expect(etiquetaIntercalada('ene 2026', 1)).toEqual(['', 'ene 2026']);
+    const ejeX = graficoMensual(tablero({})).options?.scales?.['x'];
+    expect(ejeX?.ticks?.autoSkip).toBeFalse();
   });
 
   it('leyenda_usaPointStyle', () => {

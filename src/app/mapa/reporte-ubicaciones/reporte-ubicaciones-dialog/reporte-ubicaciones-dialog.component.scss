@@ -1,0 +1,45 @@
+.reporte__fechas {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.reporte__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reporte__vendedores-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0 8px;
+}
+
+.reporte__lista {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.reporte__vendedor {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+.reporte__punto {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.reporte__progreso {
+  width: 100%;
+}

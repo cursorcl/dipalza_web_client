@@ -191,4 +191,17 @@ describe('VendorListComponent', () => {
 
     contenedor.remove();
   });
+
+  it('el botón de reporte emite reporteSolicitado sin colapsar el panel', () => {
+    fixture.detectChanges();
+    const emitido = jasmine.createSpy('reporteSolicitado');
+    component.reporteSolicitado.subscribe(emitido);
+
+    const boton: HTMLButtonElement = fixture.nativeElement.querySelector('[aria-label="Reporte de ubicaciones"]');
+    boton.click();
+    fixture.detectChanges();
+
+    expect(emitido).toHaveBeenCalledTimes(1);
+    expect(component.colapsado()).toBeFalse();
+  });
 });

@@ -1,8 +1,14 @@
-<button type="button" class="vendor-list__header" [attr.aria-expanded]="!colapsado()" aria-controls="vendor-list-body"
-  (click)="alternarColapso()">
-  <span class="vendor-list__titulo">Vendedores</span>
-  <span class="vendor-list__flecha" [class.vendor-list__flecha--colapsado]="colapsado()" aria-hidden="true">▾</span>
-</button>
+<div class="vendor-list__cabecera">
+  <button type="button" class="vendor-list__header" [attr.aria-expanded]="!colapsado()" aria-controls="vendor-list-body"
+    (click)="alternarColapso()">
+    <span class="vendor-list__titulo">Vendedores</span>
+    <span class="vendor-list__flecha" [class.vendor-list__flecha--colapsado]="colapsado()" aria-hidden="true">▾</span>
+  </button>
+  <button type="button" class="vendor-list__reporte-btn" title="Reporte de ubicaciones"
+    aria-label="Reporte de ubicaciones" (click)="onReporte($event)">
+    <span aria-hidden="true">📄</span>
+  </button>
+</div>
 @if (!colapsado()) {
   <div class="vendor-list__body" id="vendor-list-body">
     @for (vendedor of vendedores; track vendedor.vendedorId) {

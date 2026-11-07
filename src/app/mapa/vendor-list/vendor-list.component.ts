@@ -13,6 +13,7 @@ export class VendorListComponent {
   @Output() vendedorSeleccionado = new EventEmitter<string>();
   @Output() trayectoriaToggled = new EventEmitter<VendedorListItem>();
   @Output() historialSolicitado = new EventEmitter<VendedorListItem>();
+  @Output() reporteSolicitado = new EventEmitter<void>();
 
   colapsado = signal(false);
 
@@ -36,6 +37,11 @@ export class VendorListComponent {
   onHistorial(event: Event, vendedor: VendedorListItem): void {
     event.stopPropagation();
     this.historialSolicitado.emit(vendedor);
+  }
+
+  onReporte(event: Event): void {
+    event.stopPropagation();
+    this.reporteSolicitado.emit();
   }
 
   isSelected(vendedor: VendedorListItem): boolean {

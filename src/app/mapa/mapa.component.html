@@ -8,7 +8,8 @@
       [selectedId]="seleccionado()"
       (vendedorSeleccionado)="centrarEnVendedor($event)"
       (trayectoriaToggled)="toggleTrayectoria({ codigo: $event.vendedorId, tipo: $event.vendedorCodigo, nombre: $event.vendedorNombre })"
-      (historialSolicitado)="abrirHistorial($event)">
+      (historialSolicitado)="abrirHistorial($event)"
+      (reporteSolicitado)="abrirReporte()">
     </app-vendor-list>
     @if (historialAbierto()) {
       <app-historial-panel

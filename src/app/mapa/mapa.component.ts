@@ -13,6 +13,7 @@ import { detectarParadas, NodoParada } from './detectar-paradas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { TramosTableComponent } from './tramos-table/tramos-table.component';
 import { HistorialPanelComponent } from './historial-panel/historial-panel.component';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -56,6 +57,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private positionService = inject(PositionsService);
   private vendedorService = inject(VendedorService);
   private destroyRef = inject(DestroyRef);
+  private modalService = inject(NgbModal);
 
 
   ngAfterViewInit(): void {
@@ -269,6 +271,19 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
     const hoy = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD en huso horario local
     this.cargarTrayectoria(vendedor, hoy, `Sin recorrido registrado hoy para ${vendedor.nombre}`);
+  }
+
+  /** Carga el diálogo (y con él jsPDF) solo al pedir el reporte, para no inflar el chunk del mapa. */
+  async abrirReporte(): Promise<void> {
+    const { ReporteUbicacionesDialogComponent } = await import(
+      './reporte-ubicaciones/reporte-ubicaciones-dialog/reporte-ubicaciones-dialog.component'
+    );
+    const modalRef = this.modalService.open(ReporteUbicacionesDialogComponent, {
+      size: 'lg',
+      scrollable: true,
+      backdrop: 'static',
+    });
+    modalRef.componentInstance.vendedores = this.vendedores();
   }
 
   abrirHistorial(vendedor: VendedorListItem): void {

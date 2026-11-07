@@ -82,4 +82,19 @@ describe('ReporteUbicacionesService', () => {
       .toBeRejectedWithError(ReporteCancelado);
     expect(renderizador).toHaveBeenCalledTimes(1);
   });
+
+  it('si el renderizador queda colgado y se aborta, rechaza con ReporteCancelado', async () => {
+    const controller = new AbortController();
+    renderizador.and.callFake((_dia: any, _color: string, senal: AbortSignal) =>
+      new Promise((_res, rej) => senal.addEventListener('abort', () => rej(new DOMException('Cancelado', 'AbortError')))));
+    const promesa = servicio.generar(solicitud, () => {}, controller.signal);
+    setTimeout(() => controller.abort(), 10);
+    await expectAsync(promesa).toBeRejectedWithError(ReporteCancelado);
+  });
+
+  it('pasa la señal al renderizador', async () => {
+    const controller = new AbortController();
+    await servicio.generar(solicitud, () => {}, controller.signal);
+    expect(renderizador.calls.argsFor(0)[2]).toBe(controller.signal);
+  });
 });

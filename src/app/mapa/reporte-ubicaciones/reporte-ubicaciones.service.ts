@@ -38,7 +38,8 @@ export class ReporteUbicacionesService {
   private readonly paradas = inject(ParadasService);
 
   /** Reemplazable en pruebas para no hacer red ni usar canvas. */
-  renderizador: (dia: DiaReporte, color: string) => Promise<string> = renderizarMapaDia;
+  renderizador: (dia: DiaReporte, color: string, senal: AbortSignal) => Promise<string> =
+    (dia, color, senal) => renderizarMapaDia(dia, color, undefined, senal);
 
   async generar(
     solicitud: SolicitudReporte,
@@ -69,7 +70,12 @@ export class ReporteUbicacionesService {
       for (let d = 0; d < dias.length; d++) {
         this.verificarCancelacion(senal);
         informar(d + 1);
-        imagenes.push(await this.renderizador(dias[d], color));
+        try {
+          imagenes.push(await this.renderizador(dias[d], color, senal));
+        } catch (error) {
+          this.verificarCancelacion(senal);
+          throw error;
+        }
         this.verificarCancelacion(senal);
       }
       doc.agregarVendedor(vendedor, dias, imagenes);

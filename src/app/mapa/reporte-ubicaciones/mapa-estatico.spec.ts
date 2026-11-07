@@ -2,7 +2,8 @@ import * as L from 'leaflet';
 import { HistorialPosicionDTO, ParadaVendedorDTO } from '../models/model';
 import { DiaReporte } from './datos-reporte';
 import {
-  ALTO_MAPA_PX, ANCHO_MAPA_PX, CargadorMosaico, calcularEncuadre, renderizarMapaDia, ZOOM_MAXIMO_REPORTE,
+  ALTO_MAPA_PX, ANCHO_MAPA_PX, CargadorMosaico, calcularEncuadre, cargarMosaicoOsm, renderizarMapaDia,
+  TIMEOUT_MOSAICO_MS, ZOOM_MAXIMO_REPORTE,
 } from './mapa-estatico';
 
 function pos(latitud: number, longitud: number, i = 0): HistorialPosicionDTO {
@@ -79,5 +80,43 @@ describe('mapa-estatico', () => {
       expect(u).toContain(`/${e.zoom}/`);
       expect(u).toMatch(/^https:\/\/[abc]\.tile\.openstreetmap\.org\//);
     }
+  });
+
+  it('cargarMosaicoOsm resuelve null tras el timeout', async () => {
+    jasmine.clock().install();
+    try {
+      let resultado: CanvasImageSource | null | undefined;
+      // URL que no responde nunca dentro del tiempo simulado.
+      cargarMosaicoOsm('https://127.0.0.1:1/no-responde.png').then(r => (resultado = r));
+      jasmine.clock().tick(TIMEOUT_MOSAICO_MS + 1);
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(resultado).toBeNull();
+    } finally {
+      jasmine.clock().uninstall();
+    }
+  });
+
+  it('cargarMosaicoOsm resuelve null de inmediato si la señal ya viene abortada', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    expect(await cargarMosaicoOsm('https://127.0.0.1:1/x.png', controller.signal)).toBeNull();
+  });
+
+  it('renderizarMapaDia con cargador que nunca resuelve termina al abortar la señal', async () => {
+    const controller = new AbortController();
+    const cargador: CargadorMosaico = (_url, senal) =>
+      new Promise<null>(resolve => senal?.addEventListener('abort', () => resolve(null)));
+    const promesa = renderizarMapaDia(dia, '#3366cc', cargador, controller.signal);
+    setTimeout(() => controller.abort(), 10);
+    await expectAsync(promesa).toBeRejectedWithError(DOMException, 'Cancelado');
+  });
+
+  it('renderizarMapaDia termina al abortar aunque el cargador ignore la señal', async () => {
+    const controller = new AbortController();
+    const cargador: CargadorMosaico = () => new Promise<null>(() => {});
+    const promesa = renderizarMapaDia(dia, '#3366cc', cargador, controller.signal);
+    setTimeout(() => controller.abort(), 10);
+    await expectAsync(promesa).toBeRejectedWithError(DOMException, 'Cancelado');
   });
 });

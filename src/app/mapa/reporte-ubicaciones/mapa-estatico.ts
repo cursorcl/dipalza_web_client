@@ -15,15 +15,35 @@ export interface Encuadre {
   origen: { x: number; y: number };
 }
 
-/** Carga un mosaico; devuelve null si no cargó. */
-export type CargadorMosaico = (url: string) => Promise<CanvasImageSource | null>;
+/** Tiempo máximo de espera por un mosaico antes de darlo por perdido. */
+export const TIMEOUT_MOSAICO_MS = 12000;
 
-export const cargarMosaicoOsm: CargadorMosaico = url =>
+/** Carga un mosaico; devuelve null si no cargó, venció el tiempo o se abortó la señal. */
+export type CargadorMosaico = (url: string, senal?: AbortSignal) => Promise<CanvasImageSource | null>;
+
+export const cargarMosaicoOsm: CargadorMosaico = (url, senal) =>
   new Promise(resolve => {
+    if (senal?.aborted) {
+      resolve(null);
+      return;
+    }
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const terminar = (resultado: CanvasImageSource | null) => {
+      clearTimeout(timer);
+      senal?.removeEventListener('abort', alAbortar);
+      if (resultado === null) {
+        img.onload = img.onerror = null;
+        img.src = '';
+      }
+      resolve(resultado);
+    };
+    const alAbortar = () => terminar(null);
+    timer = setTimeout(() => terminar(null), TIMEOUT_MOSAICO_MS);
+    senal?.addEventListener('abort', alAbortar);
+    img.onload = () => terminar(img);
+    img.onerror = () => terminar(null);
     img.src = url;
   });
 
@@ -64,11 +84,21 @@ function urlMosaico(x: number, y: number, z: number): string {
     .replace('{y}', String(y));
 }
 
+/** Promesa que se resuelve al abortar la señal; nunca se resuelve si no hay señal. */
+function esperarAborto(senal?: AbortSignal): Promise<void> {
+  return new Promise(resolve => {
+    if (!senal) return;
+    if (senal.aborted) resolve();
+    else senal.addEventListener('abort', () => resolve(), { once: true });
+  });
+}
+
 /** Dibuja el recorrido del día sobre mosaicos de OSM y devuelve un dataURL JPEG. */
 export async function renderizarMapaDia(
   dia: DiaReporte,
   color: string,
   cargar: CargadorMosaico = cargarMosaicoOsm,
+  senal?: AbortSignal,
 ): Promise<string> {
   const canvas = document.createElement('canvas');
   canvas.width = ANCHO_MAPA_PX;
@@ -88,7 +118,7 @@ export async function renderizarMapaDia(
       const dx = x * TAM_MOSAICO - origen.x;
       const dy = y * TAM_MOSAICO - origen.y;
       tareas.push(
-        cargar(urlMosaico(x, y, zoom)).then(img => {
+        cargar(urlMosaico(x, y, zoom), senal).then(img => {
           if (img) {
             ctx.drawImage(img, dx, dy, TAM_MOSAICO, TAM_MOSAICO);
           } else {
@@ -99,7 +129,8 @@ export async function renderizarMapaDia(
       );
     }
   }
-  await Promise.all(tareas);
+  await Promise.race([Promise.all(tareas), esperarAborto(senal)]);
+  if (senal?.aborted) throw new DOMException('Cancelado', 'AbortError');
 
   // 2. Polilínea.
   ctx.save();

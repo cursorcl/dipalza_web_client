@@ -55,12 +55,23 @@ describe('DocumentoReporte', () => {
   it('40 vendedores reservan 2 páginas de índice', async () => {
     const doc = new DocumentoReporte(meta, 40, false);
     for (let i = 1; i <= 40; i++) {
-      doc.agregarVendedor(vendedor(i), [dia('2026-11-06')], [JPEG_MINIMO]);
+      // Código con prefijo para que no choque con los números de página.
+      doc.agregarVendedor({ codigo: `C${i}`, tipo: 'V', nombre: `Vendedor ${i}` }, [dia('2026-11-06')], [JPEG_MINIMO]);
     }
     expect(doc.cantidadPaginas).toBe(42);
     const t = await texto(doc);
-    // La primera fila del índice es el primer vendedor y apunta a la página 3 (tras 2 de índice).
-    expect(t).toMatch(/\(Vendedor 1\) Tj[\s\S]{0,1500}?\(3\) Tj/);
+    // Celdas de la fila de un vendedor: desde su nombre hasta el nombre del siguiente (o el final).
+    const fila = (n: number): string => {
+      const inicio = t.indexOf(`(Vendedor ${n}) Tj`);
+      expect(inicio).toBeGreaterThan(-1);
+      const fin = n < 40 ? t.indexOf(`(Vendedor ${n + 1}) Tj`, inicio) : inicio + 1200;
+      return t.slice(inicio, fin);
+    };
+    // Con 2 páginas de índice, el vendedor n empieza en la página n + 2.
+    expect(fila(1)).toContain('(3) Tj');
+    expect(fila(1)).not.toMatch(/\((2|4)\) Tj/);
+    expect(fila(31)).toContain('(33) Tj'); // primera fila de la segunda página de índice
+    expect(fila(40)).toContain('(42) Tj');
   });
 
   it('una parada en curso muestra "en curso" y la calle nula muestra coordenadas', async () => {

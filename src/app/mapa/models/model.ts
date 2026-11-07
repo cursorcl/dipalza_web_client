@@ -50,3 +50,16 @@ export interface HistorialResumenDiaDTO {
   horaInicio: string;
   horaFin: string;
 }
+
+export interface ParadaVendedorDTO {
+  id: number;
+  vendedorId: string;
+  vendedorCodigo: string;
+  vendedorNombre: string;
+  latitud: number;
+  longitud: number;
+  calle: string | null;
+  horaInicio: string;
+  horaFin: string | null;
+  enCurso: boolean;
+}

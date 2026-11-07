@@ -14,8 +14,16 @@
     z-index: 500;
 }
 
+.vendor-list__cabecera {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding-right: 8px;
+}
+
 .vendor-list__header {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
     border: 0;
     background: transparent;
     text-align: left;
@@ -104,7 +112,8 @@
     cursor: pointer;
 }
 
-.vendor-list__accion-btn {
+.vendor-list__accion-btn,
+.vendor-list__reporte-btn {
     flex-shrink: 0;
     border: none;
     background: transparent;
@@ -115,7 +124,8 @@
     border-radius: 4px;
 }
 
-.vendor-list__accion-btn:hover {
+.vendor-list__accion-btn:hover,
+.vendor-list__reporte-btn:hover {
     background-color: rgba(0, 0, 0, 0.08);
 }
 

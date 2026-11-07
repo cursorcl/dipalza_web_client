@@ -1,0 +1,60 @@
+<div class="modal-header">
+  <h2 class="modal-title fs-5">Reporte de ubicaciones</h2>
+  <button type="button" class="btn-close" aria-label="Cerrar" (click)="cerrar()"></button>
+</div>
+<div class="modal-body">
+  <div class="reporte__fechas">
+    <div class="reporte__campo">
+      <label for="reporte-desde">Desde</label>
+      <input id="reporte-desde" type="date" class="form-control" [value]="desde()" [disabled]="generando()"
+        (input)="onDesde($event)" />
+    </div>
+    <div class="reporte__campo">
+      <label for="reporte-hasta">Hasta</label>
+      <input id="reporte-hasta" type="date" class="form-control" [value]="hasta()" [disabled]="generando()"
+        (input)="onHasta($event)" />
+    </div>
+  </div>
+  @if (errorRango(); as mensaje) {
+    <p class="text-danger small mt-2" role="alert">{{ mensaje }}</p>
+  }
+
+  <div class="reporte__vendedores-cabecera">
+    <strong>Vendedores</strong>
+    <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="generando()" (click)="alternarTodos()">
+      {{ todosSeleccionados() ? 'Quitar todos' : 'Seleccionar todos' }}
+    </button>
+  </div>
+  <ul class="reporte__lista">
+    @for (v of vendedores; track clave(v)) {
+      <li>
+        <label class="reporte__vendedor">
+          <input type="checkbox" [checked]="estaSeleccionado(v)" [disabled]="generando()" (change)="alternar(v)" />
+          <span class="reporte__punto" [style.background-color]="v.color" aria-hidden="true"></span>
+          <span>{{ v.vendedorNombre }}</span>
+        </label>
+      </li>
+    }
+  </ul>
+
+  @if (avisoVolumen()) {
+    <p class="alert alert-warning small" role="status">
+      El reporte tendrá muchas páginas: la generación puede tardar varios minutos y el archivo será pesado.
+    </p>
+  }
+  @if (error(); as mensaje) {
+    <p class="alert alert-danger small" role="alert">{{ mensaje }}</p>
+  }
+  @if (generando()) {
+    <progress class="reporte__progreso" aria-label="Progreso del reporte"></progress>
+    <p class="small" aria-live="polite">{{ progreso()?.texto ?? 'Preparando…' }}</p>
+  }
+</div>
+<div class="modal-footer">
+  @if (generando()) {
+    <button type="button" class="btn btn-outline-secondary" (click)="cancelar()">Cancelar</button>
+  } @else {
+    <button type="button" class="btn btn-outline-secondary" (click)="cerrar()">Cerrar</button>
+  }
+  <button type="button" class="btn btn-primary" [disabled]="!puedeGenerar()" (click)="generar()">Generar PDF</button>
+</div>

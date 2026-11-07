@@ -2,6 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting, HttpTestingController } from '@angular/common/http/testing';
 import * as L from 'leaflet';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { Subject, take } from 'rxjs';
 
 import { MapaComponent } from './mapa.component';
 import { environment } from 'environments/environment';
@@ -680,5 +682,21 @@ describe('MapaComponent', () => {
     httpMock.expectOne(`${environment.apiUrl}/posicion/historico/resumen?vendedorCodigo=001&vendedorTipo=0`).flush([]);
 
     expect(component.historialAbierto()).toBeTrue();
+  });
+
+  it('abrirReporte dos veces seguidas abre un solo modal', async () => {
+    const modal = TestBed.inject(NgbModal);
+    const cerrar = new Subject<void>();
+    const abrir = spyOn(modal, 'open').and.returnValue({
+      componentInstance: {},
+      result: cerrar.pipe(take(1)).toPromise(),
+    } as any);
+    await Promise.all([component.abrirReporte(), component.abrirReporte()]);
+    expect(abrir).toHaveBeenCalledTimes(1);
+    cerrar.next();
+    await new Promise(r => setTimeout(r));
+    await component.abrirReporte();
+    expect(abrir).toHaveBeenCalledTimes(2);
+    cerrar.next();
   });
 });

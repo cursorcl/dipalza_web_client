@@ -1,4 +1,4 @@
-import { Component, computed, inject, Input, signal } from '@angular/core';
+import { Component, computed, inject, Input, OnDestroy, signal } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AuthService } from '@core';
 import { VendedorListItem } from '../../models/model';
@@ -11,7 +11,7 @@ import { ProgresoReporte, ReporteCancelado, ReporteUbicacionesService } from '..
   templateUrl: './reporte-ubicaciones-dialog.component.html',
   styleUrl: './reporte-ubicaciones-dialog.component.scss',
 })
-export class ReporteUbicacionesDialogComponent {
+export class ReporteUbicacionesDialogComponent implements OnDestroy {
   @Input() vendedores: VendedorListItem[] = [];
 
   private readonly servicio = inject(ReporteUbicacionesService);
@@ -39,6 +39,7 @@ export class ReporteUbicacionesDialogComponent {
   );
 
   private controlador: AbortController | null = null;
+  private destruido = false;
 
   clave(v: VendedorListItem): string {
     return `${v.vendedorId}_${v.vendedorCodigo}`;
@@ -90,10 +91,16 @@ export class ReporteUbicacionesDialogComponent {
         p => this.progreso.set(p),
         controlador.signal,
       );
+      if (controlador.signal.aborted) {
+        // Abortado (cancelar o cierre) aunque el servicio haya terminado: no se descarga nada.
+        if (!this.destruido) this.generando.set(false);
+        return;
+      }
       this.descargar(blob, nombre);
       this.generando.set(false);
       this.modal.close();
     } catch (e) {
+      if (this.destruido) return;
       if (!(e instanceof ReporteCancelado)) {
         this.error.set(e instanceof Error ? e.message : 'No se pudo generar el reporte');
       }
@@ -101,6 +108,12 @@ export class ReporteUbicacionesDialogComponent {
     } finally {
       this.controlador = null;
     }
+  }
+
+  /** Cubre cualquier vía de cierre (Escape, X, dismissAll): si se destruye mientras genera, aborta. */
+  ngOnDestroy(): void {
+    this.destruido = true;
+    this.controlador?.abort();
   }
 
   cancelar(): void {

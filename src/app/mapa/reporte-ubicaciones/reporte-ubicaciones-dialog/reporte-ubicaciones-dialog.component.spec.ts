@@ -144,4 +144,26 @@ describe('ReporteUbicacionesDialogComponent', () => {
     expect(componente.generando()).toBeFalse();
     expect(fixture.nativeElement.textContent).toContain('falló la red');
   });
+
+  it('destruir el diálogo mientras genera aborta la señal y no descarga nada', async () => {
+    let senal!: AbortSignal;
+    let resolver!: (r: { blob: Blob; nombre: string }) => void;
+    servicio.generar.and.callFake((_s: SolicitudReporte, _p: unknown, s: AbortSignal) => {
+      senal = s;
+      return new Promise(r => (resolver = r));
+    });
+    const crearUrl = spyOn(URL, 'createObjectURL').and.returnValue('blob:falso');
+    crear([vendedor('001', 'Ana')]);
+    boton('Seleccionar todos').click();
+    const promesa = componente.generar();
+
+    fixture.destroy();
+    expect(senal.aborted).toBeTrue();
+
+    // Aunque el servicio termine igual, no se descarga ni se cierra el modal.
+    resolver({ blob: new Blob(['pdf']), nombre: 'x.pdf' });
+    await promesa;
+    expect(crearUrl).not.toHaveBeenCalled();
+    expect(modal.close).not.toHaveBeenCalled();
+  });
 });

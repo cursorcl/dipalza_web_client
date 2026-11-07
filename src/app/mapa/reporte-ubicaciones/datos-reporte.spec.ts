@@ -74,7 +74,7 @@ describe('datos-reporte', () => {
 
   it('filtroRango', () => {
     expect(filtroRango({ codigo: '001', tipo: '0' }, '2026-11-06', '2026-11-07')).toEqual({
-      vendedorIds: [{ codigo: '001', tipo: '0' }], desde: '2026-11-06T00:00:00', hasta: '2026-11-07T23:59:59',
+      vendedorIds: [{ codigo: '001', tipo: '0' }], desde: '2026-11-06T00:00:00', hasta: '2026-11-07T23:59:59.999',
     });
   });
 });

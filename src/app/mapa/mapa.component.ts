@@ -58,6 +58,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private vendedorService = inject(VendedorService);
   private destroyRef = inject(DestroyRef);
   private modalService = inject(NgbModal);
+  private reporteAbierto = false;
 
 
   ngAfterViewInit(): void {
@@ -275,15 +276,24 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   /** Carga el diálogo (y con él jsPDF) solo al pedir el reporte, para no inflar el chunk del mapa. */
   async abrirReporte(): Promise<void> {
-    const { ReporteUbicacionesDialogComponent } = await import(
-      './reporte-ubicaciones/reporte-ubicaciones-dialog/reporte-ubicaciones-dialog.component'
-    );
-    const modalRef = this.modalService.open(ReporteUbicacionesDialogComponent, {
-      size: 'lg',
-      scrollable: true,
-      backdrop: 'static',
-    });
-    modalRef.componentInstance.vendedores = this.vendedores();
+    if (this.reporteAbierto) return;
+    this.reporteAbierto = true;
+    try {
+      const { ReporteUbicacionesDialogComponent } = await import(
+        './reporte-ubicaciones/reporte-ubicaciones-dialog/reporte-ubicaciones-dialog.component'
+      );
+      const modalRef = this.modalService.open(ReporteUbicacionesDialogComponent, {
+        size: 'lg',
+        scrollable: true,
+        backdrop: 'static',
+      });
+      modalRef.componentInstance.vendedores = this.vendedores();
+      // Se libera al cerrar o descartar el modal.
+      modalRef.result.catch(() => undefined).finally(() => (this.reporteAbierto = false));
+    } catch {
+      this.reporteAbierto = false;
+      this.mostrarToast('No se pudo abrir el reporte. Recargue la página e intente de nuevo.');
+    }
   }
 
   abrirHistorial(vendedor: VendedorListItem): void {

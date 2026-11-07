@@ -80,5 +80,5 @@ export function nombreArchivo(desde: string, hasta: string): string {
 }
 
 export function filtroRango(vendedor: VendedorId, desde: string, hasta: string): PositionFilter {
-  return { vendedorIds: [vendedor], desde: `${desde}T00:00:00`, hasta: `${hasta}T23:59:59` };
+  return { vendedorIds: [vendedor], desde: `${desde}T00:00:00`, hasta: `${hasta}T23:59:59.999` };
 }

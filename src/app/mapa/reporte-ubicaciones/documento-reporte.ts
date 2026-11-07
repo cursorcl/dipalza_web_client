@@ -214,7 +214,7 @@ export class DocumentoReporte {
         ]),
         styles: { fontSize: 9, cellPadding: 1.5 },
         headStyles: { fillColor: [52, 73, 94] },
-        columnStyles: { 1: { cellWidth: 22 }, 2: { cellWidth: 34 }, 3: { cellWidth: 20 }, 4: { cellWidth: 20 } },
+        columnStyles: { 0: { overflow: 'ellipsize' }, 1: { cellWidth: 22 }, 2: { cellWidth: 34 }, 3: { cellWidth: 20 }, 4: { cellWidth: 20 } },
       });
     }
   }

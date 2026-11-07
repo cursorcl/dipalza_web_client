@@ -1,3 +1,10 @@
+# [1.24.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.23.0...v1.24.0) (2026-11-07)
+
+
+### Features
+
+* reporte de ubicaciones en PDF desde la vista del mapa ([#52](https://github.com/cursorcl/dipalza_web_client/issues/52)) ([f59b192](https://github.com/cursorcl/dipalza_web_client/commit/f59b192e6ce8a4bba03f00f7d90dd562b2bf3e5e))
+
 # [1.23.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.22.0...v1.23.0) (2026-11-06)
 
 

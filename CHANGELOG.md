@@ -1,3 +1,10 @@
+# [1.25.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.24.0...v1.25.0) (2026-11-17)
+
+
+### Features
+
+* Ventas por Facturar muestra la hora en que el vendedor marcó la venta lista ([#53](https://github.com/cursorcl/dipalza_web_client/issues/53)) ([7c1da68](https://github.com/cursorcl/dipalza_web_client/commit/7c1da6833f48184d038896b0e88b536208ccbd17))
+
 # [1.24.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.23.0...v1.24.0) (2026-11-07)
 
 

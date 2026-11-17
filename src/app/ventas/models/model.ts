@@ -16,6 +16,9 @@ export interface Venta {
     totalNeto: number;
     total: number;
     estadoVenta: string;
+    // Hora (de Chile) en que el vendedor marcó la venta como lista para facturar;
+    // null en ventas marcadas antes de que el server registrara este dato.
+    fechaHoraLista: string | null;
     detalles: VentaDetalle[];
 }
 

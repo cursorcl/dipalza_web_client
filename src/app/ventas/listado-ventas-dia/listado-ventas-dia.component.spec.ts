@@ -45,6 +45,30 @@ describe('ListadoVentasDiaComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('columna Hora lista', () => {
+    const venta = (id: number, fechaHoraLista: string | null) => ({
+      id, fecha: '2026-11-16', nombreVendedor: 'Juan', rutCliente: '1-9', nombreCliente: `Cliente ${id}`,
+      nombreCondicionVenta: 'Contado', totalNeto: 0, totalDescuento: 0, totalIla: 0, totalIva: 0, total: 0,
+      fechaHoraLista
+    } as any);
+
+    const celdasHoraLista = (): string[] =>
+      Array.from(fixture.nativeElement.querySelectorAll('[data-test="hora-lista"]') as NodeListOf<HTMLElement>)
+        .map(celda => celda.textContent!.trim());
+
+    it('muestra la hora en que el vendedor marcó la venta lista, o "—" si no se registró', async () => {
+      ventasServiceMock.obtainSales.and.returnValue(of([venta(1, '2026-11-16T10:35:00'), venta(2, null)]));
+
+      component.updateSalesByDate();
+      fixture.detectChanges();
+      // whenStable() no sirve: el interval de Mastersoft mantiene la zona ocupada.
+      await new Promise(resolve => setTimeout(resolve));
+      fixture.detectChanges();
+
+      expect(celdasHoraLista()).toEqual(['10:35', '—']);
+    });
+  });
+
   describe('onSelect()', () => {
     it('habilita canFacture solo cuando hay filas seleccionadas', () => {
       const venta = { id: 1 } as any;

@@ -48,6 +48,15 @@
                             {{row.fecha | date:'dd/MM/yyyy'}}
                         </ng-template>
                     </ngx-datatable-column>
+                    <ngx-datatable-column name="Hora lista" prop="fechaHoraLista" headerClass="align-center-header"
+                        cellClass="align-center-cell">
+                        <ng-template let-row="row" ngx-datatable-cell-template>
+                            <span data-test="hora-lista"
+                                [title]="row.fechaHoraLista ? 'Marcada lista el ' + (row.fechaHoraLista | date:'dd/MM/yyyy HH:mm') : 'Sin hora registrada'">
+                                {{ row.fechaHoraLista ? (row.fechaHoraLista | date:'HH:mm') : '—' }}
+                            </span>
+                        </ng-template>
+                    </ngx-datatable-column>
                     <ngx-datatable-column [width]="200" name="Vendedor" headerClass="align-center-header">
                         <ng-template let-row="row" let-value="value" let-rowIndex="rowIndex"
                             ngx-datatable-cell-template>

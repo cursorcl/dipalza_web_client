@@ -63,3 +63,17 @@ export interface ParadaVendedorDTO {
   horaFin: string | null;
   enCurso: boolean;
 }
+
+/** Venta finalizada de un vendedor en un día (vista Ventas del mapa). */
+export interface VentaPosicionDTO {
+    numero: number;
+    ventaId: number;
+    nombreCliente: string;
+    inicioHora: string | null;
+    finHora: string;
+    finLat: number | null;
+    finLon: number | null;
+    tiempoTotalMinutos: number | null;
+    reaperturas: number;
+    total: number;
+}

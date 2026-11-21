@@ -699,4 +699,69 @@ describe('MapaComponent', () => {
     expect(abrir).toHaveBeenCalledTimes(2);
     cerrar.next();
   });
+
+  describe('vista Ventas', () => {
+    const puntos = [
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ];
+    const venta = (numero: number, lat: number | null, lon: number | null) => ({
+      numero, ventaId: 100 + numero, nombreCliente: `Cliente ${numero}`,
+      inicioHora: '2026-11-21T09:00:00', finHora: '2026-11-21T09:20:00',
+      finLat: lat, finLon: lon, tiempoTotalMinutos: 20, reaperturas: 0, total: 11900
+    });
+
+    const seleccionarJuan = (httpMock: HttpTestingController) => {
+      component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+      httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush(puntos);
+    };
+    const pedidoVentas = (httpMock: HttpTestingController) =>
+      httpMock.expectOne(r => r.url === `${environment.apiUrl}/ventas/posiciones`
+        && r.params.get('codigoVendedor') === '001'
+        && r.params.get('tipoVendedor') === '0'
+        && r.params.get('fecha') === new Date().toLocaleDateString('en-CA'));
+    const marcadoresDeVentas = (): L.Marker[] =>
+      ((component as any).ventasLayer as L.LayerGroup).getLayers() as L.Marker[];
+
+    it('al cambiar a vista Ventas muestra un marcador por venta con posición, con su número', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, null, null), venta(3, -33.42, -70.62)]);
+
+      const marcadores = marcadoresDeVentas();
+      expect(marcadores.length).toBe(2);
+      const numeros = marcadores.map(m => (m.options.icon as L.DivIcon).options.html as string);
+      expect(numeros[0]).toContain('>1<');
+      expect(numeros[1]).toContain('>3<');
+      expect((component as any).map.hasLayer((component as any).ventasLayer)).toBeTrue();
+      expect((component as any).map.hasLayer((component as any).historialLayer)).toBeFalse();
+    });
+
+    it('volver a Recorrido oculta la capa de ventas y muestra la trayectoria', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      component.cambiarVista('recorrido');
+
+      expect(component.vista()).toBe('recorrido');
+      expect((component as any).map.hasLayer((component as any).ventasLayer)).toBeFalse();
+      expect((component as any).map.hasLayer((component as any).historialLayer)).toBeTrue();
+    });
+
+    it('sin ventas dibujables en vista Ventas muestra el toast', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, null, null)]);
+
+      expect(marcadoresDeVentas().length).toBe(0);
+      expect(component.toastMensaje())
+        .toBe(`Sin ventas finalizadas el ${new Date().toLocaleDateString('en-CA')} para Juan Perez`);
+    });
+  });
 });

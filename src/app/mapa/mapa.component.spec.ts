@@ -752,16 +752,41 @@ describe('MapaComponent', () => {
       expect((component as any).map.hasLayer((component as any).historialLayer)).toBeTrue();
     });
 
-    it('sin ventas dibujables en vista Ventas muestra el toast', () => {
+    it('sin ventas finalizadas en vista Ventas muestra el toast', () => {
       const httpMock = TestBed.inject(HttpTestingController);
       seleccionarJuan(httpMock);
 
       component.cambiarVista('ventas');
-      pedidoVentas(httpMock).flush([venta(1, null, null)]);
+      pedidoVentas(httpMock).flush([]);
 
       expect(marcadoresDeVentas().length).toBe(0);
       expect(component.toastMensaje())
         .toBe(`Sin ventas finalizadas el ${new Date().toLocaleDateString('en-CA')} para Juan Perez`);
+    });
+
+    it('con ventas finalizadas pero ninguna con GPS avisa cuántas quedaron sin posición', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, null, null), venta(2, null, null)]);
+
+      expect(marcadoresDeVentas().length).toBe(0);
+      expect(component.toastMensaje())
+        .toBe(`2 ventas finalizadas el ${new Date().toLocaleDateString('en-CA')} sin posición GPS para Juan Perez`);
+    });
+
+    it('una venta sin los campos de posición en el JSON no rompe el dibujo', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      const sinCampos: any = venta(2, null, null);
+      delete sinCampos.finLat;
+      delete sinCampos.finLon;
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), sinCampos]);
+
+      expect(marcadoresDeVentas().length).toBe(1);
     });
   });
 });

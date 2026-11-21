@@ -513,9 +513,15 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
   private mostrarVentas(ventas: VentaPosicionDTO[], consulta: ConsultaMapa): void {
     // Las ventas sin posición no se dibujan, pero conservan su número (el orden real).
-    const dibujables = ventas.filter(v => v.finLat !== null && v.finLon !== null);
-    if (dibujables.length === 0) {
+    // `!= null` cubre también un JSON que omita los campos nulos.
+    const dibujables = ventas.filter(v => v.finLat != null && v.finLon != null);
+    if (ventas.length === 0) {
       this.mostrarToast(`Sin ventas finalizadas el ${consulta.fecha} para ${consulta.nombre}`);
+      return;
+    }
+    if (dibujables.length === 0) {
+      const n = ventas.length;
+      this.mostrarToast(`${n} ${n === 1 ? 'venta finalizada' : 'ventas finalizadas'} el ${consulta.fecha} sin posición GPS para ${consulta.nombre}`);
       return;
     }
     const bounds = L.latLngBounds([]);
@@ -532,7 +538,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private etiquetaVenta(venta: VentaPosicionDTO): string {
     const hora = new Date(venta.finHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
     const detalle = [`Finalizada ${hora}`];
-    if (venta.tiempoTotalMinutos !== null) detalle.push(`${venta.tiempoTotalMinutos} min`);
+    if (venta.tiempoTotalMinutos != null) detalle.push(`${venta.tiempoTotalMinutos} min`);
     if (venta.reaperturas > 0) detalle.push(`${venta.reaperturas} ${venta.reaperturas === 1 ? 'reapertura' : 'reaperturas'}`);
     const total = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(venta.total);
     return `<b>Venta ${venta.numero}</b> — ${escaparHtml(venta.nombreCliente)}<br>${detalle.join(' · ')}<br>Total ${total}`;

@@ -564,7 +564,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       title: grupo.ventas.length === 1 ? `Venta ${grupo.ventas[0].numero}` : `${grupo.ventas.length} ventas en este punto`
     });
     const contenido = this.crearContenidoGrupo(grupo);
-    marcador.bindPopup(contenido, { closeButton: false, autoPan: false, className: 'popup-ventas' });
+    marcador.bindPopup(contenido, { closeButton: false, autoPan: false, className: 'popup-ventas', minWidth: 280, maxWidth: 360 });
 
     let cierre: ReturnType<typeof setTimeout> | undefined;
     const mantener = () => { if (cierre) { clearTimeout(cierre); cierre = undefined; } };
@@ -594,6 +594,8 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     titulo.textContent = `${grupo.ventas.length} ventas en este punto`;
     const lista = document.createElement('ul');
     lista.className = 'lista-ventas';
+    // Más de 3 ventas: la lista se limita a 3 filas visibles y se desplaza.
+    if (grupo.ventas.length > 3) lista.classList.add('con-scroll');
     grupo.ventas.forEach(venta => {
       const item = document.createElement('li');
       item.dataset['venta'] = String(venta.numero);
@@ -603,13 +605,15 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         lista.querySelectorAll('li').forEach(li => li.classList.remove('activa'));
         item.classList.add('activa');
         detalle.innerHTML = this.etiquetaVenta(venta);
+        detalle.hidden = false;
       };
       item.addEventListener('mouseenter', mostrar);
       item.addEventListener('click', mostrar);
       item.addEventListener('focus', mostrar);
       lista.appendChild(item);
     });
-    detalle.textContent = 'Pase el mouse o toque una venta para ver su información';
+    // Sin texto de ayuda: el detalle aparece recién al pasar o tocar una venta.
+    detalle.hidden = true;
     contenido.append(titulo, lista, detalle);
     return contenido;
   }

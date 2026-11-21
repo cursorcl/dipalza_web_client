@@ -139,12 +139,20 @@
     list-style: none;
     margin: 4px 0;
     padding: 0;
-    max-height: 180px;
+}
+
+/* 3 filas visibles (28 px c/u); el resto con scroll. */
+::ng-deep .popup-ventas .lista-ventas.con-scroll {
+    max-height: 84px;
     overflow-y: auto;
 }
 
 ::ng-deep .popup-ventas .lista-ventas li {
+    line-height: 22px;
     padding: 3px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     border-radius: 4px;
     cursor: pointer;
 }

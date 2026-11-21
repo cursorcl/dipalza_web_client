@@ -773,6 +773,35 @@ describe('MapaComponent', () => {
       expect(items[1]).toContain('Cliente 3');
     });
 
+    it('el popup de varias ventas no muestra texto de ayuda y es más ancho', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+      const [marcador] = marcadoresDeVentas();
+
+      marcador.fire('mouseover');
+
+      const detalle = contenidoPopup(marcador).querySelector('.detalle-venta') as HTMLElement;
+      expect(detalle.textContent).toBe('');
+      expect(detalle.hidden).toBeTrue();
+      expect(marcador.getPopup()!.options.minWidth).toBeGreaterThanOrEqual(260);
+    });
+
+    it('la lista tiene scroll solo cuando hay más de 3 ventas en el punto', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([
+        venta(1, -33.40, -70.60), venta(2, -33.40, -70.60), venta(3, -33.40, -70.60),
+        venta(4, -33.42, -70.62), venta(5, -33.42, -70.62), venta(6, -33.42, -70.62), venta(7, -33.42, -70.62)
+      ]);
+      const [deTres, deCuatro] = marcadoresDeVentas();
+
+      expect(contenidoPopup(deTres).querySelector('.lista-ventas')!.classList).not.toContain('con-scroll');
+      expect(contenidoPopup(deCuatro).querySelector('.lista-ventas')!.classList).toContain('con-scroll');
+    });
+
     it('al pasar el mouse por una venta de la lista muestra su información', () => {
       const httpMock = TestBed.inject(HttpTestingController);
       seleccionarJuan(httpMock);

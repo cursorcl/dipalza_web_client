@@ -1,3 +1,10 @@
+# [1.27.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.26.0...v1.27.0) (2026-11-21)
+
+
+### Features
+
+* vistas Ventas y Ambos en el mapa con ventas numeradas ([#55](https://github.com/cursorcl/dipalza_web_client/issues/55)) ([b8ffccd](https://github.com/cursorcl/dipalza_web_client/commit/b8ffccd4e1030f3d4154c200c34ceab44020adcc))
+
 # [1.26.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.25.0...v1.26.0) (2026-11-21)
 
 

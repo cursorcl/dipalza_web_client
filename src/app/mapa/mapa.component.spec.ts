@@ -8,6 +8,7 @@ import { Subject, take } from 'rxjs';
 import { MapaComponent } from './mapa.component';
 import { environment } from 'environments/environment';
 import { colorForVendedor } from './vendor-color';
+import { WSPositionService } from './ws-position.service';
 
 describe('MapaComponent', () => {
   let component: MapaComponent;
@@ -698,5 +699,278 @@ describe('MapaComponent', () => {
     await component.abrirReporte();
     expect(abrir).toHaveBeenCalledTimes(2);
     cerrar.next();
+  });
+
+  describe('vista Ventas', () => {
+    const puntos = [
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ];
+    const venta = (numero: number, lat: number | null, lon: number | null) => ({
+      numero, ventaId: 100 + numero, nombreCliente: `Cliente ${numero}`,
+      inicioHora: '2026-11-21T09:00:00', finHora: '2026-11-21T09:20:00',
+      finLat: lat, finLon: lon, tiempoTotalMinutos: 20, reaperturas: 0, total: 11900
+    });
+
+    const seleccionarJuan = (httpMock: HttpTestingController) => {
+      component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+      httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush(puntos);
+    };
+    const pedidoVentas = (httpMock: HttpTestingController) =>
+      httpMock.expectOne(r => r.url === `${environment.apiUrl}/ventas/posiciones`
+        && r.params.get('codigoVendedor') === '001'
+        && r.params.get('tipoVendedor') === '0'
+        && r.params.get('fecha') === new Date().toLocaleDateString('en-CA'));
+    const marcadoresDeVentas = (): L.Marker[] =>
+      ((component as any).ventasLayer as L.LayerGroup).getLayers() as L.Marker[];
+
+    it('al cambiar a vista Ventas muestra un marcador por venta con posición, con su número', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, null, null), venta(3, -33.42, -70.62)]);
+
+      const marcadores = marcadoresDeVentas();
+      expect(marcadores.length).toBe(2);
+      const numeros = marcadores.map(m => (m.options.icon as L.DivIcon).options.html as string);
+      expect(numeros[0]).toContain('>1<');
+      expect(numeros[1]).toContain('>3<');
+      expect((component as any).map.hasLayer((component as any).ventasLayer)).toBeTrue();
+      expect((component as any).map.hasLayer((component as any).historialLayer)).toBeFalse();
+    });
+
+    const htmlIcono = (m: L.Marker) => (m.options.icon as L.DivIcon).options.html as string;
+    const contenidoPopup = (m: L.Marker) => m.getPopup()!.getContent() as HTMLElement;
+
+    it('las ventas hechas en el mismo lugar se muestran como un solo marcador apilado "×n"', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+
+      const marcadores = marcadoresDeVentas();
+      expect(marcadores.length).toBe(2);
+      expect(htmlIcono(marcadores[0])).toContain('>1<');
+      expect(htmlIcono(marcadores[0])).not.toContain('venta-badge-pila');
+      expect(htmlIcono(marcadores[1])).toContain('>×2<');
+      expect(htmlIcono(marcadores[1])).toContain('venta-badge-pila');
+      expect(marcadores[1].options.title).toBe('2 ventas: 2 y 3');
+    });
+
+    it('al pasar el mouse por un marcador de varias ventas lista las ventas de ese punto', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+      const [marcador] = marcadoresDeVentas();
+
+      marcador.fire('mouseover');
+
+      expect(marcador.isPopupOpen()).toBeTrue();
+      const items = Array.from(contenidoPopup(marcador).querySelectorAll('[data-venta]')).map(e => e.textContent);
+      expect(items.length).toBe(2);
+      expect(items[0]).toContain('Venta 2');
+      expect(items[0]).toContain('Cliente 2');
+      expect(items[1]).toContain('Cliente 3');
+    });
+
+    it('el popup de varias ventas no muestra texto de ayuda y es más ancho', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+      const [marcador] = marcadoresDeVentas();
+
+      marcador.fire('mouseover');
+
+      const detalle = contenidoPopup(marcador).querySelector('.detalle-venta') as HTMLElement;
+      expect(detalle.textContent).toBe('');
+      expect(detalle.hidden).toBeTrue();
+      expect(marcador.getPopup()!.options.minWidth).toBeGreaterThanOrEqual(260);
+    });
+
+    it('la lista tiene scroll solo cuando hay más de 3 ventas en el punto', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([
+        venta(1, -33.40, -70.60), venta(2, -33.40, -70.60), venta(3, -33.40, -70.60),
+        venta(4, -33.42, -70.62), venta(5, -33.42, -70.62), venta(6, -33.42, -70.62), venta(7, -33.42, -70.62)
+      ]);
+      const [deTres, deCuatro] = marcadoresDeVentas();
+
+      expect(contenidoPopup(deTres).querySelector('.lista-ventas')!.classList).not.toContain('con-scroll');
+      expect(contenidoPopup(deCuatro).querySelector('.lista-ventas')!.classList).toContain('con-scroll');
+    });
+
+    it('al pasar el mouse por una venta de la lista muestra su información', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+      const [marcador] = marcadoresDeVentas();
+      marcador.fire('mouseover');
+      const contenido = contenidoPopup(marcador);
+
+      contenido.querySelector('[data-venta="3"]')!.dispatchEvent(new MouseEvent('mouseenter'));
+
+      const detalle = contenido.querySelector('.detalle-venta')!.textContent!;
+      expect(detalle).toContain('Venta 3');
+      expect(detalle).toContain('20 min');
+      expect(detalle).toContain('Total');
+    });
+
+    it('una venta sola muestra su información al pasar el mouse', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+      const [marcador] = marcadoresDeVentas();
+
+      marcador.fire('mouseover');
+
+      expect(contenidoPopup(marcador).textContent).toContain('Venta 1');
+      expect(contenidoPopup(marcador).querySelectorAll('[data-venta]').length).toBe(0);
+    });
+
+    it('un aviso de venta finalizada del vendedor y día consultados recarga la vista Ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      const ws = TestBed.inject(WSPositionService) as any;
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      ws.ventaFinalizadaSubject.next({ codigoVendedor: '001', tipoVendedor: '0', fecha: new Date().toLocaleDateString('en-CA'), ventaId: 102 });
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, -33.42, -70.62)]);
+
+      expect(marcadoresDeVentas().length).toBe(2);
+    });
+
+    it('un aviso de otro vendedor no recarga la vista Ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      const ws = TestBed.inject(WSPositionService) as any;
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      ws.ventaFinalizadaSubject.next({ codigoVendedor: '002', tipoVendedor: '0', fecha: new Date().toLocaleDateString('en-CA'), ventaId: 9 });
+
+      httpMock.expectNone(r => r.url === `${environment.apiUrl}/ventas/posiciones`);
+    });
+
+    const capaVisible = (capa: string) => (component as any).map.hasLayer((component as any)[capa]);
+
+    it('la vista Ambos muestra el recorrido y las ventas a la vez', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      expect(capaVisible('historialLayer')).toBeTrue();
+      expect(capaVisible('ventasLayer')).toBeTrue();
+      expect(marcadoresDeVentas().length).toBe(1);
+    });
+
+    it('de Ambos a Ventas oculta el recorrido sin volver a pedir las ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      component.cambiarVista('ventas');
+
+      expect(capaVisible('historialLayer')).toBeFalse();
+      expect(capaVisible('ventasLayer')).toBeTrue();
+      expect(marcadoresDeVentas().length).toBe(1);
+      httpMock.expectNone(r => r.url === `${environment.apiUrl}/ventas/posiciones`);
+    });
+
+    it('de Ambos a Recorrido oculta las ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      component.cambiarVista('recorrido');
+
+      expect(capaVisible('historialLayer')).toBeTrue();
+      expect(capaVisible('ventasLayer')).toBeFalse();
+    });
+
+    it('en la vista Ambos un aviso de venta finalizada también recarga las ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      const ws = TestBed.inject(WSPositionService) as any;
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      ws.ventaFinalizadaSubject.next({ codigoVendedor: '001', tipoVendedor: '0', fecha: new Date().toLocaleDateString('en-CA'), ventaId: 102 });
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, -33.42, -70.62)]);
+
+      expect(marcadoresDeVentas().length).toBe(2);
+    });
+
+    it('el selector ofrece Recorrido, Ventas y Ambos', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      fixture.detectChanges();
+
+      const botones = Array.from(fixture.nativeElement.querySelectorAll('.selector-vista button') as NodeListOf<HTMLElement>)
+        .map(b => b.textContent!.trim());
+      expect(botones).toEqual(['Recorrido', 'Ventas', 'Ambos']);
+    });
+
+    it('volver a Recorrido oculta la capa de ventas y muestra la trayectoria', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      component.cambiarVista('recorrido');
+
+      expect(component.vista()).toBe('recorrido');
+      expect((component as any).map.hasLayer((component as any).ventasLayer)).toBeFalse();
+      expect((component as any).map.hasLayer((component as any).historialLayer)).toBeTrue();
+    });
+
+    it('sin ventas finalizadas en vista Ventas muestra el toast', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([]);
+
+      expect(marcadoresDeVentas().length).toBe(0);
+      expect(component.toastMensaje())
+        .toBe(`Sin ventas finalizadas el ${new Date().toLocaleDateString('en-CA')} para Juan Perez`);
+    });
+
+    it('con ventas finalizadas pero ninguna con GPS avisa cuántas quedaron sin posición', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, null, null), venta(2, null, null)]);
+
+      expect(marcadoresDeVentas().length).toBe(0);
+      expect(component.toastMensaje())
+        .toBe(`2 ventas finalizadas el ${new Date().toLocaleDateString('en-CA')} sin posición GPS para Juan Perez`);
+    });
+
+    it('una venta sin los campos de posición en el JSON no rompe el dibujo', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      const sinCampos: any = venta(2, null, null);
+      delete sinCampos.finLat;
+      delete sinCampos.finLon;
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), sinCampos]);
+
+      expect(marcadoresDeVentas().length).toBe(1);
+    });
   });
 });

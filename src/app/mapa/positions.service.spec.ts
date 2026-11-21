@@ -4,7 +4,7 @@ import { provideHttpClientTesting, HttpTestingController } from '@angular/common
 import { environment } from 'environments/environment';
 
 import { PositionsService } from './positions.service';
-import { HistorialResumenDiaDTO } from './models/model';
+import { HistorialResumenDiaDTO, VentaPosicionDTO } from './models/model';
 
 describe('PositionsService', () => {
   let service: PositionsService;
@@ -38,5 +38,22 @@ describe('PositionsService', () => {
     );
     expect(req.request.method).toBe('GET');
     req.flush(resumen);
+  });
+
+  it('getVentasDelDia hace GET a /ventas/posiciones con el vendedor y la fecha', () => {
+    const ventas: VentaPosicionDTO[] = [];
+
+    service.getVentasDelDia('001', '0', '2026-11-21').subscribe((result) => {
+      expect(result).toEqual(ventas);
+    });
+
+    const req = httpMock.expectOne(
+      (r) => r.url === `${environment.apiUrl}/ventas/posiciones`
+        && r.params.get('codigoVendedor') === '001'
+        && r.params.get('tipoVendedor') === '0'
+        && r.params.get('fecha') === '2026-11-21'
+    );
+    expect(req.request.method).toBe('GET');
+    req.flush(ventas);
   });
 });

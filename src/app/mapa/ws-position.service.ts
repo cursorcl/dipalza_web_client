@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Client, Message } from '@stomp/stompjs';
 import { Subject, Observable } from 'rxjs';
-import { PosicionDTO } from './models/model';
+import { PosicionDTO, VentaPosicionEventoDTO } from './models/model';
 import { environment } from 'environments/environment';
 
 @Injectable({
@@ -10,6 +10,7 @@ import { environment } from 'environments/environment';
 export class WSPositionService {
   private stompClient: Client;
   private posicionSubject = new Subject<PosicionDTO>();
+  private ventaFinalizadaSubject = new Subject<VentaPosicionEventoDTO>();
 
   constructor() {
     this.stompClient = new Client({
@@ -27,6 +28,11 @@ export class WSPositionService {
       this.stompClient.subscribe('/topic/posiciones', (message: Message) => {
         const posicion: PosicionDTO = JSON.parse(message.body);
         this.posicionSubject.next(posicion);
+      });
+
+      // Ventas finalizadas: la vista Ventas del mapa se recarga si corresponde.
+      this.stompClient.subscribe('/topic/ventas-posicion', (message: Message) => {
+        this.ventaFinalizadaSubject.next(JSON.parse(message.body));
       });
     };
 
@@ -51,6 +57,11 @@ export class WSPositionService {
    */
   getPositions$(): Observable<PosicionDTO> {
     return this.posicionSubject.asObservable();
+  }
+
+  /** Avisos de ventas finalizadas (vendedor, día y venta). */
+  getVentasFinalizadas$(): Observable<VentaPosicionEventoDTO> {
+    return this.ventaFinalizadaSubject.asObservable();
   }
 
   disconnect(): void {

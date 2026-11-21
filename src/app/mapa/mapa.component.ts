@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
-import { HistorialPosicionDTO, HistorialResumenDiaDTO, PosicionDTO, PositionFilter, VendedorDTO, VendedorId, VendedorListItem } from './models/model';
+import { HistorialPosicionDTO, HistorialResumenDiaDTO, PosicionDTO, PositionFilter, VendedorDTO, VendedorId, VendedorListItem, VentaPosicionDTO, VentaPosicionEventoDTO } from './models/model';
 import { Subscription, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { WSPositionService } from './ws-position.service';
@@ -10,11 +10,24 @@ import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
 import { detectarParadas, NodoParada } from './detectar-paradas';
+import { agruparVentasPorLugar, etiquetaGrupo, GrupoVentas, resumenGrupo } from './agrupar-ventas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { TramosTableComponent } from './tramos-table/tramos-table.component';
 import { HistorialPanelComponent } from './historial-panel/historial-panel.component';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+
+type VistaMapa = 'recorrido' | 'ventas' | 'ambos';
+const muestraRecorrido = (v: VistaMapa) => v !== 'ventas';
+const muestraVentas = (v: VistaMapa) => v !== 'recorrido';
+interface ConsultaMapa { codigo: string; tipo: string; nombre: string; fecha: string; }
+
+/** Color de los marcadores de venta: distinto al de paradas, inicio (verde) y fin (rojo). */
+const COLOR_VENTA = '#8e44ad';
+
+function escaparHtml(texto: string): string {
+  return texto.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+}
 
 @Component({
   selector: 'app-mapa',
@@ -31,6 +44,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private map!: L.Map;
   private markers: Map<string, L.Marker> = new Map();
   private historialLayer: L.LayerGroup = L.layerGroup();
+  // Capa independiente de la del recorrido: hoy se muestra una u otra según
+  // `vista`, pero quedan separadas para poder mostrarlas juntas más adelante.
+  private ventasLayer: L.LayerGroup = L.layerGroup();
   private tooltipRefreshInterval?: ReturnType<typeof setInterval>;
   vendedores = signal<VendedorListItem[]>([]);
   private padronVendedores: VendedorDTO[] = [];
@@ -46,6 +62,10 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   private desiredSelection: string | null = null; // Tracks the most recently desired selection while loads are in flight
   seleccionado = signal<string | null>(null);
   nodosSeleccionados = signal<NodoParada[]>([]);
+
+  vista = signal<VistaMapa>('recorrido');
+  /** Vendedor y día consultados (recorrido o ventas); null si no hay ninguno. */
+  consulta = signal<ConsultaMapa | null>(null);
 
   historialAbierto = signal(false);
   historialVendedor = signal<VendedorListItem | null>(null);
@@ -72,6 +92,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         this.updatePositionOnMap(posicion);
       }
     );
+    this.subscription.add(this.wsPosicionService.getVentasFinalizadas$().subscribe(
+      evento => this.alFinalizarVenta(evento)
+    ));
     this.tooltipRefreshInterval = setInterval(() => {
       this.markers.forEach((marker, key) => {
         const data = this.posicionesActuales.get(key);
@@ -262,6 +285,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       this.ocultarTrayectoria(key);
       this.seleccionado.set(null);
       this.desiredSelection = null;
+      this.limpiarConsulta();
       return;
     }
 
@@ -353,6 +377,11 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
 
     // Track that this key is the currently desired selection
     this.desiredSelection = key;
+
+    this.consulta.set({ codigo: vendedor.codigo, tipo: vendedor.tipo, nombre: vendedor.nombre, fecha });
+    if (muestraVentas(this.vista())) {
+      this.cargarVentas(this.vista() === 'ventas');
+    }
 
     const filter: PositionFilter = {
       vendedorIds: [{ codigo: vendedor.codigo, tipo: vendedor.tipo }],
@@ -446,6 +475,193 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.nodosSeleccionados.set(nodos);
 
     this.ajustarVistaATrayectoriasVisibles();
+  }
+
+  /** Alterna entre el recorrido GPS y las ventas finalizadas del vendedor y día consultados. */
+  readonly opcionesVista: { valor: VistaMapa; texto: string }[] = [
+    { valor: 'recorrido', texto: 'Recorrido' },
+    { valor: 'ventas', texto: 'Ventas' },
+    { valor: 'ambos', texto: 'Ambos' },
+  ];
+
+  /**
+   * Recorrido GPS, ventas finalizadas, o ambos superpuestos, para el vendedor y
+   * día consultados. Las ventas se piden solo al pasar a una vista que las
+   * muestra y antes no se veían; en Ambos no se mueve el mapa del recorrido.
+   */
+  cambiarVista(vista: VistaMapa): void {
+    const anterior = this.vista();
+    if (vista === anterior) return;
+    this.vista.set(vista);
+    this.mostrarCapa(this.historialLayer, muestraRecorrido(vista));
+    this.mostrarCapa(this.ventasLayer, muestraVentas(vista));
+    if (muestraVentas(vista) && !muestraVentas(anterior)) {
+      this.cargarVentas(vista === 'ventas');
+    }
+  }
+
+  private mostrarCapa(capa: L.LayerGroup, visible: boolean): void {
+    if (visible) {
+      this.map.addLayer(capa);
+    } else {
+      this.map.removeLayer(capa);
+    }
+  }
+
+  private limpiarConsulta(): void {
+    this.consulta.set(null);
+    this.ventasLayer.clearLayers();
+    this.cambiarVista('recorrido');
+  }
+
+  private cargarVentas(ajustarVista = true): void {
+    const consulta = this.consulta();
+    if (!consulta) return;
+    this.ventasLayer.clearLayers();
+    this.positionService.getVentasDelDia(consulta.codigo, consulta.tipo, consulta.fecha)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ventas => {
+          // Se descarta si mientras tanto se cambió de vendedor, de día o de vista.
+          if (this.consulta() !== consulta || !muestraVentas(this.vista())) return;
+          this.ventasLayer.clearLayers();
+          this.mostrarVentas(ventas, consulta, ajustarVista);
+        },
+        error: () => {
+          if (this.consulta() === consulta) {
+            this.mostrarToast(`No se pudo obtener las ventas de ${consulta.nombre}`);
+          }
+        }
+      });
+  }
+
+  /** Recarga la vista Ventas si la venta finalizada es del vendedor y día que se están mirando. */
+  private alFinalizarVenta(evento: VentaPosicionEventoDTO): void {
+    const consulta = this.consulta();
+    if (!consulta || !muestraVentas(this.vista())) return;
+    const mismoVendedor = evento.codigoVendedor?.trim() === consulta.codigo.trim()
+      && evento.tipoVendedor?.trim() === consulta.tipo.trim();
+    if (mismoVendedor && evento.fecha === consulta.fecha) {
+      this.cargarVentas(false);
+    }
+  }
+
+  private mostrarVentas(ventas: VentaPosicionDTO[], consulta: ConsultaMapa, ajustarVista = true): void {
+    // Las ventas sin posición no se dibujan, pero conservan su número (el orden real).
+    // `!= null` cubre también un JSON que omita los campos nulos.
+    const dibujables = ventas.filter(v => v.finLat != null && v.finLon != null);
+    if (ventas.length === 0) {
+      this.mostrarToast(`Sin ventas finalizadas el ${consulta.fecha} para ${consulta.nombre}`);
+      return;
+    }
+    if (dibujables.length === 0) {
+      const n = ventas.length;
+      this.mostrarToast(`${n} ${n === 1 ? 'venta finalizada' : 'ventas finalizadas'} el ${consulta.fecha} sin posición GPS para ${consulta.nombre}`);
+      return;
+    }
+    const bounds = L.latLngBounds([]);
+    agruparVentasPorLugar(dibujables).forEach(grupo => {
+      const latLng = L.latLng(grupo.latitud, grupo.longitud);
+      this.crearMarcadorGrupo(grupo, latLng).addTo(this.ventasLayer);
+      bounds.extend(latLng);
+    });
+    // En una recarga por aviso en vivo no se mueve el mapa que el usuario está mirando.
+    if (ajustarVista) {
+      this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+    }
+  }
+
+  /**
+   * Un marcador por lugar: muestra el número de la venta o, si hay varias, un
+   * marcador apilado con la cantidad ("×3"). Al pasar el mouse (o tocar) abre
+   * la lista de las ventas de ese punto; al pasar o tocar una se ve su información.
+   */
+  private crearMarcadorGrupo(grupo: GrupoVentas, latLng: L.LatLng): L.Marker {
+    const marcador = L.marker(latLng, {
+      keyboard: false,
+      icon: this.crearIconoVenta(etiquetaGrupo(grupo), grupo.ventas.length > 1),
+      // En Ambos, las ventas quedan por encima de los nodos de parada del recorrido.
+      zIndexOffset: 1000,
+      title: resumenGrupo(grupo)
+    });
+    const contenido = this.crearContenidoGrupo(grupo);
+    marcador.bindPopup(contenido, { closeButton: false, autoPan: false, className: 'popup-ventas', minWidth: 280, maxWidth: 360 });
+
+    let cierre: ReturnType<typeof setTimeout> | undefined;
+    const mantener = () => { if (cierre) { clearTimeout(cierre); cierre = undefined; } };
+    const cerrarLuego = () => { mantener(); cierre = setTimeout(() => marcador.closePopup(), 300); };
+    marcador.on('mouseover', () => { mantener(); marcador.openPopup(); });
+    marcador.on('mouseout', cerrarLuego);
+    // Mientras el mouse está sobre la lista, el popup sigue abierto.
+    contenido.addEventListener('mouseenter', mantener);
+    contenido.addEventListener('mouseleave', cerrarLuego);
+    return marcador;
+  }
+
+  private crearContenidoGrupo(grupo: GrupoVentas): HTMLElement {
+    const contenido = document.createElement('div');
+    contenido.className = 'contenido-ventas';
+    const detalle = document.createElement('div');
+    detalle.className = 'detalle-venta';
+
+    if (grupo.ventas.length === 1) {
+      detalle.innerHTML = this.etiquetaVenta(grupo.ventas[0]);
+      contenido.appendChild(detalle);
+      return contenido;
+    }
+
+    const titulo = document.createElement('div');
+    titulo.className = 'titulo-ventas';
+    titulo.textContent = `${grupo.ventas.length} ventas en este punto`;
+    const lista = document.createElement('ul');
+    lista.className = 'lista-ventas';
+    // Más de 3 ventas: la lista se limita a 3 filas visibles y se desplaza.
+    if (grupo.ventas.length > 3) lista.classList.add('con-scroll');
+    grupo.ventas.forEach(venta => {
+      const item = document.createElement('li');
+      item.dataset['venta'] = String(venta.numero);
+      item.tabIndex = 0;
+      item.textContent = `Venta ${venta.numero} — ${venta.nombreCliente} · ${this.horaFin(venta)}`;
+      const mostrar = () => {
+        lista.querySelectorAll('li').forEach(li => li.classList.remove('activa'));
+        item.classList.add('activa');
+        detalle.innerHTML = this.etiquetaVenta(venta);
+        detalle.hidden = false;
+      };
+      item.addEventListener('mouseenter', mostrar);
+      item.addEventListener('click', mostrar);
+      item.addEventListener('focus', mostrar);
+      lista.appendChild(item);
+    });
+    // Sin texto de ayuda: el detalle aparece recién al pasar o tocar una venta.
+    detalle.hidden = true;
+    contenido.append(titulo, lista, detalle);
+    return contenido;
+  }
+
+  private horaFin(venta: VentaPosicionDTO): string {
+    return new Date(venta.finHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+
+  private crearIconoVenta(etiqueta: string, apilado: boolean): L.DivIcon {
+    // El apilado suma 4 px por las "hojas" que asoman detrás.
+    const ancho = Math.max(24, 10 + etiqueta.length * 8) + (apilado ? 4 : 0);
+    const clases = apilado ? 'venta-badge venta-badge-pila' : 'venta-badge';
+    return L.divIcon({
+      html: `<div class="${clases}" style="background:${COLOR_VENTA};">${etiqueta}</div>`,
+      className: 'custom-nodo-parada-icon',
+      iconSize: [ancho, 24],
+      iconAnchor: [ancho / 2, 12],
+      popupAnchor: [0, -12]
+    });
+  }
+
+  private etiquetaVenta(venta: VentaPosicionDTO): string {
+    const detalle = [`Finalizada ${this.horaFin(venta)}`];
+    if (venta.tiempoTotalMinutos != null) detalle.push(`${venta.tiempoTotalMinutos} min`);
+    if (venta.reaperturas > 0) detalle.push(`${venta.reaperturas} ${venta.reaperturas === 1 ? 'reapertura' : 'reaperturas'}`);
+    const total = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(venta.total);
+    return `<b>Venta ${venta.numero}</b> — ${escaparHtml(venta.nombreCliente)}<br>${detalle.join(' · ')}<br>Total ${total}`;
   }
 
   private crearIconoNodo(numero: number, colorFondo: string): L.DivIcon {

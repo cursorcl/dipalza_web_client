@@ -860,6 +860,69 @@ describe('MapaComponent', () => {
       httpMock.expectNone(r => r.url === `${environment.apiUrl}/ventas/posiciones`);
     });
 
+    const capaVisible = (capa: string) => (component as any).map.hasLayer((component as any)[capa]);
+
+    it('la vista Ambos muestra el recorrido y las ventas a la vez', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      expect(capaVisible('historialLayer')).toBeTrue();
+      expect(capaVisible('ventasLayer')).toBeTrue();
+      expect(marcadoresDeVentas().length).toBe(1);
+    });
+
+    it('de Ambos a Ventas oculta el recorrido sin volver a pedir las ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      component.cambiarVista('ventas');
+
+      expect(capaVisible('historialLayer')).toBeFalse();
+      expect(capaVisible('ventasLayer')).toBeTrue();
+      expect(marcadoresDeVentas().length).toBe(1);
+      httpMock.expectNone(r => r.url === `${environment.apiUrl}/ventas/posiciones`);
+    });
+
+    it('de Ambos a Recorrido oculta las ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      component.cambiarVista('recorrido');
+
+      expect(capaVisible('historialLayer')).toBeTrue();
+      expect(capaVisible('ventasLayer')).toBeFalse();
+    });
+
+    it('en la vista Ambos un aviso de venta finalizada también recarga las ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      const ws = TestBed.inject(WSPositionService) as any;
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ambos');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      ws.ventaFinalizadaSubject.next({ codigoVendedor: '001', tipoVendedor: '0', fecha: new Date().toLocaleDateString('en-CA'), ventaId: 102 });
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, -33.42, -70.62)]);
+
+      expect(marcadoresDeVentas().length).toBe(2);
+    });
+
+    it('el selector ofrece Recorrido, Ventas y Ambos', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      fixture.detectChanges();
+
+      const botones = Array.from(fixture.nativeElement.querySelectorAll('.selector-vista button') as NodeListOf<HTMLElement>)
+        .map(b => b.textContent!.trim());
+      expect(botones).toEqual(['Recorrido', 'Ventas', 'Ambos']);
+    });
+
     it('volver a Recorrido oculta la capa de ventas y muestra la trayectoria', () => {
       const httpMock = TestBed.inject(HttpTestingController);
       seleccionarJuan(httpMock);

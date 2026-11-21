@@ -19,15 +19,15 @@
         (fechaSeleccionada)="seleccionarFechaHistorial($event)"
         (cerrar)="cerrarHistorial()">
       </app-historial-panel>
-    } @else if (vista() === 'recorrido' && nodosSeleccionados().length > 0) {
+    } @else if (vista() !== 'ventas' && nodosSeleccionados().length > 0) {
       <app-tramos-table [nodos]="nodosSeleccionados()" (centrarEnNodo)="centrarEnNodoDelMapa($event)"></app-tramos-table>
     }
     @if (consulta(); as c) {
       <div class="selector-vista btn-group btn-group-sm" role="group" [attr.aria-label]="'Vista del mapa para ' + c.nombre">
-        <button type="button" class="btn" [class.btn-primary]="vista() === 'recorrido'" [class.btn-light]="vista() !== 'recorrido'"
-          [attr.aria-pressed]="vista() === 'recorrido'" (click)="cambiarVista('recorrido')">Recorrido</button>
-        <button type="button" class="btn" [class.btn-primary]="vista() === 'ventas'" [class.btn-light]="vista() !== 'ventas'"
-          [attr.aria-pressed]="vista() === 'ventas'" (click)="cambiarVista('ventas')">Ventas</button>
+        @for (opcion of opcionesVista; track opcion.valor) {
+          <button type="button" class="btn" [class.btn-primary]="vista() === opcion.valor" [class.btn-light]="vista() !== opcion.valor"
+            [attr.aria-pressed]="vista() === opcion.valor" (click)="cambiarVista(opcion.valor)">{{ opcion.texto }}</button>
+        }
       </div>
     }
     <div class="map-container" #map role="region" aria-label="Mapa de vendedores"></div>

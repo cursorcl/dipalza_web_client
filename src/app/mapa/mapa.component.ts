@@ -17,7 +17,9 @@ import { HistorialPanelComponent } from './historial-panel/historial-panel.compo
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
-type VistaMapa = 'recorrido' | 'ventas';
+type VistaMapa = 'recorrido' | 'ventas' | 'ambos';
+const muestraRecorrido = (v: VistaMapa) => v !== 'ventas';
+const muestraVentas = (v: VistaMapa) => v !== 'recorrido';
 interface ConsultaMapa { codigo: string; tipo: string; nombre: string; fecha: string; }
 
 /** Color de los marcadores de venta: distinto al de paradas, inicio (verde) y fin (rojo). */
@@ -377,8 +379,8 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.desiredSelection = key;
 
     this.consulta.set({ codigo: vendedor.codigo, tipo: vendedor.tipo, nombre: vendedor.nombre, fecha });
-    if (this.vista() === 'ventas') {
-      this.cargarVentas();
+    if (muestraVentas(this.vista())) {
+      this.cargarVentas(this.vista() === 'ventas');
     }
 
     const filter: PositionFilter = {
@@ -476,16 +478,33 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   }
 
   /** Alterna entre el recorrido GPS y las ventas finalizadas del vendedor y día consultados. */
+  readonly opcionesVista: { valor: VistaMapa; texto: string }[] = [
+    { valor: 'recorrido', texto: 'Recorrido' },
+    { valor: 'ventas', texto: 'Ventas' },
+    { valor: 'ambos', texto: 'Ambos' },
+  ];
+
+  /**
+   * Recorrido GPS, ventas finalizadas, o ambos superpuestos, para el vendedor y
+   * día consultados. Las ventas se piden solo al pasar a una vista que las
+   * muestra y antes no se veían; en Ambos no se mueve el mapa del recorrido.
+   */
   cambiarVista(vista: VistaMapa): void {
-    if (vista === this.vista()) return;
+    const anterior = this.vista();
+    if (vista === anterior) return;
     this.vista.set(vista);
-    if (vista === 'ventas') {
-      this.map.removeLayer(this.historialLayer);
-      this.map.addLayer(this.ventasLayer);
-      this.cargarVentas();
+    this.mostrarCapa(this.historialLayer, muestraRecorrido(vista));
+    this.mostrarCapa(this.ventasLayer, muestraVentas(vista));
+    if (muestraVentas(vista) && !muestraVentas(anterior)) {
+      this.cargarVentas(vista === 'ventas');
+    }
+  }
+
+  private mostrarCapa(capa: L.LayerGroup, visible: boolean): void {
+    if (visible) {
+      this.map.addLayer(capa);
     } else {
-      this.map.removeLayer(this.ventasLayer);
-      this.map.addLayer(this.historialLayer);
+      this.map.removeLayer(capa);
     }
   }
 
@@ -504,7 +523,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       .subscribe({
         next: ventas => {
           // Se descarta si mientras tanto se cambió de vendedor, de día o de vista.
-          if (this.consulta() !== consulta || this.vista() !== 'ventas') return;
+          if (this.consulta() !== consulta || !muestraVentas(this.vista())) return;
           this.ventasLayer.clearLayers();
           this.mostrarVentas(ventas, consulta, ajustarVista);
         },
@@ -519,7 +538,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   /** Recarga la vista Ventas si la venta finalizada es del vendedor y día que se están mirando. */
   private alFinalizarVenta(evento: VentaPosicionEventoDTO): void {
     const consulta = this.consulta();
-    if (!consulta || this.vista() !== 'ventas') return;
+    if (!consulta || !muestraVentas(this.vista())) return;
     const mismoVendedor = evento.codigoVendedor?.trim() === consulta.codigo.trim()
       && evento.tipoVendedor?.trim() === consulta.tipo.trim();
     if (mismoVendedor && evento.fecha === consulta.fecha) {
@@ -561,6 +580,8 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     const marcador = L.marker(latLng, {
       keyboard: false,
       icon: this.crearIconoVenta(etiquetaGrupo(grupo), grupo.ventas.length > 1),
+      // En Ambos, las ventas quedan por encima de los nodos de parada del recorrido.
+      zIndexOffset: 1000,
       title: resumenGrupo(grupo)
     });
     const contenido = this.crearContenidoGrupo(grupo);

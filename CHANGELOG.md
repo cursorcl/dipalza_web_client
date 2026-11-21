@@ -1,3 +1,10 @@
+# [1.26.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.25.0...v1.26.0) (2026-11-21)
+
+
+### Features
+
+* ordena ventas por facturar por vendedor, fecha y hora ([#54](https://github.com/cursorcl/dipalza_web_client/issues/54)) ([310482f](https://github.com/cursorcl/dipalza_web_client/commit/310482f69ca57ad0a3c131067dee7b5f69e4a771))
+
 # [1.25.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.24.0...v1.25.0) (2026-11-17)
 
 

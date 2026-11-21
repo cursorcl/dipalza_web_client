@@ -1,6 +1,6 @@
 <button type="button" class="tramos-table__header" [attr.aria-expanded]="!colapsado()" aria-controls="tramos-table-body"
   (click)="alternarColapso()">
-  <span class="tramos-table__titulo">Tramos del recorrido</span>
+  <span class="tramos-table__titulo">Tramos del recorrido@if (fechaFormateada) { · {{ fechaFormateada }} }</span>
   <span class="tramos-table__flecha" [class.tramos-table__flecha--colapsado]="colapsado()" aria-hidden="true">▾</span>
 </button>
 @if (!colapsado()) {

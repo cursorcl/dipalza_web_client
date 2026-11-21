@@ -217,4 +217,21 @@ describe('TramosTableComponent', () => {
 
     expect(emitidos).toEqual([{ latitud: nodoParada.latitud, longitud: nodoParada.longitud }]);
   });
+
+  it('muestra la fecha del recorrido en el encabezado', () => {
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(of({ calle: 'Calle X' }));
+    component.fecha = '2026-11-21';
+    fixture.detectChanges();
+
+    const titulo = fixture.nativeElement.querySelector('.tramos-table__titulo').textContent;
+    expect(titulo).toContain('Tramos del recorrido');
+    expect(titulo).toContain('21/11/2026');
+  });
+
+  it('sin fecha muestra solo el título', () => {
+    geocodificacionServiceSpy.obtenerCalle.and.returnValue(of({ calle: 'Calle X' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.tramos-table__titulo').textContent.trim()).toBe('Tramos del recorrido');
+  });
 });

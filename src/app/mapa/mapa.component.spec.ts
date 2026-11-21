@@ -8,6 +8,7 @@ import { Subject, take } from 'rxjs';
 import { MapaComponent } from './mapa.component';
 import { environment } from 'environments/environment';
 import { colorForVendedor } from './vendor-color';
+import { WSPositionService } from './ws-position.service';
 
 describe('MapaComponent', () => {
   let component: MapaComponent;
@@ -737,6 +738,94 @@ describe('MapaComponent', () => {
       expect(numeros[1]).toContain('>3<');
       expect((component as any).map.hasLayer((component as any).ventasLayer)).toBeTrue();
       expect((component as any).map.hasLayer((component as any).historialLayer)).toBeFalse();
+    });
+
+    const htmlIcono = (m: L.Marker) => (m.options.icon as L.DivIcon).options.html as string;
+    const contenidoPopup = (m: L.Marker) => m.getPopup()!.getContent() as HTMLElement;
+
+    it('las ventas hechas en el mismo lugar se muestran como un solo marcador "n+"', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+
+      const marcadores = marcadoresDeVentas();
+      expect(marcadores.length).toBe(2);
+      expect(htmlIcono(marcadores[0])).toContain('>1<');
+      expect(htmlIcono(marcadores[1])).toContain('>3+<');
+    });
+
+    it('al pasar el mouse por un marcador de varias ventas lista las ventas de ese punto', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+      const [marcador] = marcadoresDeVentas();
+
+      marcador.fire('mouseover');
+
+      expect(marcador.isPopupOpen()).toBeTrue();
+      const items = Array.from(contenidoPopup(marcador).querySelectorAll('[data-venta]')).map(e => e.textContent);
+      expect(items.length).toBe(2);
+      expect(items[0]).toContain('Venta 2');
+      expect(items[0]).toContain('Cliente 2');
+      expect(items[1]).toContain('Cliente 3');
+    });
+
+    it('al pasar el mouse por una venta de la lista muestra su información', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(2, -33.42, -70.62), venta(3, -33.42, -70.62)]);
+      const [marcador] = marcadoresDeVentas();
+      marcador.fire('mouseover');
+      const contenido = contenidoPopup(marcador);
+
+      contenido.querySelector('[data-venta="3"]')!.dispatchEvent(new MouseEvent('mouseenter'));
+
+      const detalle = contenido.querySelector('.detalle-venta')!.textContent!;
+      expect(detalle).toContain('Venta 3');
+      expect(detalle).toContain('20 min');
+      expect(detalle).toContain('Total');
+    });
+
+    it('una venta sola muestra su información al pasar el mouse', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+      const [marcador] = marcadoresDeVentas();
+
+      marcador.fire('mouseover');
+
+      expect(contenidoPopup(marcador).textContent).toContain('Venta 1');
+      expect(contenidoPopup(marcador).querySelectorAll('[data-venta]').length).toBe(0);
+    });
+
+    it('un aviso de venta finalizada del vendedor y día consultados recarga la vista Ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      const ws = TestBed.inject(WSPositionService) as any;
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      ws.ventaFinalizadaSubject.next({ codigoVendedor: '001', tipoVendedor: '0', fecha: new Date().toLocaleDateString('en-CA'), ventaId: 102 });
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60), venta(2, -33.42, -70.62)]);
+
+      expect(marcadoresDeVentas().length).toBe(2);
+    });
+
+    it('un aviso de otro vendedor no recarga la vista Ventas', () => {
+      const httpMock = TestBed.inject(HttpTestingController);
+      const ws = TestBed.inject(WSPositionService) as any;
+      seleccionarJuan(httpMock);
+      component.cambiarVista('ventas');
+      pedidoVentas(httpMock).flush([venta(1, -33.40, -70.60)]);
+
+      ws.ventaFinalizadaSubject.next({ codigoVendedor: '002', tipoVendedor: '0', fecha: new Date().toLocaleDateString('en-CA'), ventaId: 9 });
+
+      httpMock.expectNone(r => r.url === `${environment.apiUrl}/ventas/posiciones`);
     });
 
     it('volver a Recorrido oculta la capa de ventas y muestra la trayectoria', () => {

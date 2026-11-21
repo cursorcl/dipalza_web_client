@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, DestroyRef, ElementRef, inject, OnDestroy, signal, ViewChild } from '@angular/core';
 import * as L from 'leaflet';
 import { MapInitializerService } from './map-initializer.service';
-import { HistorialPosicionDTO, HistorialResumenDiaDTO, PosicionDTO, PositionFilter, VendedorDTO, VendedorId, VendedorListItem, VentaPosicionDTO } from './models/model';
+import { HistorialPosicionDTO, HistorialResumenDiaDTO, PosicionDTO, PositionFilter, VendedorDTO, VendedorId, VendedorListItem, VentaPosicionDTO, VentaPosicionEventoDTO } from './models/model';
 import { Subscription, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { WSPositionService } from './ws-position.service';
@@ -10,6 +10,7 @@ import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
 import { detectarParadas, NodoParada } from './detectar-paradas';
+import { agruparVentasPorLugar, etiquetaGrupo, GrupoVentas } from './agrupar-ventas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { TramosTableComponent } from './tramos-table/tramos-table.component';
 import { HistorialPanelComponent } from './historial-panel/historial-panel.component';
@@ -89,6 +90,9 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         this.updatePositionOnMap(posicion);
       }
     );
+    this.subscription.add(this.wsPosicionService.getVentasFinalizadas$().subscribe(
+      evento => this.alFinalizarVenta(evento)
+    ));
     this.tooltipRefreshInterval = setInterval(() => {
       this.markers.forEach((marker, key) => {
         const data = this.posicionesActuales.get(key);
@@ -491,7 +495,7 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     this.cambiarVista('recorrido');
   }
 
-  private cargarVentas(): void {
+  private cargarVentas(ajustarVista = true): void {
     const consulta = this.consulta();
     if (!consulta) return;
     this.ventasLayer.clearLayers();
@@ -501,7 +505,8 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
         next: ventas => {
           // Se descarta si mientras tanto se cambió de vendedor, de día o de vista.
           if (this.consulta() !== consulta || this.vista() !== 'ventas') return;
-          this.mostrarVentas(ventas, consulta);
+          this.ventasLayer.clearLayers();
+          this.mostrarVentas(ventas, consulta, ajustarVista);
         },
         error: () => {
           if (this.consulta() === consulta) {
@@ -511,7 +516,18 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       });
   }
 
-  private mostrarVentas(ventas: VentaPosicionDTO[], consulta: ConsultaMapa): void {
+  /** Recarga la vista Ventas si la venta finalizada es del vendedor y día que se están mirando. */
+  private alFinalizarVenta(evento: VentaPosicionEventoDTO): void {
+    const consulta = this.consulta();
+    if (!consulta || this.vista() !== 'ventas') return;
+    const mismoVendedor = evento.codigoVendedor?.trim() === consulta.codigo.trim()
+      && evento.tipoVendedor?.trim() === consulta.tipo.trim();
+    if (mismoVendedor && evento.fecha === consulta.fecha) {
+      this.cargarVentas(false);
+    }
+  }
+
+  private mostrarVentas(ventas: VentaPosicionDTO[], consulta: ConsultaMapa, ajustarVista = true): void {
     // Las ventas sin posición no se dibujan, pero conservan su número (el orden real).
     // `!= null` cubre también un JSON que omita los campos nulos.
     const dibujables = ventas.filter(v => v.finLat != null && v.finLon != null);
@@ -525,19 +541,96 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
       return;
     }
     const bounds = L.latLngBounds([]);
-    dibujables.forEach(venta => {
-      const latLng = L.latLng(venta.finLat!, venta.finLon!);
-      L.marker(latLng, { keyboard: false, icon: this.crearIconoNodo(venta.numero, COLOR_VENTA) })
-        .bindPopup(this.etiquetaVenta(venta))
-        .addTo(this.ventasLayer);
+    agruparVentasPorLugar(dibujables).forEach(grupo => {
+      const latLng = L.latLng(grupo.latitud, grupo.longitud);
+      this.crearMarcadorGrupo(grupo, latLng).addTo(this.ventasLayer);
       bounds.extend(latLng);
     });
-    this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+    // En una recarga por aviso en vivo no se mueve el mapa que el usuario está mirando.
+    if (ajustarVista) {
+      this.map.fitBounds(bounds, { padding: [40, 40], maxZoom: 16 });
+    }
+  }
+
+  /**
+   * Un marcador por lugar: muestra el número de la venta, o "n+" si hay varias
+   * (n = la última). Al pasar el mouse (o tocar) abre la lista de las ventas de
+   * ese punto; al pasar o tocar una de ellas se ve su información.
+   */
+  private crearMarcadorGrupo(grupo: GrupoVentas, latLng: L.LatLng): L.Marker {
+    const marcador = L.marker(latLng, {
+      keyboard: false,
+      icon: this.crearIconoVenta(etiquetaGrupo(grupo)),
+      title: grupo.ventas.length === 1 ? `Venta ${grupo.ventas[0].numero}` : `${grupo.ventas.length} ventas en este punto`
+    });
+    const contenido = this.crearContenidoGrupo(grupo);
+    marcador.bindPopup(contenido, { closeButton: false, autoPan: false, className: 'popup-ventas' });
+
+    let cierre: ReturnType<typeof setTimeout> | undefined;
+    const mantener = () => { if (cierre) { clearTimeout(cierre); cierre = undefined; } };
+    const cerrarLuego = () => { mantener(); cierre = setTimeout(() => marcador.closePopup(), 300); };
+    marcador.on('mouseover', () => { mantener(); marcador.openPopup(); });
+    marcador.on('mouseout', cerrarLuego);
+    // Mientras el mouse está sobre la lista, el popup sigue abierto.
+    contenido.addEventListener('mouseenter', mantener);
+    contenido.addEventListener('mouseleave', cerrarLuego);
+    return marcador;
+  }
+
+  private crearContenidoGrupo(grupo: GrupoVentas): HTMLElement {
+    const contenido = document.createElement('div');
+    contenido.className = 'contenido-ventas';
+    const detalle = document.createElement('div');
+    detalle.className = 'detalle-venta';
+
+    if (grupo.ventas.length === 1) {
+      detalle.innerHTML = this.etiquetaVenta(grupo.ventas[0]);
+      contenido.appendChild(detalle);
+      return contenido;
+    }
+
+    const titulo = document.createElement('div');
+    titulo.className = 'titulo-ventas';
+    titulo.textContent = `${grupo.ventas.length} ventas en este punto`;
+    const lista = document.createElement('ul');
+    lista.className = 'lista-ventas';
+    grupo.ventas.forEach(venta => {
+      const item = document.createElement('li');
+      item.dataset['venta'] = String(venta.numero);
+      item.tabIndex = 0;
+      item.textContent = `Venta ${venta.numero} — ${venta.nombreCliente} · ${this.horaFin(venta)}`;
+      const mostrar = () => {
+        lista.querySelectorAll('li').forEach(li => li.classList.remove('activa'));
+        item.classList.add('activa');
+        detalle.innerHTML = this.etiquetaVenta(venta);
+      };
+      item.addEventListener('mouseenter', mostrar);
+      item.addEventListener('click', mostrar);
+      item.addEventListener('focus', mostrar);
+      lista.appendChild(item);
+    });
+    detalle.textContent = 'Pase el mouse o toque una venta para ver su información';
+    contenido.append(titulo, lista, detalle);
+    return contenido;
+  }
+
+  private horaFin(venta: VentaPosicionDTO): string {
+    return new Date(venta.finHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
+  }
+
+  private crearIconoVenta(etiqueta: string): L.DivIcon {
+    const ancho = Math.max(24, 10 + etiqueta.length * 8);
+    return L.divIcon({
+      html: `<div class="venta-badge" style="background:${COLOR_VENTA};">${etiqueta}</div>`,
+      className: 'custom-nodo-parada-icon',
+      iconSize: [ancho, 24],
+      iconAnchor: [ancho / 2, 12],
+      popupAnchor: [0, -12]
+    });
   }
 
   private etiquetaVenta(venta: VentaPosicionDTO): string {
-    const hora = new Date(venta.finHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
-    const detalle = [`Finalizada ${hora}`];
+    const detalle = [`Finalizada ${this.horaFin(venta)}`];
     if (venta.tiempoTotalMinutos != null) detalle.push(`${venta.tiempoTotalMinutos} min`);
     if (venta.reaperturas > 0) detalle.push(`${venta.reaperturas} ${venta.reaperturas === 1 ? 'reapertura' : 'reaperturas'}`);
     const total = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(venta.total);

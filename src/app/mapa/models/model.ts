@@ -64,6 +64,14 @@ export interface ParadaVendedorDTO {
   enCurso: boolean;
 }
 
+/** Aviso del server (WebSocket) de que una venta quedó finalizada. */
+export interface VentaPosicionEventoDTO {
+    codigoVendedor: string;
+    tipoVendedor: string;
+    fecha: string;
+    ventaId: number;
+}
+
 /** Venta finalizada de un vendedor en un día (vista Ventas del mapa). */
 export interface VentaPosicionDTO {
     numero: number;

@@ -117,3 +117,55 @@
     z-index: 1000;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
 }
+
+::ng-deep .venta-badge {
+    min-width: 24px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 12px;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    border: 2px solid #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 0 2px rgba(0, 0, 0, 0.85);
+    white-space: nowrap;
+}
+
+::ng-deep .popup-ventas .lista-ventas {
+    list-style: none;
+    margin: 4px 0;
+    padding: 0;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+::ng-deep .popup-ventas .lista-ventas li {
+    padding: 3px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+::ng-deep .popup-ventas .lista-ventas li.activa,
+::ng-deep .popup-ventas .lista-ventas li:hover {
+    background: #f0e6f6;
+}
+
+::ng-deep .popup-ventas .titulo-ventas {
+    font-weight: bold;
+}
+
+::ng-deep .popup-ventas .detalle-venta {
+    border-top: 1px solid #ddd;
+    margin-top: 4px;
+    padding-top: 4px;
+}
+
+::ng-deep .popup-ventas .contenido-ventas > .detalle-venta:first-child {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+}

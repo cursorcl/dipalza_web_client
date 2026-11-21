@@ -69,6 +69,26 @@ describe('ListadoVentasDiaComponent', () => {
     });
   });
 
+  describe('orden inicial', () => {
+    const venta = (id: number, nombreVendedor: string, fecha: string, fechaHoraLista: string | null) =>
+      ({ id, nombreVendedor, fecha, fechaHoraLista, nombreCliente: `Cliente ${id}` } as any);
+
+    it('ordena por vendedor, fecha y hora lista, de menor a mayor (sin hora al final)', () => {
+      ventasServiceMock.obtainSales.and.returnValue(of([
+        venta(1, 'Pedro', '2026-11-16', '2026-11-16T09:00:00'),
+        venta(2, 'Ana', '2026-11-17', '2026-11-17T08:00:00'),
+        venta(3, 'Ana', '2026-11-16', null),
+        venta(4, 'Ana', '2026-11-16', '2026-11-16T11:30:00'),
+        venta(5, 'Ana', '2026-11-16', '2026-11-16T10:15:00'),
+      ]));
+
+      component.updateSalesByDate();
+
+      expect(component.rows.map(v => v.id)).toEqual([5, 4, 3, 2, 1]);
+      expect(component.temp.map(v => v.id)).toEqual([5, 4, 3, 2, 1]);
+    });
+  });
+
   describe('onSelect()', () => {
     it('habilita canFacture solo cuando hay filas seleccionadas', () => {
       const venta = { id: 1 } as any;

@@ -13,6 +13,23 @@ import Swal from 'sweetalert2';
 
 const INTERVALO_VERIFICACION_MASTERSOFT_MS = 30000;
 
+// Orden pedido por el cliente: vendedor, fecha y hora en que se marcó lista,
+// todo de menor a mayor. Las ventas sin hora registrada van al final de su
+// fecha; el id desempata para que el orden sea siempre el mismo.
+function compararVentasPorFacturar(a: Venta, b: Venta): number {
+  return (a.nombreVendedor ?? '').localeCompare(b.nombreVendedor ?? '', 'es', { sensitivity: 'base' })
+    || (a.fecha ?? '').localeCompare(b.fecha ?? '')
+    || compararHoraLista(a.fechaHoraLista, b.fechaHoraLista)
+    || a.id - b.id;
+}
+
+function compararHoraLista(a: string | null, b: string | null): number {
+  if (a === b) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  return a.localeCompare(b);
+}
+
 @Component({
   selector: 'app-listado-ventas-dia',
   imports: [NgxDatatableModule, CommonModule, FormsModule, RouterLink],
@@ -69,8 +86,9 @@ export class ListadoVentasDiaComponent implements OnInit {
     const filtros = { estados: ['FINISHED'] };
     this.ventaService.obtainSales(filtros).subscribe({
       next: (ventas: Venta[]) => {
-        this.rows = ventas;
-        this.temp = ventas;
+        const ordenadas = [...ventas].sort(compararVentasPorFacturar);
+        this.rows = ordenadas;
+        this.temp = ordenadas;
         this.selected = [];
         this.canFacture = false;
         this.loadingIndicator = false;

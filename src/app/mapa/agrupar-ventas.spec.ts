@@ -1,4 +1,4 @@
-import { agruparVentasPorLugar, etiquetaGrupo } from './agrupar-ventas';
+import { agruparVentasPorLugar, etiquetaGrupo, resumenGrupo } from './agrupar-ventas';
 import { VentaPosicionDTO } from './models/model';
 
 const venta = (numero: number, lat: number | null, lon: number | null): VentaPosicionDTO => ({
@@ -41,7 +41,18 @@ describe('etiquetaGrupo', () => {
     expect(etiquetaGrupo({ latitud: 0, longitud: 0, ventas: [venta(3, 0, 0)] })).toBe('3');
   });
 
-  it('varias ventas muestran el último número con "+"', () => {
-    expect(etiquetaGrupo({ latitud: 0, longitud: 0, ventas: [venta(2, 0, 0), venta(5, 0, 0)] })).toBe('5+');
+  it('varias ventas muestran la cantidad con "×" (no un número de orden)', () => {
+    expect(etiquetaGrupo({ latitud: 0, longitud: 0, ventas: [venta(2, 0, 0), venta(5, 0, 0)] })).toBe('×2');
+  });
+});
+
+describe('resumenGrupo', () => {
+  it('una venta: "Venta n"', () => {
+    expect(resumenGrupo({ latitud: 0, longitud: 0, ventas: [venta(3, 0, 0)] })).toBe('Venta 3');
+  });
+
+  it('varias ventas: cantidad y números', () => {
+    expect(resumenGrupo({ latitud: 0, longitud: 0, ventas: [venta(2, 0, 0), venta(4, 0, 0), venta(5, 0, 0)] }))
+      .toBe('3 ventas: 2, 4 y 5');
   });
 });

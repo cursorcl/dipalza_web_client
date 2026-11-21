@@ -743,7 +743,7 @@ describe('MapaComponent', () => {
     const htmlIcono = (m: L.Marker) => (m.options.icon as L.DivIcon).options.html as string;
     const contenidoPopup = (m: L.Marker) => m.getPopup()!.getContent() as HTMLElement;
 
-    it('las ventas hechas en el mismo lugar se muestran como un solo marcador "n+"', () => {
+    it('las ventas hechas en el mismo lugar se muestran como un solo marcador apilado "×n"', () => {
       const httpMock = TestBed.inject(HttpTestingController);
       seleccionarJuan(httpMock);
 
@@ -753,7 +753,10 @@ describe('MapaComponent', () => {
       const marcadores = marcadoresDeVentas();
       expect(marcadores.length).toBe(2);
       expect(htmlIcono(marcadores[0])).toContain('>1<');
-      expect(htmlIcono(marcadores[1])).toContain('>3+<');
+      expect(htmlIcono(marcadores[0])).not.toContain('venta-badge-pila');
+      expect(htmlIcono(marcadores[1])).toContain('>×2<');
+      expect(htmlIcono(marcadores[1])).toContain('venta-badge-pila');
+      expect(marcadores[1].options.title).toBe('2 ventas: 2 y 3');
     });
 
     it('al pasar el mouse por un marcador de varias ventas lista las ventas de ese punto', () => {

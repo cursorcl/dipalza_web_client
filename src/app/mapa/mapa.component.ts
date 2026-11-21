@@ -10,7 +10,7 @@ import { VendedorService } from './vendedor.service';
 import { TimeFormatter } from 'app/utils/time-formatter';
 import { colorForVendedor } from './vendor-color';
 import { detectarParadas, NodoParada } from './detectar-paradas';
-import { agruparVentasPorLugar, etiquetaGrupo, GrupoVentas } from './agrupar-ventas';
+import { agruparVentasPorLugar, etiquetaGrupo, GrupoVentas, resumenGrupo } from './agrupar-ventas';
 import { VendorListComponent } from './vendor-list/vendor-list.component';
 import { TramosTableComponent } from './tramos-table/tramos-table.component';
 import { HistorialPanelComponent } from './historial-panel/historial-panel.component';
@@ -553,15 +553,15 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
   }
 
   /**
-   * Un marcador por lugar: muestra el número de la venta, o "n+" si hay varias
-   * (n = la última). Al pasar el mouse (o tocar) abre la lista de las ventas de
-   * ese punto; al pasar o tocar una de ellas se ve su información.
+   * Un marcador por lugar: muestra el número de la venta o, si hay varias, un
+   * marcador apilado con la cantidad ("×3"). Al pasar el mouse (o tocar) abre
+   * la lista de las ventas de ese punto; al pasar o tocar una se ve su información.
    */
   private crearMarcadorGrupo(grupo: GrupoVentas, latLng: L.LatLng): L.Marker {
     const marcador = L.marker(latLng, {
       keyboard: false,
-      icon: this.crearIconoVenta(etiquetaGrupo(grupo)),
-      title: grupo.ventas.length === 1 ? `Venta ${grupo.ventas[0].numero}` : `${grupo.ventas.length} ventas en este punto`
+      icon: this.crearIconoVenta(etiquetaGrupo(grupo), grupo.ventas.length > 1),
+      title: resumenGrupo(grupo)
     });
     const contenido = this.crearContenidoGrupo(grupo);
     marcador.bindPopup(contenido, { closeButton: false, autoPan: false, className: 'popup-ventas', minWidth: 280, maxWidth: 360 });
@@ -622,10 +622,12 @@ export class MapaComponent implements AfterViewInit, OnDestroy {
     return new Date(venta.finHora).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit', hour12: false });
   }
 
-  private crearIconoVenta(etiqueta: string): L.DivIcon {
-    const ancho = Math.max(24, 10 + etiqueta.length * 8);
+  private crearIconoVenta(etiqueta: string, apilado: boolean): L.DivIcon {
+    // El apilado suma 4 px por las "hojas" que asoman detrás.
+    const ancho = Math.max(24, 10 + etiqueta.length * 8) + (apilado ? 4 : 0);
+    const clases = apilado ? 'venta-badge venta-badge-pila' : 'venta-badge';
     return L.divIcon({
-      html: `<div class="venta-badge" style="background:${COLOR_VENTA};">${etiqueta}</div>`,
+      html: `<div class="${clases}" style="background:${COLOR_VENTA};">${etiqueta}</div>`,
       className: 'custom-nodo-parada-icon',
       iconSize: [ancho, 24],
       iconAnchor: [ancho / 2, 12],

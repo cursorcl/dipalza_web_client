@@ -33,10 +33,20 @@ export function agruparVentasPorLugar(
   return grupos;
 }
 
-/** "n" para una venta; "n+" para varias, donde n es la última (el número más alto). */
+/**
+ * Texto del marcador: el número de orden si hay una venta; la cantidad con "×"
+ * si hay varias ("×3"), para que no se confunda con el número de una venta.
+ */
 export function etiquetaGrupo(grupo: GrupoVentas): string {
-  const ultima = grupo.ventas[grupo.ventas.length - 1].numero;
-  return grupo.ventas.length === 1 ? `${ultima}` : `${ultima}+`;
+  return grupo.ventas.length === 1 ? `${grupo.ventas[0].numero}` : `×${grupo.ventas.length}`;
+}
+
+/** Tooltip del marcador: "Venta 3" o "3 ventas: 2, 4 y 5". */
+export function resumenGrupo(grupo: GrupoVentas): string {
+  const numeros = grupo.ventas.map(v => v.numero);
+  if (numeros.length === 1) return `Venta ${numeros[0]}`;
+  const ultimo = numeros.pop();
+  return `${grupo.ventas.length} ventas: ${numeros.join(', ')} y ${ultimo}`;
 }
 
 function distanciaMetros(lat1: number, lon1: number, lat2: number, lon2: number): number {

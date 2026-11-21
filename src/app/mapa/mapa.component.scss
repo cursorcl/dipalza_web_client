@@ -177,3 +177,14 @@
     margin-top: 0;
     padding-top: 0;
 }
+
+/* Varias ventas en un punto: "pila" de dos hojas desplazadas detrás del marcador. */
+::ng-deep .venta-badge-pila {
+    position: relative;
+    box-shadow:
+        3px -3px 0 -1px #ffffff,
+        3px -3px 0 1px #c9a3dc,
+        6px -6px 0 -1px #ffffff,
+        6px -6px 0 1px #b07cc9,
+        0 1px 3px rgba(0, 0, 0, 0.4);
+}

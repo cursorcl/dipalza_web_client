@@ -1,3 +1,10 @@
+# [1.28.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.27.0...v1.28.0) (2026-11-22)
+
+
+### Features
+
+* el panel de tramos muestra la fecha del recorrido ([#56](https://github.com/cursorcl/dipalza_web_client/issues/56)) ([55ff03a](https://github.com/cursorcl/dipalza_web_client/commit/55ff03a686ac5c2e44e8de643fc41ca658e1776e))
+
 # [1.27.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.26.0...v1.27.0) (2026-11-21)
 
 

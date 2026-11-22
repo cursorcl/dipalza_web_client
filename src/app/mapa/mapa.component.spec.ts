@@ -973,4 +973,18 @@ describe('MapaComponent', () => {
       expect(marcadoresDeVentas().length).toBe(1);
     });
   });
+
+  it('el panel de tramos recibe la fecha del recorrido consultado', () => {
+    const httpMock = TestBed.inject(HttpTestingController);
+    component.toggleTrayectoria({ codigo: '001', tipo: '0', nombre: 'Juan Perez' });
+    httpMock.expectOne(`${environment.apiUrl}/posicion/historico`).flush([
+      { id: 1, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:00:00', latitud: -33.40, longitud: -70.60 },
+      { id: 2, vendedorId: '001', vendedorCodigo: '0', vendedorNombre: 'Juan Perez', fechaHora: '2026-07-26T09:05:00', latitud: -33.41, longitud: -70.61 }
+    ]);
+    fixture.detectChanges();
+
+    const titulo = fixture.nativeElement.querySelector('app-tramos-table .tramos-table__titulo').textContent;
+    const [a, m, d] = new Date().toLocaleDateString('en-CA').split('-');
+    expect(titulo).toContain(`${d}/${m}/${a}`);
+  });
 });

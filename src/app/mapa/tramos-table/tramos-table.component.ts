@@ -19,6 +19,15 @@ export interface FilaTramo {
 })
 export class TramosTableComponent implements OnChanges {
   @Input() nodos: NodoParada[] = [];
+  /** Día del recorrido (YYYY-MM-DD), para mostrarlo en el encabezado. */
+  @Input() fecha: string | null = null;
+
+  /** 'YYYY-MM-DD' → 'DD/MM/YYYY' sin pasar por Date (evita el corrimiento de huso horario). */
+  get fechaFormateada(): string | null {
+    if (!this.fecha) return null;
+    const [anio, mes, dia] = this.fecha.split('-');
+    return `${dia}/${mes}/${anio}`;
+  }
   @Output() centrarEnNodo = new EventEmitter<{ latitud: number; longitud: number }>();
 
   filas = signal<FilaTramo[]>([]);

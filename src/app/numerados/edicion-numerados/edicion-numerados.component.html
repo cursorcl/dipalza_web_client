@@ -12,7 +12,7 @@
         aria-describedby="numerado-producto-error"
         [ngbTypeahead]="buscarProducto" [resultFormatter]="formatearProducto"
         [inputFormatter]="formatearProducto" placeholder="Ej: ART001 o Queso…"
-        (selectItem)="irANumero()" />
+        (selectItem)="irAPesoTrasSeleccion()" />
       @if (form.get('producto')?.touched && form.get('producto')?.invalid) {
         <div id="numerado-producto-error" class="invalid-feedback d-block">Debe seleccionar un producto de la lista.</div>
       }

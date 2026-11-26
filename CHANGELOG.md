@@ -1,3 +1,10 @@
+## [1.28.1](https://github.com/cursorcl/dipalza_web_client/compare/v1.28.0...v1.28.1) (2026-11-26)
+
+
+### Bug Fixes
+
+* al elegir producto en el alta de numerados el foco pasa a peso ([#57](https://github.com/cursorcl/dipalza_web_client/issues/57)) ([8f6bd33](https://github.com/cursorcl/dipalza_web_client/commit/8f6bd3353ad472f4fa0fdb6b52fa9dd960f17442))
+
 # [1.28.0](https://github.com/cursorcl/dipalza_web_client/compare/v1.27.0...v1.28.0) (2026-11-22)
 
 
